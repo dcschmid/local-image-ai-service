@@ -1,10 +1,11 @@
 # Local Image AI Service
 
-Eigenständiger lokaler Image-Inference-Dienst für **MOSS-Image SFT** und **Z-Image Turbo**.
-MOSS ist der Standard. Kein Import und kein Aufruf von `imgai`, kein Spiel-, Blender- oder Track-Code.
+A standalone local image inference service for **MOSS-Image SFT** and **Z-Image Turbo**.
+MOSS is the default. The service does not import or invoke `imgai` and contains no game,
+Blender, character, vehicle, or track workflow code.
 
-Stand 28.10.2026: installiert und mit beiden Modellen auf Fedora 44 / RTX 5070 Laptop 8 GB geprüft.
-Der Dienst ist nach den Tests **gestoppt**, ohne Login-Autostart. Kein Remote-Repository wurde angelegt.
+Installed and tested on Fedora 44 / RTX 5070 Laptop 8 GB on October 28, 2026.
+Login autostart is not enabled. No remote repository was created.
 
 ```bash
 local-image-ai-service doctor
@@ -17,7 +18,8 @@ local-image-ai-service logs
 local-image-ai-service stop
 ```
 
-Alternativ direkt:
+`start`, `restart`, and `use` wait for the selected model to become ready. Direct systemd commands
+are also supported; `systemctl start` returns before loading finishes, so check `/ready`:
 
 ```bash
 systemctl --user start local-image-ai
@@ -27,10 +29,37 @@ systemctl --user status local-image-ai
 journalctl --user -u local-image-ai -f
 ```
 
-Die Verwaltungsbefehle `start`, `restart` und `use` warten zusätzlich auf Modellbereitschaft.
-Bei direktem `systemctl start` erfolgt das Laden im Hintergrund; `/ready` prüfen.
+## Generate and optionally save an image
 
-API: `http://127.0.0.1:7861/v1`. Ohne konfigurierten API-Key lokal ohne Authentifizierung.
+The new service CLI calls the running image API. Start the service first:
+
+```bash
+local-image-ai-service start
+local-image-ai-service generate \
+  --prompt 'A red teapot on a white table' --size 512x512 --seed 42 --save
+```
+
+`--save` writes a PNG to **`~/.local/share/local-image-ai-service-images/`** and prints JSON
+containing its absolute `path`, `model`, `seed`, and `size`. This separate directory survives
+service uninstallation. Filenames contain a UTC timestamp, model, seed, and unique suffix.
+Existing files are never overwritten. No image is saved unless a saving flag is provided.
+
+Use `--save-dir` instead to choose a directory; this flag implies saving:
+
+```bash
+local-image-ai-service generate \
+  --model moss --prompt 'A small lighthouse at sunset' --size 768x768 \
+  --save-dir "$HOME/.local/share/my-image-experiments"
+```
+
+Without `--save` or `--save-dir`, the CLI prints the complete API JSON, including
+`data[0].b64_json`, and creates no image files. `generate --help` lists all options.
+The selected model must already be loaded; `generate` does not start or switch the service.
+This CLI is independent of the existing `imgai` CLI.
+
+## HTTP API
+
+Base URL: `http://127.0.0.1:7861/v1`. Authentication is optional on loopback.
 
 ```bash
 curl --fail-with-body http://127.0.0.1:7861/v1/models
@@ -39,40 +68,42 @@ curl --fail-with-body http://127.0.0.1:7861/v1/images/generations \
   -d '{"model":"moss","prompt":"A red teapot on a white table","seed":42,"size":"512x512","n":1,"response_format":"b64_json"}'
 ```
 
-Die Antwort enthält PNG-Daten in `data[0].b64_json`. Es erfolgt keine automatische Bildspeicherung.
-Eine gleichzeitige Generierung; weitere Anfragen erhalten `429`. Ein anderes konfiguriertes Modell
-im Request erhält `409`, bis es mit `use` geladen wurde. Kein automatischer Modellwechsel über HTTP.
+Responses contain PNG bytes as Base64. The HTTP service never saves images automatically;
+CLI saving happens in the client after a successful response. One generation runs at a time;
+additional requests receive `429`. Requesting the other configured model returns `409` until
+it has been selected with `use`. There is no automatic HTTP model switching.
 
-Runtime: separat installiertes offizielles `sd-server master-987-a77d362`, inklusive eigener CUDA-13.4-
-Laufzeitbibliotheken. Die vorhandenen Gewichte werden ausschließlich über absolute Pfade gelesen.
-Ein kleiner Python-Standardbibliothek-Adapter ergänzt notwendige Validierung, Modellkennungen,
-Authentifizierung und Ressourcenbegrenzung. Die native API alleine erfüllt diese Anforderungen nicht;
-der [gemessene Nachweis und die Architekturentscheidung](docs/inspection.md) sind dokumentiert.
+The runtime is a separate installation of official `sd-server master-987-a77d362`, including
+its own CUDA 13.4 runtime libraries. Existing weights are read through absolute paths.
+A small Python standard-library adapter adds required validation, model IDs, authentication,
+and resource limits. See the [measured findings and architecture decision](docs/inspection.md).
 
-Dieses Repository enthält keine Modelle, Bilder oder anderen Binärassets. Vorhandene Bild- und
-Spielverzeichnisse werden weder als Ausgabe verwendet noch bereinigt. Vorhandene `imgai`-Workflows
-bleiben eigenständig; bei CLI-Nutzung den neuen Dienst vorher stoppen, um GPU-Konflikte zu vermeiden.
+This repository contains no models, images, or other binary assets. Existing image and game
+folders are not output or cleanup targets. Before using the existing `imgai` workflows, stop
+this service to avoid GPU resource conflicts.
 
-## Dokumentation
+## Documentation
 
-- [Installation, Updates, Deinstallation](docs/installation.md)
-- [Konfiguration und Modellpfade](docs/configuration.md)
-- [systemd und Ressourcen](docs/systemd.md)
-- [API und Fehlercodes](docs/api.md)
-- [Spätere Open-WebUI-Anbindung](docs/open-webui.md)
-- [Fehlersuche](docs/troubleshooting.md)
-- [Bestandsaufnahme und Runtime-Entscheidung](docs/inspection.md)
-- [Prüfbericht](docs/test-report.md)
+- [Installation, updates, and uninstallation](docs/installation.md)
+- [Configuration and model paths](docs/configuration.md)
+- [systemd and resource management](docs/systemd.md)
+- [HTTP API, CLI generation, and errors](docs/api.md)
+- [Future Open WebUI integration](docs/open-webui.md)
+- [Troubleshooting](docs/troubleshooting.md)
+- [Inventory and runtime decision](docs/inspection.md)
+- [Test report](docs/test-report.md)
 
 ## Tests
 
 ```bash
 cd ~/dev/github/local-image-ai-service
 python3 -m unittest discover -s tests -v
-# Verwendet die echte GPU, schaltet beide Modelle nacheinander und stoppt danach den Dienst:
+# Uses the real GPU, tests both models sequentially, and stops the service afterwards:
 python3 tests/integration.py
+# With an already running, idle service, test CLI saving without switching or stopping it:
+python3 tests/cli_integration.py
 ```
 
-Python >=3.11, keine zusätzlichen Python-Pakete. Runtime-Revision und Prüfsummen stehen in
-[runtime.lock.json](runtime.lock.json); die tatsächlich installierten Dateien zusätzlich in
-`~/.local/share/local-image-ai-service/runtime/receipt.json`.
+Requires Python >=3.11, with no additional Python packages. Runtime revision and reference
+checksums are in [runtime.lock.json](runtime.lock.json). Installed file checksums are also
+recorded in `~/.local/share/local-image-ai-service/runtime/receipt.json`.

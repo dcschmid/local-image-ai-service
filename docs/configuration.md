@@ -1,29 +1,29 @@
-# Konfiguration
+# Configuration
 
-Aktive Datei: `~/.config/local-image-ai-service/config.json`, Eigentümer aktueller Benutzer,
-Modus `0600`. Vorlage: [config.example.json](../config/config.example.json).
-Konfiguration und API-Key gehören nicht ins Git-Repository. Änderungen werden beim Neustart gelesen.
+Active file: `~/.config/local-image-ai-service/config.json`, owned by the current user with
+mode `0600`. Template: [config.example.json](../config/config.example.json).
+Configuration and API keys must stay out of Git. Changes take effect after a restart.
 
-| Feld | Standard / Bedeutung |
+| Field | Default / meaning |
 | --- | --- |
-| `active_model` | `moss`; ausschließlich `moss` oder `z-image` |
-| `host` | Nur `127.0.0.1` zulässig |
-| `port` | 7861, öffentliche lokale API |
-| `backend_port` | 17861, ausschließlich lokale interne Runtime |
-| `runtime` | Absoluter Pfad des eigenen `runtime/bin/sd-server` |
-| `cuda_lib` | Absoluter Pfad der eigenen CUDA-Laufzeitbibliotheken |
-| `gpu_uuid` | Von `nvidia-smi` ermittelte GPU-UUID |
-| `load_timeout` | 180 Sekunden; zulässig 1–1800 |
-| `generation_timeout` | 300 Sekunden; zulässig 1–1800 |
-| `api_key_file` | `null` oder absoluter Pfad einer privaten Schlüsseldatei |
-| `models` | Genau zwei Einträge mit absoluten lesbaren Dateipfaden |
+| `active_model` | `moss`; only `moss` or `z-image` |
+| `host` | Only `127.0.0.1` is accepted |
+| `port` | 7861, client-facing local API |
+| `backend_port` | 17861, internal loopback runtime |
+| `runtime` | Absolute path to this service's `runtime/bin/sd-server` |
+| `cuda_lib` | Absolute path to its own CUDA runtime libraries |
+| `gpu_uuid` | GPU UUID reported by `nvidia-smi` |
+| `load_timeout` | 180 seconds; allowed range 1–1800 |
+| `generation_timeout` | 300 seconds; allowed range 1–1800 |
+| `api_key_file` | `null` or absolute path to a private key file |
+| `models` | Exactly two entries with absolute, readable file paths |
 
-## Bereits vorhandene Gewichte
+## Existing weights
 
-Wurzel auf diesem Rechner: `~/.local/share/local-image-ai/models/`. Die installierte JSON-Datei
-enthält expandierte absolute Pfade; `~`, Umgebungsvariablen und relative Pfade werden nicht expandiert.
+Model root on this machine: `~/.local/share/local-image-ai/models/`. The installed JSON contains
+expanded absolute paths. Tildes, environment variables, and relative paths are not expanded.
 
-| Modell | Rolle | Datei unter Modellwurzel |
+| Model | Role | File under model root |
 | --- | --- | --- |
 | moss | diffusion | `moss/MOSS-Image-SFT-Q4_K.gguf` |
 | moss | llm | `moss/Qwen3.5-9B-Q4_K_M.gguf` |
@@ -33,39 +33,50 @@ enthält expandierte absolute Pfade; `~`, Umgebungsvariablen und relative Pfade 
 | z-image | llm | `z-image/Qwen3-4B-Instruct-2507-Q4_K_M.gguf` |
 | z-image | vae | `z-image/flux1-ae.safetensors` |
 
-`llm` bezeichnet hier ausschließlich den Textencoder für Bildgenerierung. Es wird keine Chat-API
-bereitgestellt. Gemeinsame Encoder können über identische absolute Pfade referenziert werden;
-keine Datei wird kopiert, verändert oder vom Service gelöscht.
+Here, `llm` refers only to the image model's text encoder. No chat API is exposed. Shared encoders
+can be referenced through identical absolute paths. The service never copies, modifies, or deletes them.
 
-## Modellwechsel
+## Switch models
 
 ```bash
 local-image-ai-service use z-image
 local-image-ai-service use moss
 ```
 
-`use` prüft zunächst die benötigten Dateien, stoppt dann die eigene vollständige systemd-Prozessgruppe,
-schreibt atomar die private Konfiguration und startet neu. Maximal ein Modell ist geladen. Der Befehl
-wartet auf Bereitschaft. Laufende Anfragen werden beim Wechsel abgebrochen. Es gibt keinen HTTP-
-Modellwechsel und keinen Eingriff in `imgai` oder dessen Konfiguration.
+`use` first checks the required files, then stops its complete systemd process group, atomically
+writes private configuration, and starts again. At most one model is loaded. The command waits
+for readiness. Switching cancels requests in progress. There is no HTTP model switch and no
+change to `imgai` or its configuration.
 
-Fehlende Dateien vor dem Wechsel lassen den aktuellen Dienst unangetastet. Ein späterer Ladefehler
-führt zu `/ready` = 503 und manueller Fehlerbehebung; kein automatisches Zurückschalten oder Reload.
+Missing files detected before switching leave the current service untouched. A later load failure
+results in `/ready` = 503 and requires manual repair; there is no automatic rollback or reload.
 
-## Sampling und Speicher
+## Sampling and memory
 
-MOSS: Euler, 20 Schritte, CFG 3.0. Z-Image: Euler, 8 Schritte, CFG 1.0.
-Standardgröße 768×768; API-Grenzen siehe [API](api.md). Beide mit `--offload-to-cpu`,
-`--flash-attn on`, explizitem `--backend cuda0`, VAE-Tiling, acht CPU-Threads und einem
-Conditioning-Cache-Eintrag. Diese Begrenzungen gelten nur für den neuen Dienst.
+MOSS: Euler, 20 steps, CFG 3.0. Z-Image: Euler, 8 steps, CFG 1.0. Default size: 768×768;
+see [API limits](api.md). Both use `--offload-to-cpu`, `--flash-attn on`, explicit
+`--backend cuda0`, VAE tiling, eight CPU threads, and one conditioning-cache entry.
+These limits apply only to this service.
 
-CUDA-Bibliotheken stammen ausschließlich aus dessen eigener Runtime. GPU-Auswahl erfolgt über
-`CUDA_VISIBLE_DEVICES`; ein nicht verfügbarer CUDA-Backend führt zum Fehler statt CPU-Fallback.
-Keine harte VRAM-Partitionierung: parallele fremde GPU-Nutzung kann weiterhin OOM verursachen.
+CUDA libraries come exclusively from its own runtime. `CUDA_VISIBLE_DEVICES` selects the GPU;
+an unavailable CUDA backend causes an error rather than CPU fallback. There is no hard VRAM
+partition: other GPU workloads started later can still cause OOM.
 
-## Optionaler Bearer-Key
+## CLI image saving
 
-Eine private Schlüsseldatei erzeugen, ohne den Wert auszugeben:
+Saving is a per-call client option, not a service configuration setting:
+
+- `generate --save`: save in `~/.local/share/local-image-ai-service-images`.
+- `generate --save-dir DIRECTORY`: save in the selected directory, creating it when needed.
+- Neither flag: return API JSON only, without writing an image.
+
+The default image directory is outside the application and cache and is not removed by uninstall.
+The service's systemd filesystem permissions do not need to change: the CLI writes the response
+in the caller's process. Existing picture and project folders remain unused by default.
+
+## Optional Bearer key
+
+Create a private key file without printing its value:
 
 ```bash
 python3 - <<'PY'
@@ -79,11 +90,12 @@ p.chmod(0o600)
 PY
 ```
 
-`api_key_file` in der JSON-Konfiguration auf den absoluten Pfad setzen, dann Dienst neu starten.
-Mindestens 24 Zeichen, Eigentümer aktueller Benutzer und Modus `0600` werden geprüft. Danach ist
-für **alle vier öffentlichen Endpunkte** `Authorization: Bearer <KEY>` erforderlich. Ohne Schlüssel
-ist kein Header nötig; ein Client-Dummy-Key wird dann ignoriert. Schlüsseländerungen benötigen Neustart.
+Set `api_key_file` in JSON to its absolute path, then restart. The key must contain at least
+24 characters, be owned by the current user, and have mode `0600`. Once configured,
+**all four client-facing endpoints** require `Authorization: Bearer <KEY>`. The service CLI
+reads and sends this key automatically, including for `generate`. Without a configured key,
+no header is required and a client-supplied dummy key is ignored. Key changes require a restart.
 
-Die interne native Runtime bleibt auf Loopback ohne Authentifizierung. Der Key schützt den Adapter,
-stellt aber keine Sicherheitsgrenze gegenüber anderen lokalen Benutzern dar. Ein späterer lokaler
-Tunnel darf nur den Adapter-Port weiterleiten. Der Dienst selbst akzeptiert keine LAN-Bindeadresse.
+The internal native runtime remains unauthenticated on loopback. The key protects the adapter
+but is not a security boundary against other local users. A future local tunnel must forward
+only the adapter port. The service itself does not accept a LAN bind address.

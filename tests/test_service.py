@@ -212,7 +212,8 @@ class InstallationTests(unittest.TestCase):
         with tempfile.TemporaryDirectory(prefix="install-test-", dir=cache) as work:
             home = Path(work)
             protected = [home / ".local/share/local-image-ai/keep.txt",
-                         home / "Pictures/AI-Generated/keep.txt", home / "dev/github/riff-racers/keep.txt"]
+                         home / "Pictures/AI-Generated/keep.txt", home / "dev/github/riff-racers/keep.txt",
+                         home / ".local/share/local-image-ai-service-images/keep.txt"]
             for path in protected:
                 path.parent.mkdir(parents=True, exist_ok=True)
                 path.write_text("must remain untouched")

@@ -1,8 +1,8 @@
-# systemd-User-Service
+# systemd user service
 
-Unit: `~/.config/systemd/user/local-image-ai.service`; kein Root-Daemon.
-Anwendung: `~/.local/share/local-image-ai-service/app/`.
-Arbeitsverzeichnis: `~/.cache/local-image-ai-service/work/`.
+Unit: `~/.config/systemd/user/local-image-ai.service`; no root daemon.
+Application: `~/.local/share/local-image-ai-service/app/`.
+Working directory: `~/.cache/local-image-ai-service/work/`.
 
 ```bash
 systemctl --user start local-image-ai
@@ -12,50 +12,50 @@ systemctl --user status local-image-ai
 journalctl --user -u local-image-ai -f
 ```
 
-`Type=simple` bedeutet, dass `systemctl start` vor abgeschlossener Modellinitialisierung zurückkehrt.
-`local-image-ai-service start` wartet auf Bereitschaft und liefert bei Ladefehlern einen Fehlerstatus.
-`/health` beschreibt den Zustand, `/ready` liefert bis zur Bereitschaft HTTP 503.
-Ein geladener Dienst bleibt bis zum Stop aktiv; kein automatisches Idle-Unload.
+With `Type=simple`, `systemctl start` returns before model initialization finishes.
+`local-image-ai-service start` waits for readiness and returns an error on load failure.
+`/health` describes the state; `/ready` returns 503 until ready. A loaded service remains
+active until stopped; there is no automatic idle unloading.
 
-## Prozess- und Ressourcenverhalten
+## Processes and resources
 
-Die Unit umfasst Adapter und genau einen eigenen `sd-server`. `KillMode=control-group` beendet die
-gesamte Gruppe. Der Adapter sendet seinem Kind SIGTERM und wartet höchstens acht Sekunden, danach
-SIGKILL mit höchstens fünf Sekunden Wartezeit. Die Unit erzwingt die Gesamtbeendigung spätestens nach
-20 Sekunden. Ein eigener Drop-in `local-image-ai.service.d/20-bounded-stop.conf` setzt
-`TimeoutStopFailureMode=kill`, um Fedoras generisches `abort` samt möglichem großen Core-Dump zu
-überschreiben. Fremde Prozesse werden weder signalisiert noch beendet. Auch ein sofortiger Neustart
-wartet über systemd auf die Bereinigung der vorherigen Gruppe.
+The unit contains the adapter and exactly one owned `sd-server`. `KillMode=control-group`
+terminates the entire group. The adapter sends its child SIGTERM and waits up to eight seconds,
+then SIGKILL with up to five seconds to reap it. The unit enforces termination after 20 seconds.
+Its own `local-image-ai.service.d/20-bounded-stop.conf` sets `TimeoutStopFailureMode=kill`
+to override Fedora's generic `abort` setting and avoid a potentially large core dump.
+Other processes are never signalled or killed. Restart waits for the previous group to be cleaned up.
 
-`Restart=no`: kein automatischer Neustart bei Ladefehler, CUDA-Fehler oder OOM. Startbegrenzung:
-höchstens zwei Starts pro 60 Sekunden. Bei bewusst schnellen Wartungszyklen gegebenenfalls:
+`Restart=no` prevents automatic retries after load failures, CUDA failures, or OOM. The start limit
+is two starts per 60 seconds. During deliberately rapid maintenance cycles, if necessary:
 
 ```bash
 systemctl --user reset-failed local-image-ai
 local-image-ai-service start
 ```
 
-Weitere Grenzen: `MemoryHigh=16G`, `MemoryMax=24G`, `MemorySwapMax=2G`, `CPUQuota=800%`,
-`TasksMax=128`, `LimitNOFILE=256`, `OOMPolicy=stop`. Diese cgroup-Grenzen begrenzen RAM/CPU,
-keinen dedizierten VRAM-Anteil. Der API-Adapter erlaubt eine Generierung ohne Warteschlange,
-acht HTTP-Worker und einen Listen-Backlog von acht Verbindungen. Generationen über Kapazität
-erhalten 429; vollständig belegte HTTP-Worker führen zu 503. Header/Body-Lese-Timeout: zehn Sekunden.
+Additional limits: `MemoryHigh=16G`, `MemoryMax=24G`, `MemorySwapMax=2G`, `CPUQuota=800%`,
+`TasksMax=128`, `LimitNOFILE=256`, and `OOMPolicy=stop`. These cgroup limits constrain RAM and
+CPU, not a dedicated share of VRAM. The adapter admits one generation with no generation queue,
+eight HTTP workers, and a listen backlog of eight connections. Excess generation requests receive
+429; fully occupied HTTP workers cause 503. HTTP header/body read timeout: ten seconds.
 
-`NoNewPrivileges`, `ProtectSystem=strict`, `ProtectHome=read-only`, `PrivateTmp`, `UMask=0077`
-und eine Schreibfreigabe ausschließlich für den eigenen Cache schützen die bestehenden Dateien.
-GPU-Geräte bleiben zugänglich; `PrivateDevices` wird deshalb nicht gesetzt.
+`NoNewPrivileges`, `ProtectSystem=strict`, `ProtectHome=read-only`, `PrivateTmp`, `UMask=0077`,
+and write access only to the service's own cache protect existing files. GPU devices remain
+accessible; `PrivateDevices` is therefore not enabled. Optional CLI saving happens outside
+the systemd process, so these restrictions remain unchanged.
 
-Der Dienst führt beim Start einen konservativen Test auf fremde CUDA-Compute-Prozesse aus und
-verweigert gegebenenfalls das Laden. KDEs vorhandener `kwin_wayland`- und Xwayland-Prozess werden
-ausgenommen. Dieser Test verhindert keinen späteren parallelen CLI-Start. Keine gemeinsame Sperre
-mit `imgai`: vor dessen Nutzung den Dienst stoppen und nachher bei Bedarf wieder starten.
+At startup, the service conservatively checks for other CUDA compute processes and refuses to
+load if any exist. The existing KDE `kwin_wayland` and Xwayland processes are excluded.
+This check cannot prevent an existing CLI from starting later. There is no shared lock with
+`imgai`: stop this service before using that CLI and start it again afterwards if needed.
 
-## Kein Login-Autostart
+## No login autostart
 
-Die Unit hat absichtlich keinen `[Install]`-Abschnitt und erscheint als `static`. Es wurde kein
-`enable`, kein Linger und keine andere Autostart-Konfiguration gesetzt. Eine spätere bewusste
-Entscheidung für Login-Autostart erfordert das Ergänzen eines geeigneten Install-Ziels.
+The unit deliberately has no `[Install]` section and is reported as `static`. No `enable`,
+linger, or other autostart configuration has been set. A later explicit decision to enable
+login autostart requires adding a suitable installation target.
 
-Logs enthalten Modell-, Lade-, CUDA- und Fehlerzustände sowie HTTP-Statuscodes. Der Adapter protokolliert
-keine Request-Bodies oder Schlüssel. Native Runtime-Meldungen und Metadaten können Prompts enthalten;
-das User-Journal ist daher wie lokale Arbeitsdaten zu behandeln.
+Logs include model loading, CUDA state, errors, and HTTP status codes. The adapter does not
+log request bodies or keys. Native runtime messages and metadata may contain prompts;
+treat the user journal as local working data.

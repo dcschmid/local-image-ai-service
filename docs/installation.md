@@ -1,15 +1,15 @@
-# Installation und Wartung
+# Installation and maintenance
 
-## Voraussetzungen
+## Requirements
 
-Python >=3.11, systemd-User-Manager mit cgroup v2, NVIDIA-Treiber mit funktionierendem `nvidia-smi`.
-Geprüft: Fedora 44 KDE, Python 3.14.8, NVIDIA 615.78.08, CUDA 13.4, RTX 5070 Laptop / SM 120,
-64 GB RAM. Keine Root-Installation und keine System-Python-Pakete erforderlich.
+Python >=3.11, a systemd user manager with cgroup v2, and NVIDIA drivers with working `nvidia-smi`.
+Tested on Fedora 44 KDE, Python 3.14.8, NVIDIA 615.78.08, CUDA 13.4, RTX 5070 Laptop / SM 120,
+and 64 GB RAM. No root installation or system Python packages are required.
 
-Die Modellgewichte müssen bereits vorhanden sein. Die Installationsskripte laden keine Modelle herunter.
-Etwa 690 MiB zusätzlicher Speicher werden für die unabhängige Runtime benötigt.
+Model weights must already exist. Installation scripts do not download models. The separate
+runtime requires approximately 690 MiB of additional disk space.
 
-## Vorhandenen offiziellen Build separat installieren
+## Separately install the existing official build
 
 ```bash
 cd ~/dev/github/local-image-ai-service
@@ -22,19 +22,20 @@ local-image-ai-service doctor
 local-image-ai-service start
 ```
 
-Das erste Skript prüft die gepinnte Quellrevision und die bekannte Binary-Prüfsumme. Es installiert
-eigene Kopien des offiziellen Binaries sowie `libcudart.so.13`, `libcublas.so.13` und `libcublasLt.so.13`.
-Es kopiert **keine Gewichte**. Alle Kopien werden per SHA-256 geprüft. Zur Laufzeit sind weder der
-bisherige Quellcode noch dessen Binary, Python-Umgebung oder CUDA-Installationspfad erforderlich.
-Die Systembibliotheken und der NVIDIA-Treiber bleiben Betriebssystemabhängigkeiten.
+The first script checks the pinned source revision and known binary checksum. It installs
+separate copies of the official binary, `libcudart.so.13`, `libcublas.so.13`, and `libcublasLt.so.13`.
+It copies **no model weights**. All copies are verified with SHA-256. At runtime, neither the
+previous project's source, binary, Python environment, nor CUDA installation path is required.
+System libraries and the NVIDIA driver remain operating-system dependencies.
 
-`install.py` installiert Anwendung, eigenen Launcher und Unit, erstellt bei Erstinstallation die
-Konfiguration mit lokalen absoluten Pfaden und GPU-UUID. Eine vorhandene Konfiguration bleibt erhalten.
-Es startet und aktiviert den Dienst nicht. `~/.local/bin` muss im `PATH` stehen.
+`install.py` installs the application, a separate launcher, the user unit, and its bounded-stop
+drop-in. On first installation, it creates configuration with local absolute paths and the GPU UUID.
+Existing configuration is retained. It neither starts nor enables the service. Ensure `~/.local/bin`
+is on `PATH`.
 
-## Eigener reproduzierbarer Quellbuild
+## Reproduce a separate source build
 
-Alternativ aus dem offiziellen Repository mit exakt gepinnter Revision und Submodulen bauen:
+Alternatively, build from the official repository at the exact pinned revision and submodules:
 
 ```bash
 cd ~/dev/github/local-image-ai-service
@@ -46,16 +47,13 @@ local-image-ai-service doctor
 local-image-ai-service start
 ```
 
-Erfordert Git, CMake, Ninja, C/C++-Compiler und bestehendes CUDA-13.4-Toolkit. Das Toolkit wird nur
-gelesen. Download und Build liegen ausschließlich unter `~/.cache/local-image-ai-service/build`.
-Keine Verwendung des bisherigen stable-diffusion.cpp-Quellverzeichnisses. Die Buildkonfiguration ist
-reproduzierbar; eine bitidentische Binary über unterschiedliche Compiler hinweg wird nicht zugesagt.
-Der Neuaufbau ist ein Wartungsweg; für die Erstinstallation wurde der bekannte funktionierende
-offizielle Build separat installiert und getestet.
+Requires Git, CMake, Ninja, C/C++ compilers, and an existing CUDA 13.4 toolkit. The toolkit is
+read-only input. Downloads and build output stay under `~/.cache/local-image-ai-service/build`;
+the previous stable-diffusion.cpp source directory is not used. Build configuration is reproducible;
+bit-identical binaries across different compilers are not guaranteed. This is a maintenance path;
+the initial installation used and tested a separate copy of the known working official build.
 
-## Updates
-
-Anwendung aus diesem lokalen Repository erneut installieren:
+## Update the application
 
 ```bash
 cd ~/dev/github/local-image-ai-service
@@ -65,24 +63,38 @@ python3 scripts/install.py
 local-image-ai-service start
 ```
 
-Ein Runtime-Update erfolgt bewusst durch Änderung der Revision und Buildprüfung in einem eigenen
-Änderungssatz, anschließend Build, Doctor und Integrationstests. Kein automatisches `git pull` einer
-laufenden Runtime. `build-runtime.sh` baut den derzeit geprüften Pin erneut. Keine automatischen
-Updates, Modell-Downloads oder Neustartschleifen.
+Runtime upgrades require a deliberate change to the pinned revision and build verification,
+followed by a build, Doctor, and integration tests. There is no automatic `git pull` on a running
+runtime. `build-runtime.sh` rebuilds the current pin. There are no automatic updates, model downloads,
+or restart loops.
 
-## Deinstallation
+## Save CLI-generated images
+
+```bash
+local-image-ai-service generate --prompt 'A red ceramic teapot' --save
+local-image-ai-service generate --prompt 'A small lighthouse' \
+  --save-dir "$HOME/.local/share/my-image-experiments"
+```
+
+The default `--save` directory, `~/.local/share/local-image-ai-service-images`, is separate from
+the application and cache and survives updates and uninstallation. Choose a custom directory outside
+the installation, configuration, and cache trees if those outputs should also survive uninstallation.
+No saving flag changes the HTTP API or the existing `imgai` installation.
+
+## Uninstall
 
 ```bash
 cd ~/dev/github/local-image-ai-service
 python3 scripts/uninstall.py
 ```
 
-Entfernt ausschließlich diese User-Unit, diesen Launcher sowie die drei eigenen Verzeichnisse:
+Removes only this user unit and its own drop-in, this launcher, and these three directories:
 
 - `~/.local/share/local-image-ai-service`
 - `~/.config/local-image-ai-service`
-- `~/.cache/local-image-ai-service` einschließlich eigener Test-/Auditprotokolle
+- `~/.cache/local-image-ai-service`, including its own test and audit logs
 
-Repository, bestehende Installation `local-image-ai`, alle Modelle, Bilder und Spielprojekte bleiben
-erhalten. Der Cache wird bei der Deinstallation entfernt; benötigte Auditprotokolle vorher sichern.
-Keine Entfernung von `~/.local/share/local-image-ai` oder `~/Pictures/AI-Generated`.
+The repository, previous `local-image-ai` installation, models, existing images, game projects,
+and the default CLI image directory `~/.local/share/local-image-ai-service-images` are retained.
+Back up audit logs before uninstalling if needed. Neither `~/.local/share/local-image-ai` nor
+`~/Pictures/AI-Generated` is removed.

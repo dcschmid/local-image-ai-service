@@ -1,6 +1,6 @@
-# Fehlersuche
+# Troubleshooting
 
-Zuerst:
+Start with:
 
 ```bash
 local-image-ai-service doctor
@@ -9,76 +9,93 @@ journalctl --user -u local-image-ai -n 100 --no-pager
 nvidia-smi
 ```
 
-## Port bereits belegt
+## Port already in use
 
-Die bisherige inaktive `imgai-api.service` verwendet ebenfalls 7861 und intern 7862. Der neue Dienst
-benutzt 7861 und intern 17861. Beide öffentlichen APIs können nicht gleichzeitig 7861 belegen.
-Der neue Dienst beendet bei einem Konflikt keinen fremden Prozess und ändert die alte Unit nicht.
+The previous, initially inactive `imgai-api.service` also uses port 7861 and internal port 7862.
+The new service uses 7861 and internal port 17861. Both public APIs cannot bind 7861 together.
+This service never terminates another process to resolve a conflict or changes the old unit.
 
 ```bash
 ss -ltnp 'sport = :7861 or sport = :17861'
 ```
 
-Den fremden Dienst nur selbst bewusst stoppen oder den **neuen** öffentlichen Port in seiner
-Konfiguration ändern und dessen Clients entsprechend konfigurieren. Bestehende Programme werden
-nicht automatisch umgestellt.
+Stop the other service yourself if intended, or change the **new** service's public port and
+configure its clients accordingly. Existing programs are not automatically reconfigured.
 
-## GPU belegt / CUDA-Speicher knapp
+## GPU occupied or CUDA memory exhausted
 
-Beim Start wird fremde CUDA-Compute-Nutzung erkannt und das Modellladen verweigert. Der KDE-Kompositor
-bleibt ausgenommen. Bestehende Prozesse werden niemals beendet. Eine erst später gestartete `imgai`-
-Generierung kann trotzdem mit dem Dienst konkurrieren. Vor bisheriger CLI-/Benchmark-Nutzung:
+At startup, other CUDA compute workloads cause model loading to be refused. The KDE compositor
+is excluded. Other processes are never terminated. An `imgai` process started later can still
+compete with this service. Before using the previous CLI or benchmarks:
 
 ```bash
 local-image-ai-service stop
 ```
 
-Nach Ende des anderen Workflows den Dienst bei Bedarf wieder starten. Bei OOM kleinere Bildgröße
-verwenden und Logs prüfen; keine automatischen Retries. RAM-Grenzen sind keine VRAM-Reservierung.
-`/health` kann weiter erreichbar sein, obwohl `/ready` 503 liefert.
+Restart afterwards if needed. On OOM, choose a smaller size and inspect logs; there are no automatic
+retries. RAM limits do not reserve VRAM. `/health` can remain reachable while `/ready` returns 503.
 
-## Fehlende Dateien oder Ladefehler
+## Missing files or load failure
 
-`doctor` prüft beide Modelle. Absolute Pfade in der privaten JSON-Konfiguration korrigieren.
-Keine Modelldatei neu herunterladen, umbenennen oder verschieben. MOSS braucht neben DiT, Encoder und
-VAE auch `tokenizer_qwen3.5.json`. Ein Ladefehler wird in `/health.error` und im Journal gemeldet;
-keine Wiederholschleife. Nach Korrektur:
+`doctor` checks both models. Correct absolute paths in private JSON configuration; do not download,
+rename, or move existing weights. MOSS requires `tokenizer_qwen3.5.json` in addition to its DiT,
+encoder, and VAE. Failures appear in `/health.error` and the journal without retry loops.
+After fixing the cause:
 
 ```bash
 local-image-ai-service restart
 ```
 
-## CUDA-Laufzeitbibliothek fehlt
+## Missing CUDA runtime libraries
 
-Die eigene Runtime benötigt die drei in `runtime/receipt.json` verzeichneten CUDA-Bibliotheken.
-`cuda_lib` muss auf den eigenen absoluten Runtime-Lib-Pfad zeigen. Die alte Installation wird nicht
-zur Laufzeit als Fallback verwendet. `doctor` muss einen `CUDA0`-Backend melden. Kein stiller CPU-Betrieb.
+The separate runtime needs the three CUDA libraries recorded in `runtime/receipt.json`.
+`cuda_lib` must point to its own absolute library directory. The previous installation is not
+used as a runtime fallback. `doctor` must report CUDA0; CPU fallback is not silent.
 
-## 409, 429 oder 504
+## HTTP 409, 429, or 504
 
-409: per `use` das gewünschte Modell laden und anschließend den Request wiederholen.
-429: laufende Generierung abwarten; es gibt keine Auftragswarteschlange.
-504: eigene Runtime wurde gestoppt. Logs prüfen und manuell neu starten. Der Client sollte mehr
-Zeit als der Diensttimeout einschließlich Prozessbereinigung erlauben. Stop/Modellwechsel bricht
-laufende Requests ab.
+409: load the requested model with `use`, then retry.
+429: wait for the current generation; there is no job queue.
+504: the owned runtime was stopped. Inspect logs and restart manually. Client timeouts must
+allow the generation deadline plus process cleanup. Stop and model switching cancel active requests.
 
-## systemd aktiv, aber Modell nicht bereit
+## CLI saving or generation fails
 
-`Type=simple` bestätigt nur den gestarteten Adapter. `/ready` oder den wartenden Verwaltungsbefehl
-verwenden. Nach Backendfehler bleibt der Adapter zur Diagnose erreichbar. `Restart=no` ist beabsichtigt.
-Bei `start-limit-hit` erst Ursache beheben, dann `systemctl --user reset-failed local-image-ai`.
+`generate` requires a running, ready service. Use `local-image-ai-service start` first.
+It does not implicitly start or switch the model. Check available options with:
 
-## Dateien, Rechte, Browser und Authentifizierung
+```bash
+local-image-ai-service generate --help
+```
 
-Konfiguration und optionalen Key mit `chmod 600` schützen. Fehlerhafte Rechte verhindern den Start.
-Ein Browser-Origin wird abgelehnt; API-Clients und serverseitige Open-WebUI-Aufrufe nutzen.
-401: korrekten Bearer-Key senden. Der Key wird nicht automatisch von einem Client gespeichert.
+Choose either `--save` or `--save-dir DIRECTORY`. Without either flag, the CLI prints Base64 JSON
+without writing an image. `--save-dir` creates missing directories after a valid image response.
+An existing file cannot be used as the output directory. Check permissions and free disk space
+when saving fails. Existing files are never overwritten; a write failure removes only its own
+new partial file. No automatic retry occurs after generation or save failure.
 
-## Sicher prüfen, dass alte Projekte unverändert sind
+The default output directory is `~/.local/share/local-image-ai-service-images`, outside the
+installation and cache. It survives uninstall. Use an external custom directory if those images
+should also survive; custom output inside the service cache remains disposable.
 
-Die Erstinstallation hat einen vollständigen SHA-256-Vergleich angelegt, siehe [Prüfbericht](test-report.md).
-Ein späterer Vergleich kann legitime Änderungen durch andere Arbeit melden; nicht automatisch zurücksetzen.
-Das Audit-Skript schreibt nur in die ausdrücklich gewählte Manifestdatei und liest die geschützten Wurzeln.
+## systemd active but model not ready
+
+`Type=simple` confirms only that the adapter started. Use `/ready` or the management command,
+which waits for readiness. After a backend failure, the adapter stays reachable for diagnostics.
+`Restart=no` is deliberate. For `start-limit-hit`, fix the cause first, then run
+`systemctl --user reset-failed local-image-ai`.
+
+## Permissions, browser requests, and authentication
+
+Protect configuration and the optional key with `chmod 600`. Incorrect permissions prevent
+startup. Browser origins are rejected; use API clients or server-side Open WebUI requests.
+401 means a valid Bearer key is required. The service CLI reads its configured key automatically.
+
+## Check integrity of existing projects
+
+The initial installation recorded a full SHA-256 comparison; see the [test report](test-report.md).
+Later comparisons may report legitimate concurrent changes. Do not reset them automatically.
+The audit script writes only to the explicitly selected manifest and reads the protected roots.
 
 ```bash
 cd ~/dev/github/local-image-ai-service

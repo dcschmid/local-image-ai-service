@@ -1,26 +1,25 @@
-# Vorbereitung für Open WebUI
+# Preparing for Open WebUI
 
-Open WebUI wurde für diese Aufgabe weder installiert noch verändert. Die folgende Konfiguration ist
-für eine spätere manuelle Einrichtung vorgesehen; die tatsächliche Integration wurde noch nicht getestet.
+Open WebUI was neither installed nor modified for this task. These settings are intended for
+future manual setup; the integration itself has not been tested.
 
-In **Admin → Settings → Images** einen OpenAI-kompatiblen Image-Generation-Backend auswählen:
+Under **Admin → Settings → Images**, select an OpenAI-compatible image generation backend:
 
-| Einstellung | Wert |
+| Setting | Value |
 | --- | --- |
 | Engine | OpenAI / `openai` |
-| Image API Base URL | `http://127.0.0.1:7861/v1` |
-| Modell | `moss` (Standard) oder `z-image`, passend zum geladenen Dienstmodell |
-| Größe | z.B. `512x512` oder `768x768` |
-| Anzahl | 1 |
-| API-Key | Konfigurierter Bearer-Key; ohne Dienst-Key bei Pflichtfeld ein Dummy wie `local-unused` |
-| Ausgabe | Base64 / `b64_json` |
+| Image API base URL | `http://127.0.0.1:7861/v1` |
+| Model | `moss` (default) or `z-image`, matching the loaded model |
+| Size | For example, `512x512` or `768x768` |
+| Count | 1 |
+| API key | Configured Bearer key; if the service has none but the field is required, a dummy such as `local-unused` |
+| Response format | Base64 / `b64_json` |
 
-Image Editing deaktiviert lassen. Keine zusätzlichen `quality`-, `style`- oder anderen nicht
-unterstützten Parameter senden. Falls die spätere Open-WebUI-Version solche Parameter grundsätzlich
-sendet, wird die API sie ausdrücklich ablehnen; dann die Integration anhand dieser Version anpassen.
-Es gibt keine OpenAI-Chat-Verbindung zu diesem Service.
+Keep image editing disabled. Do not send unsupported `quality`, `style`, or other parameters.
+If the future Open WebUI version always sends these fields, the API will explicitly reject them;
+adapt the integration for that version. This service is not an OpenAI chat backend.
 
-Die entsprechenden dokumentierten Umgebungsvariablen lauten:
+The documented environment variables are:
 
 ```text
 ENABLE_IMAGE_GENERATION=true
@@ -31,24 +30,27 @@ IMAGE_SIZE=512x512
 IMAGES_OPENAI_API_KEY=<configured-key-or-local-unused>
 ```
 
-Die derzeitige Benennung stammt aus der [offiziellen Open-WebUI-Dokumentation](https://docs.openwebui.com/troubleshooting/image-generation/),
-geprüft am 28.10.2026. Ein produktiver Open-WebUI-Test bleibt bewusst außerhalb dieses Auftrags.
+Names were checked against the [official Open WebUI documentation](https://docs.openwebui.com/troubleshooting/image-generation/)
+on October 28, 2026. Production Open WebUI validation remains outside this task.
 
-Zuerst `local-image-ai-service use z-image` ausführen und Bereitschaft abwarten, danach das Modell in
-Open WebUI auf `z-image` stellen. Nicht geladenes Modell: 409 mit `model_not_loaded`; kein automatischer
-Wechsel. Der Dienst bedient immer nur eine Generierung, weitere Nutzer/Anfragen erhalten 429.
+To switch, first run `local-image-ai-service use z-image` and wait for readiness, then select
+`z-image` in Open WebUI. An unloaded model returns 409 `model_not_loaded`; it is not switched
+automatically. Only one generation runs at a time; additional requests receive 429.
 
-## Container-Netzwerk
+The CLI `--save` and `--save-dir` flags apply only to that CLI invocation. They do not enable
+server-side saving for Open WebUI or other HTTP clients.
 
-In einem normalen Docker-Bridge-Container zeigt `127.0.0.1` auf den Container selbst. Ein auf dem Host
-an `127.0.0.1` gebundener Dienst ist auch über `host.docker.internal`/`host-gateway` normalerweise
-**nicht** erreichbar: dieser Name allein ändert die Bindeadresse des Dienstes nicht.
+## Container networking
 
-Für eine spätere Linux-Installation mit gemeinsamem Host-Netzwerk (`network_mode: host`) bleibt die
-Base URL `http://127.0.0.1:7861/v1`. Host-Netzwerk ist auch in der
-[offiziellen Docker-Anleitung](https://docs.docker.com/ai/model-runner/openwebui-integration/)
-als Linux-Option beschrieben. Alternativ kann ein gezielt konfigurierter lokaler Tunnel zum
-Adapter-Port verwendet werden; dies wäre eine separate bewusste Netzwerkkonfiguration.
+Inside a normal Docker bridge container, `127.0.0.1` refers to the container itself. A host
+service bound to `127.0.0.1` is normally **not** reachable through `host.docker.internal` or
+`host-gateway` either: the hostname does not change the service's bind address.
 
-Es wurden keine Container, Tunnel, Firewall-Regeln oder LAN-Freigaben angelegt. Der Dienst erlaubt
-absichtlich nur Loopback. Ein API-Key allein macht ihn nicht über das Container-Gateway erreichbar.
+For a future Linux setup using host networking (`network_mode: host`), the base URL remains
+`http://127.0.0.1:7861/v1`. Host networking is also described as a Linux option in the
+[official Docker guide](https://docs.docker.com/ai/model-runner/openwebui-integration/).
+Alternatively, a deliberately configured local tunnel to the adapter port could be used;
+that would be a separate networking decision.
+
+No containers, tunnels, firewall rules, or LAN exposure were configured. The service accepts
+only loopback. An API key alone does not make it reachable through a container gateway.
