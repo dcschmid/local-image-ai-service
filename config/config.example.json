@@ -1,0 +1,25 @@
+{
+  "active_model": "moss",
+  "host": "127.0.0.1",
+  "port": 7861,
+  "backend_port": 17861,
+  "runtime": "/home/YOUR_USER/.local/share/local-image-ai-service/runtime/bin/sd-server",
+  "cuda_lib": "/home/YOUR_USER/.local/share/local-image-ai-service/runtime/lib",
+  "gpu_uuid": "GPU-YOUR-UUID",
+  "load_timeout": 180,
+  "generation_timeout": 300,
+  "api_key_file": null,
+  "models": {
+    "moss": {
+      "diffusion": "/absolute/path/moss/MOSS-Image-SFT-Q4_K.gguf",
+      "llm": "/absolute/path/moss/Qwen3.5-9B-Q4_K_M.gguf",
+      "vae": "/absolute/path/moss/flux2-vae.safetensors",
+      "tokenizer": "/absolute/path/moss/tokenizer_qwen3.5.json"
+    },
+    "z-image": {
+      "diffusion": "/absolute/path/z-image/z_image_turbo-Q4_K.gguf",
+      "llm": "/absolute/path/z-image/Qwen3-4B-Instruct-2507-Q4_K_M.gguf",
+      "vae": "/absolute/path/z-image/flux1-ae.safetensors"
+    }
+  }
+}

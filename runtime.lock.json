@@ -1,0 +1,15 @@
+{
+  "upstream": "https://github.com/leejet/stable-diffusion.cpp",
+  "revision": "a77d3623180b2bc1886f3dd04c0aa04156a987ef",
+  "version": "master-987-a77d362",
+  "cuda_toolkit": "13.4.92",
+  "cuda_architecture": "120",
+  "build_type": "Release",
+  "cuda_flags": "-allow-unsupported-compiler",
+  "installed_reference_sha256": {
+    "bin/sd-server": "d438b31a7a0794f25646320ff86b04449ac17058855b3620f861711df31c6e43",
+    "lib/libcudart.so.13": "7fb00519a24512bf677b59e87921e5c05aac8246ceb6a57435c0d9dfeef364f6",
+    "lib/libcublas.so.13": "c0c5a5f16b29c42f1b55b4d081f2ae685e602e3fcf37b7407049d7247036d023",
+    "lib/libcublasLt.so.13": "d3b51f2253ba58f0a7f299b883bc6b4f3a27f81701c9ab15accb3bd770a91669"
+  }
+}

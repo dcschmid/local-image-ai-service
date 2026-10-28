@@ -1,0 +1,33 @@
+[Unit]
+Description=Standalone Local Image AI (MOSS / Z-Image, CUDA, loopback)
+StartLimitIntervalSec=60
+StartLimitBurst=2
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 %h/.local/share/local-image-ai-service/app/service.py
+WorkingDirectory=%h/.cache/local-image-ai-service/work
+Environment=PYTHONUNBUFFERED=1
+Environment=PYTHONDONTWRITEBYTECODE=1
+UMask=0077
+Restart=no
+KillMode=control-group
+TimeoutStopSec=20
+SendSIGKILL=yes
+MemoryHigh=16G
+MemoryMax=24G
+MemorySwapMax=2G
+TasksMax=128
+CPUQuota=800%
+LimitNOFILE=256
+OOMPolicy=stop
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=%h/.cache/local-image-ai-service
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+RestrictSUIDSGID=yes
+LockPersonality=yes
+
+# Deliberately no [Install] section: no enable/login autostart.
