@@ -39,6 +39,10 @@ automatically. Only one generation runs at a time; additional requests receive 4
 
 The CLI `--save` and `--save-dir` flags apply only to that CLI invocation. They do not enable
 server-side saving for Open WebUI or other HTTP clients.
+Automatic CPU anatomy screening applies to Open WebUI requests too. Clear estimated extra limbs
+return HTTP 422 with `anatomy_rejected`; other detected-person images carry `REVIEW_REQUIRED` in
+the local `anatomy_check` extension. An unmodified Open WebUI may ignore that extension, so it
+must not be treated as anatomy approval. Allow at least 510 seconds for a request with review.
 
 ## Container networking
 

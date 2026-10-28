@@ -56,8 +56,9 @@ used as a runtime fallback. `doctor` must report CUDA0; CPU fallback is not sile
 
 409: load the requested model with `use`, then retry.
 429: wait for the current generation; there is no job queue.
-504: the owned runtime was stopped. Inspect logs and restart manually. Client timeouts must
-allow the generation deadline plus process cleanup. Stop and model switching cancel active requests.
+504 `generation_timeout`: the GPU runtime was stopped; inspect logs and restart manually.
+504 `anatomy_timeout`: only the CPU checker was stopped; the healthy GPU runtime is retained.
+Client timeouts must allow generation, CPU review, and cleanup. Stop and model switching cancel active requests.
 
 ## CLI saving or generation fails
 
@@ -77,6 +78,20 @@ new partial file. No automatic retry occurs after generation or save failure.
 The default output directory is `~/.local/share/local-image-ai-service-images`, outside the
 installation and cache. It survives uninstall. Use an external custom directory if those images
 should also survive; custom output inside the service cache remains disposable.
+
+## Anatomy review, rejection, or checker failure
+
+The installed service checks every image on CPU. `REVIEW_REQUIRED` is expected for detected
+people: real tests showed extra legs can be missed, so no automatic anatomy approval is offered.
+The CLI still saves review images when explicitly requested and prints a notice. A 422
+`anatomy_rejected` response withholds an image with clearly estimated extra limbs. Inspect the
+report and try another seed or prompt; there is no automatic retry or seed substitution.
+
+503 `anatomy_unavailable`/`anatomy_failed` and 504 `anatomy_timeout` also withhold the image.
+Use `doctor` and `/health.anatomy_check` to inspect readiness, busy state, and the last error.
+Check the configured CPU binary, shared MOSS encoder, and separate vision projector. Rebuild with
+`python3 scripts/install-anatomy.py` if necessary; do not move or redownload existing image models.
+Allow at least 510 seconds in external clients. See [anatomy.md](anatomy.md) for accuracy limits.
 
 ## systemd active but model not ready
 

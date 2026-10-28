@@ -47,6 +47,8 @@ def main():
             path = Path(output["path"])
             if path.parent != expected or "data" in output or output["seed"] != 42:
                 raise AssertionError("Incorrect compact save response")
+            if output.get("anatomy_check", {}).get("checked") is not True:
+                raise AssertionError("Saved CLI response lost the automatic anatomy assessment")
             if path.stat().st_mode & 0o077:
                 raise AssertionError("Image file permissions are not private")
             details = png_check(path.read_bytes(), (512, 512))

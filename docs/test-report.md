@@ -83,6 +83,49 @@ nonzero without creating output. The existing service process/model remained rea
 no stop, restart, or model switch was performed. The updated CLI module was installed atomically
 because the user had started the service during this update. Semgrep again reported no findings.
 
+## Automatic CPU anatomy screening update
+
+The expanded software suite passed **47 test groups**. New tests cover schema validation,
+per-person limb counts, uncertain or inconsistent observations, rejection without image bytes,
+review notices and saved CLI JSON, CPU-only/offline arguments, missing models, malformed output,
+deadlines, admission limits, and reaping owned processes on stop. Semgrep found no issues.
+
+The reviewer uses the existing MOSS Qwen3.5-9B encoder **read-only**, plus a separately installed
+918 MB F16 vision projector and CPU-only llama.cpp binary. The shared encoder's SHA-256 matches
+the pinned GGUF producer. No generation model was copied or downloaded again. The unused 2B and
+4B trial weights created during this update were removed from the service's own model directory.
+
+Real CPU controls produced these results with the selected profile:
+
+| Control | Actual assessment | Evaluation |
+| --- | --- | --- |
+| Normal figure | `REVIEW_REQUIRED` | No automatic anatomy approval |
+| Three arms | `ISSUE_DETECTED`, estimated three arms | Third arm detected |
+| Three legs | `REVIEW_REQUIRED`, estimated two legs | **Third-leg count missed**, manual review required |
+| Occluded body | `REVIEW_REQUIRED` | Unseen limbs not automatically approved |
+| Blank image | `NOT_APPLICABLE` | No people reported |
+
+The conservative-policy checks passed; **limb-detection calibration found limitations**. Those
+are distinct outcomes. Smaller 2B/4B candidates and a different 9B prompt also missed controls,
+and a subjective deformation flag produced false alarms. Therefore only a clear extra-limb
+estimate can reject, subjective concerns cause review, and every detected person otherwise
+requires human review. This update does not establish reliable detection of all extra legs.
+
+The full generation/lifecycle suite passed again with real CPU screening after **both** MOSS
+and Z-Image generation. The teapot samples returned `NOT_APPLICABLE`; end-to-end times were
+41.90 seconds for MOSS and 28.83 seconds for Z-Image at 512×512. Seed 42, PNG dimensions, chunk
+CRCs, decoded pixels, model switching, errors, 429 backpressure, stop, restart, and closed listeners
+were checked again. No parallel GPU benchmarks ran.
+
+A real generated portrait was saved through the installed CLI with `REVIEW_REQUIRED`, a visible
+stderr notice, and the complete report in compact JSON. Its CPU review took 27.00 seconds.
+No checker process remained afterwards. A second real request was stopped during CPU screening:
+termination took **1.72 seconds**, the CPU child had no NVIDIA compute context, and all owned
+CPU/GPU children exited. The service was restored running with MOSS, still `static` and without
+automatic restarts. Temporary test images were removed from the service-specific cache.
+
+Full details and accuracy limitations: [anatomy.md](anatomy.md).
+
 ## Existing file integrity
 
 Before implementation, `scripts/audit.py` recorded **140,000 entries**, including SHA-256 file
@@ -152,6 +195,12 @@ be asserted because of concurrent work. This task did not modify those files.
 ~/.cache/local-image-ai-service/cli-integration-report.json
 ~/.cache/local-image-ai-service/cli-integration-output.log
 ~/.cache/local-image-ai-service/cli-semgrep-report.json
+~/.cache/local-image-ai-service/anatomy-integration-report.json
+~/.cache/local-image-ai-service/anatomy-api-integration-report.json
+~/.cache/local-image-ai-service/anatomy-generation-integration.log
+~/.cache/local-image-ai-service/anatomy-semgrep-report.json
+~/.cache/local-image-ai-service/anatomy-setup/unit-tests.log
+~/.local/share/local-image-ai-service/anatomy/receipt.json
 ~/.local/share/local-image-ai-service/runtime/receipt.json
 ```
 

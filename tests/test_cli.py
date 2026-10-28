@@ -41,7 +41,7 @@ class CLIImageTests(unittest.TestCase):
     def tearDown(self):
         self.temporary.cleanup()
 
-    def invoke(self, options, response=None):
+    def invoke(self, options, response=None, expected_timeout=330):
         output = io.StringIO()
         with patch.object(manage, "load_config", return_value=self.cfg), \
                 patch.object(manage, "request", return_value=response or (200, self.result)) as request, \
@@ -50,7 +50,7 @@ class CLIImageTests(unittest.TestCase):
         self.assertEqual(status, 0)
         control.assert_not_called()
         self.assertEqual(request.call_count, 1)
-        self.assertEqual(request.call_args.kwargs["timeout"], 330)
+        self.assertEqual(request.call_args.kwargs["timeout"], expected_timeout)
         return json.loads(output.getvalue()), request.call_args.kwargs["body"]
 
     def test_without_flag_returns_full_json_and_writes_nothing(self):
@@ -177,6 +177,45 @@ class CLIImageTests(unittest.TestCase):
         self.assertEqual(returned, self.result)
         self.assertEqual(received, {"path": "/v1/images/generations", "authorization": "Bearer " + key.read_text(),
                                     "content_type": "application/json", "body": {"prompt": "tree"}})
+
+    def test_automatic_check_is_preserved_in_saved_result_and_extends_timeout(self):
+        self.cfg["anatomy"] = {"enabled": True, "timeout": 180}
+        report = {"status": "NO_OBVIOUS_ISSUE", "checked": True, "summary": "No obvious issue observed."}
+        response = dict(self.result, anatomy_check=report)
+        directory = self.root / "screened"
+        result, _ = self.invoke(["--save-dir", str(directory)], response=(200, response), expected_timeout=510)
+        self.assertEqual(result["anatomy_check"], report)
+        self.assertEqual(Path(result["path"]).read_bytes(), self.raw)
+
+    def test_missing_or_disabled_assessment_cannot_be_saved_when_enabled(self):
+        self.cfg["anatomy"] = {"enabled": True, "timeout": 180}
+        directory = self.root / "must-not-exist"
+        for report in (None, {"status": "DISABLED", "checked": False},
+                       {"status": "ISSUE_DETECTED", "checked": True}):
+            response = dict(self.result)
+            if report is not None:
+                response["anatomy_check"] = report
+            with self.subTest(report=report), self.assertRaisesRegex(RuntimeError, "no valid automatic anatomy"):
+                self.invoke(["--save-dir", str(directory)], response=(200, response))
+            self.assertFalse(directory.exists())
+
+    def test_uncertain_assessment_is_visible_in_stderr_and_saved_json(self):
+        self.cfg["anatomy"] = {"enabled": True, "timeout": 180}
+        report = {"status": "REVIEW_REQUIRED", "checked": True, "summary": "Legs are cropped."}
+        errors = io.StringIO()
+        with redirect_stderr(errors):
+            result, _ = self.invoke(["--save-dir", str(self.root / "review")],
+                                    response=(200, dict(self.result, anatomy_check=report)), expected_timeout=510)
+        self.assertIn("Anatomy review required", errors.getvalue())
+        self.assertEqual(result["anatomy_check"], report)
+
+    def test_anatomy_rejection_produces_no_saved_image(self):
+        directory = self.root / "must-not-exist"
+        error = {"error": {"code": "anatomy_rejected", "message": "Extra arm detected", "seed": 42,
+                           "anatomy_check": {"status": "ISSUE_DETECTED", "checked": True}}}
+        with redirect_stderr(io.StringIO()), self.assertRaisesRegex(RuntimeError, "anatomy_rejected"):
+            self.invoke(["--save-dir", str(directory)], response=(422, error))
+        self.assertFalse(directory.exists())
 
 
 if __name__ == "__main__":

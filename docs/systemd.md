@@ -19,7 +19,9 @@ active until stopped; there is no automatic idle unloading.
 
 ## Processes and resources
 
-The unit contains the adapter and exactly one owned `sd-server`. `KillMode=control-group`
+The unit contains the adapter, exactly one owned `sd-server`, and a temporary CPU anatomy process
+while checking a response. The CPU checker uses a separate session and exits after each check.
+`KillMode=control-group`
 terminates the entire group. The adapter sends its child SIGTERM and waits up to eight seconds,
 then SIGKILL with up to five seconds to reap it. The unit enforces termination after 20 seconds.
 Its own `local-image-ai.service.d/20-bounded-stop.conf` sets `TimeoutStopFailureMode=kill`
@@ -34,11 +36,14 @@ systemctl --user reset-failed local-image-ai
 local-image-ai-service start
 ```
 
-Additional limits: `MemoryHigh=16G`, `MemoryMax=24G`, `MemorySwapMax=2G`, `CPUQuota=800%`,
+Additional limits: `MemoryHigh=20G`, `MemoryMax=28G`, `MemorySwapMax=2G`, `CPUQuota=800%`,
 `TasksMax=128`, `LimitNOFILE=256`, and `OOMPolicy=stop`. These cgroup limits constrain RAM and
 CPU, not a dedicated share of VRAM. The adapter admits one generation with no generation queue,
 eight HTTP workers, and a listen backlog of eight connections. Excess generation requests receive
 429; fully occupied HTTP workers cause 503. HTTP header/body read timeout: ten seconds.
+The generation slot remains occupied during CPU screening. Its separate 180-second deadline
+terminates only the checker; it does not discard a healthy GPU runtime. `LimitCORE=0` prevents
+large dumps from native failures. The raised RAM limits accommodate the CPU vision model.
 
 `NoNewPrivileges`, `ProtectSystem=strict`, `ProtectHome=read-only`, `PrivateTmp`, `UMask=0077`,
 and write access only to the service's own cache protect existing files. GPU devices remain

@@ -1,0 +1,28 @@
+{
+  "runtime": {
+    "upstream": "https://github.com/ggml-org/llama.cpp.git",
+    "revision": "620d2225cc436ab0b001e3200e590e3b286ef9ab",
+    "version": "v0.7.0",
+    "target": "llama-mtmd-cli",
+    "gpu_backends": false
+  },
+  "model": {
+    "name": "Qwen3.5-9B-Q4_K_M",
+    "repository": "unsloth/Qwen3.5-9B-GGUF",
+    "revision": "3885219b6810b007914f3a7950a8d1b469d598a5",
+    "license": "Apache-2.0",
+    "files": {
+      "mmproj-F16.gguf": {
+        "local_name": "mmproj-Qwen3.5-9B-F16.gguf",
+        "bytes": 918166080,
+        "sha256": "f70dc3509053962b0d0d3ee8a7eacebf5d60aa560cad78254ae8698516ae029f"
+      }
+    },
+    "shared_model": {
+      "default_path": ".local/share/local-image-ai/models/moss/Qwen3.5-9B-Q4_K_M.gguf",
+      "bytes": 5680522464,
+      "sha256": "03b74727a860a56338e042c4420bb3f04b2fec5734175f4cb9fa853daf52b7e8",
+      "download": false
+    }
+  }
+}

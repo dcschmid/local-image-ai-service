@@ -70,6 +70,7 @@ class FakeBackend:
         self.proc = None
         self.cfg = {"models": {"moss": {}, "z-image": {}}}
         self.failure = None
+        self.checker = service.AnatomyChecker({"enabled": False}, Path("/unused"))
         self.entered = threading.Event()
         self.release = threading.Event()
 

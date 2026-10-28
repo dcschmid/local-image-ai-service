@@ -17,6 +17,26 @@ Configuration and API keys must stay out of Git. Changes take effect after a res
 | `generation_timeout` | 300 seconds; allowed range 1–1800 |
 | `api_key_file` | `null` or absolute path to a private key file |
 | `models` | Exactly two entries with absolute, readable file paths |
+| `anatomy` | Automatic offline CPU screening; defaults listed below |
+
+## Automatic anatomy checker
+
+`anatomy.enabled` defaults to `true`, including when this section is omitted from older config.
+It applies to every API/CLI generation. There is no per-request bypass or prompt-keyword trigger.
+The installed configuration explicitly enables it. Administrative opt-out is reported as `DISABLED`.
+
+| Anatomy field | Default / meaning |
+| --- | --- |
+| `enabled` | `true`; boolean |
+| `runtime` | Absolute path to `~/.local/share/local-image-ai-service/anatomy/runtime/llama-mtmd-cli` |
+| `model` | Absolute path to the existing `~/.local/share/local-image-ai/models/moss/Qwen3.5-9B-Q4_K_M.gguf`, never copied |
+| `mmproj` | Absolute path to `~/.local/share/local-image-ai-service/anatomy/models/mmproj-Qwen3.5-9B-F16.gguf` |
+| `timeout` | 180 seconds; allowed range 1–600 |
+| `threads` | 8 CPU threads; allowed range 1–8 |
+
+Missing assets prevent readiness. Invalid or failed checks withhold the image rather than pretending
+it passed. Person images still require manual review because calibration found missed extra legs.
+Full behavior and status meanings are in [anatomy.md](anatomy.md).
 
 ## Existing weights
 

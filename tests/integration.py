@@ -30,7 +30,9 @@ def request(cfg, method, path, body=None):
     headers = {"Content-Type": "application/json"}
     if cfg.get("api_key_file"):
         headers["Authorization"] = "Bearer " + Path(cfg["api_key_file"]).read_text().strip()
-    conn = http.client.HTTPConnection(cfg["host"], cfg["port"], timeout=cfg["generation_timeout"] + 20)
+    check_cfg = cfg.get("anatomy", {})
+    check_timeout = check_cfg.get("timeout", 0) if check_cfg.get("enabled") else 0
+    conn = http.client.HTTPConnection(cfg["host"], cfg["port"], timeout=cfg["generation_timeout"] + check_timeout + 30)
     try:
         conn.request(method, path, json.dumps(body) if body is not None else None, headers)
         response = conn.getresponse()
@@ -142,8 +144,12 @@ def main():
                 tests["real_concurrent_request_429"] = "passed"
                 status, result = generation.result()
             check(status == 200, f"{model} generation failed: {result if status != 200 else status}")
+            assessment = result.get("anatomy_check", {})
+            check(assessment.get("checked") is True and assessment.get("backend") == "local_cpu", "Automatic real CPU screening")
+            tests[f"automatic_cpu_check_{model}"] = "passed"
             raw = base64.b64decode(result["data"][0]["b64_json"], validate=True)
             report["images"][model] = png_check(raw, (512, 512))
+            report["images"][model]["anatomy_status"] = assessment["status"]
             report["images"][model]["seconds"] = round(time.monotonic() - start, 2)
             (Path(temporary.name) / f"{model}.png").write_bytes(raw)
             tests[f"real_generation_{model}"] = "passed"

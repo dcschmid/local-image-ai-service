@@ -68,10 +68,17 @@ curl --fail-with-body http://127.0.0.1:7861/v1/images/generations \
   -d '{"model":"moss","prompt":"A red teapot on a white table","seed":42,"size":"512x512","n":1,"response_format":"b64_json"}'
 ```
 
-Responses contain PNG bytes as Base64. The HTTP service never saves images automatically;
+Responses contain PNG bytes as Base64. The HTTP service never retains generated images;
 CLI saving happens in the client after a successful response. One generation runs at a time;
 additional requests receive `429`. Requesting the other configured model returns `409` until
 it has been selected with `use`. There is no automatic HTTP model switching.
+
+Every image now receives an automatic, offline CPU anatomy check before the response.
+The reviewer reuses the existing Qwen3.5-9B encoder read-only, with a separate vision projector.
+Clear estimated extra limbs return `422 anatomy_rejected`; images with detected people otherwise
+remain **`REVIEW_REQUIRED`**. Tests showed missed extra legs, so no person is automatically certified
+as anatomically correct. CLI saving preserves the report in its JSON output and shows a review notice.
+See [anatomy screening, accuracy limits, and setup](docs/anatomy.md).
 
 The runtime is a separate installation of official `sd-server master-987-a77d362`, including
 its own CUDA 13.4 runtime libraries. Existing weights are read through absolute paths.
@@ -88,6 +95,7 @@ this service to avoid GPU resource conflicts.
 - [Configuration and model paths](docs/configuration.md)
 - [systemd and resource management](docs/systemd.md)
 - [HTTP API, CLI generation, and errors](docs/api.md)
+- [Automatic anatomy screening and its limits](docs/anatomy.md)
 - [Future Open WebUI integration](docs/open-webui.md)
 - [Troubleshooting](docs/troubleshooting.md)
 - [Inventory and runtime decision](docs/inspection.md)
@@ -102,6 +110,8 @@ python3 -m unittest discover -s tests -v
 python3 tests/integration.py
 # With an already running, idle service, test CLI saving without switching or stopping it:
 python3 tests/cli_integration.py
+# Real CPU control images; detection limitations are reported separately:
+python3 tests/anatomy_integration.py
 ```
 
 Requires Python >=3.11, with no additional Python packages. Runtime revision and reference

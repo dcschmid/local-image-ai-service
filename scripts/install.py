@@ -17,7 +17,7 @@ def main():
     target = HOME / ".local/share/local-image-ai-service"
     app = target / "app"
     app.mkdir(parents=True, exist_ok=True)
-    for name in ("service.py", "manage.py"):
+    for name in ("service.py", "manage.py", "anatomy.py"):
         shutil.copyfile(ROOT / "src" / name, app / name)
     work = HOME / ".cache/local-image-ai-service/work"
     work.mkdir(parents=True, exist_ok=True)
@@ -27,6 +27,10 @@ def main():
         cfg = json.loads((ROOT / "config/config.example.json").read_text())
         cfg["runtime"] = str(target / "runtime/bin/sd-server")
         cfg["cuda_lib"] = str(target / "runtime/lib")
+        anatomy = target / "anatomy"
+        cfg["anatomy"]["runtime"] = str(anatomy / "runtime/llama-mtmd-cli")
+        cfg["anatomy"]["model"] = str(HOME / ".local/share/local-image-ai/models/moss/Qwen3.5-9B-Q4_K_M.gguf")
+        cfg["anatomy"]["mmproj"] = str(anatomy / "models/mmproj-Qwen3.5-9B-F16.gguf")
         gpu_lines = subprocess.check_output(["nvidia-smi", "--query-gpu=uuid", "--format=csv,noheader"], text=True).splitlines()
         if len(gpu_lines) != 1:
             raise SystemExit("Expected one NVIDIA GPU; configure gpu_uuid manually")
