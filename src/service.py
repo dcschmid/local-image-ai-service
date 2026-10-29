@@ -25,7 +25,8 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 HOME = Path.home()
 CONFIG = HOME / ".config/local-image-ai-service/config.json"
 WORK = HOME / ".cache/local-image-ai-service/work"
-DEFAULTS = {"moss": {"steps": 20, "cfg": 3.0}}
+DEFAULTS = {"moss": {"steps": 50, "cfg": 3.0}}
+DEFAULT_SIZE = "1024x1024"
 MAX_BODY = 65536
 MAX_RESPONSE = 16 * 1024 * 1024
 LOG = logging.getLogger("local-image-ai")
@@ -43,6 +44,17 @@ def private_file(path):
         raise ValueError(f"Expected own regular file with mode 0600: {path}")
 
 
+def sampling_settings(cfg):
+    settings = cfg.get("sampling", DEFAULTS["moss"])
+    if not isinstance(settings, dict) or set(settings) != {"steps", "cfg"}:
+        raise ValueError("sampling must contain exactly steps and cfg")
+    if type(settings["steps"]) is not int or not 10 <= settings["steps"] <= 100:
+        raise ValueError("sampling.steps must be an integer from 10 to 100")
+    if type(settings["cfg"]) not in (int, float) or not 1 <= settings["cfg"] <= 6:
+        raise ValueError("sampling.cfg must be a finite number from 1 to 6")
+    return dict(settings)
+
+
 def load_config(path=CONFIG):
     private_file(path)
     cfg = json.loads(path.read_text())
@@ -50,6 +62,7 @@ def load_config(path=CONFIG):
         raise ValueError("This service supports loopback 127.0.0.1 only")
     if cfg["active_model"] not in DEFAULTS or set(cfg["models"]) != set(DEFAULTS):
         raise ValueError("Only moss may be configured")
+    sampling_settings(cfg)
     for key in ("port", "backend_port"):
         if type(cfg[key]) is not int or not 1024 <= cfg[key] <= 65535:
             raise ValueError(f"Invalid {key}")
@@ -132,7 +145,7 @@ def validate_request(body, active):
         raise APIError(400, "prompt must contain 1..16000 characters", "invalid_prompt", "prompt")
     if re.search(r"sd_cpp_extra_args|<lora:", prompt, re.IGNORECASE):
         raise APIError(400, "Runtime control tags are unsupported in prompts", "invalid_prompt", "prompt")
-    size = body.get("size", "768x768")
+    size = body.get("size", DEFAULT_SIZE)
     match = re.fullmatch(r"([0-9]{3,4})x([0-9]{3,4})", size) if isinstance(size, str) else None
     if not match or any(v < 256 or v > 1024 or v % 64 for v in map(int, match.groups())):
         raise APIError(400, "size: dimensions must be multiples of 64 between 256 and 1024", "invalid_size", "size")
@@ -199,17 +212,21 @@ class Backend:
                     raise ValueError("Backend port is already in use")
             except ConnectionRefusedError:
                 pass
+            sampling = sampling_settings(cfg)
+            width, height = DEFAULT_SIZE.split("x")
             args = [cfg["runtime"], "--listen-ip", "127.0.0.1", "--listen-port", str(cfg["backend_port"]),
                     "--model-dir", str(WORK / "empty-model-catalog"), "--offload-to-cpu", "--flash-attn", "on",
                     "--backend", "cuda0", "--threads", "8", "--conditioning-cache-size", "1",
-                    "-W", "768", "-H", "768", "--steps", str(DEFAULTS[self.model]["steps"]),
-                    "--cfg-scale", str(DEFAULTS[self.model]["cfg"]), "--sampling-method", "euler", "--vae-tiling"]
+                    "-W", width, "-H", height, "--steps", str(sampling["steps"]),
+                    "--cfg-scale", str(sampling["cfg"]), "--sampling-method", "euler",
+                    "--scheduler", "discrete", "--flow-shift", "5", "--vae-tiling"]
             flags = {"diffusion": "--diffusion-model", "llm": "--llm", "vae": "--vae", "tokenizer": "--tokenizer"}
             for role, path in cfg["models"][self.model].items():
                 args.extend([flags[role], path])
             if self.stopping.is_set():
                 return
-            LOG.info("Loading model=%s; offload=cpu flash-attn=on backend=cuda0", self.model)
+            LOG.info("Loading model=%s steps=%s cfg=%s sampler=euler scheduler=discrete flow-shift=5; offload=cpu flash-attn=on backend=cuda0",
+                     self.model, sampling["steps"], sampling["cfg"])
             self.proc = subprocess.Popen(args, env=runtime_env(cfg), cwd=WORK)
             deadline = time.monotonic() + cfg["load_timeout"]
             while time.monotonic() < deadline and not self.stopping.is_set():

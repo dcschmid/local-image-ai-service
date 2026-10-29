@@ -5,6 +5,21 @@ Environment: Fedora Linux 44 KDE, RTX 5070 Laptop 8 GB, NVIDIA 615.78.08, CUDA 1
 Python 3.14.8. Inference uses the separate official `master-987-a77d362` installation.
 No existing model weights were changed, moved, copied, or downloaded during this update.
 
+## Quality update — current settings
+
+The later quality update passed **32 automated tests** and three sequential real MOSS comparisons
+using the original heavy-metal prompt and seed 42. The current defaults are **1024×1024, 50 Euler
+steps, CFG 3.0, discrete scheduler, flow shift 5**. Sampling can be configured privately and is
+validated before loading; unsupported API parameters remain rejected. Native PNG metadata confirms
+the actual settings. The 1024×1024 / 50-step generation completed in 190.61 seconds with a maximum
+observed total GPU memory use of 4,236 MiB. Semgrep again reported zero findings.
+
+See [the measured comparison and quality guide](quality.md). Evidence is stored in
+`~/.cache/local-image-ai-service/quality-unit-tests.log`, `quality-semgrep-report.json`, and the
+`quality-comparison-*` directory named by `quality-comparison-current.txt`. The running service uses
+the new quality settings. Its existing API limits, direct delivery, saving flags, weights, and
+loopback binding are retained. The sections below describe the earlier 20-step validation.
+
 ## Automated validation
 
 `python3 -m unittest discover -s tests -v` passed **30 tests**, including request-validation
@@ -100,7 +115,7 @@ October 28. The API process cannot write there under its systemd filesystem rest
 ## Scope and limitations
 
 Only `moss` is supported by this service; other installed model weights remain available to their
-original workflows. Sampling remains Euler / 20 steps / CFG 3.0. Images are delivered without
+original workflows. The earlier lifecycle run used Euler / 20 steps / CFG 3.0; the quality update above uses 50 steps. Images are delivered without
 anatomy assessment, filtering, or automatic regeneration. These tests verify generation and
 service behavior; they do not assess artistic quality or anatomical accuracy. No full resolution
 benchmark or Open WebUI configuration change was performed. Documentation remains in English.

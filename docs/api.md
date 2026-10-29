@@ -53,7 +53,7 @@ still detects corrupt responses and dimensions that differ from the request.
 | `model` | Optional; defaults to `moss`. Only `moss` is supported; every other model returns 404 |
 | `prompt` | Required nonblank string, up to 16,000 characters |
 | `seed` | Optional local extension; integer 0–2147483647, otherwise generated randomly |
-| `size` | Optional, default `768x768`; `WIDTHxHEIGHT`, each 256–1024 and a multiple of 64; rectangles accepted |
+| `size` | Optional, default `1024x1024`; `WIDTHxHEIGHT`, each 256–1024 and a multiple of 64; rectangles accepted |
 | `n` | Optional; only integer 1. Request more images sequentially |
 | `response_format` | Optional; only `b64_json` |
 | `output_format` | Optional; only `png` |
@@ -61,7 +61,8 @@ still detects corrupt responses and dimensions that differ from the request.
 
 All other parameters receive 400, including `quality`, `style`, `steps`, `cfg_scale`,
 `negative_prompt`, `background`, `output_compression`, and arbitrary model paths.
-Sampling is fixed per model; unsupported features are not silently simulated.
+Sampling is configured administratively for this service (default: 50 steps, CFG 3.0);
+unsupported per-request features are not silently simulated. See [configuration](configuration.md).
 Prompts containing `sd_cpp_extra_args` or LoRA control tags are rejected. The adapter translates
 only the validated seed into the documented native extension. Maximum request body: 64 KiB;
 JSON object, `Content-Type: application/json`, exactly one `Content-Length`, no chunked requests.
@@ -80,7 +81,7 @@ local-image-ai-service generate --model moss --prompt 'A mountain lake' \
   --size 768x768 --save-dir "$HOME/.local/share/my-image-experiments"
 ```
 
-`--prompt` is required. `--model` defaults to the configured model, `--size` to `768x768`,
+`--prompt` is required. `--model` defaults to the configured model, `--size` to `1024x1024`,
 and `--seed` to a server-generated random seed. The flags `--save` and `--save-dir DIRECTORY`
 are mutually exclusive; `--save-dir` implies saving. The directory is created only after a
 successful, validated image response. PNG format, dimensions, model, and seed are checked.

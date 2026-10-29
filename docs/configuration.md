@@ -16,6 +16,7 @@ Configuration and API keys must stay out of Git. Changes take effect after a res
 | `load_timeout` | 180 seconds; allowed range 1–1800 |
 | `generation_timeout` | 300 seconds; allowed range 1–1800 |
 | `api_key_file` | `null` or absolute path to a private key file |
+| `sampling` | Optional object with `steps` and `cfg`; defaults to 50 and 3.0 |
 | `models` | Exactly one `moss` entry with absolute, readable file paths |
 
 ## Existing weights
@@ -48,8 +49,26 @@ results in `/ready` = 503 and requires manual repair; there is no automatic roll
 
 ## Sampling and memory
 
-MOSS: Euler, 20 steps, CFG 3.0. Default size: 768×768;
-see [API limits](api.md). The runtime uses `--offload-to-cpu`, `--flash-attn on`, explicit
+MOSS quality defaults: Euler, 50 steps, CFG 3.0, discrete scheduler, flow shift 5.
+Default size: 1024×1024. The native MOSS implementation applies negative-branch layer skipping
+at layer 22. These settings follow the [official SFT model card](https://huggingface.co/OpenMOSS-Team/MOSS-Image-SFT)
+and the [pinned runtime documentation](https://github.com/leejet/stable-diffusion.cpp/blob/a77d3623180b2bc1886f3dd04c0aa04156a987ef/docs/moss_image.md).
+
+Optional private configuration:
+
+```json
+"sampling": {"steps": 50, "cfg": 3.0}
+```
+
+Both keys are required when the object is present. `steps` must be an integer from 10 to 100;
+`cfg` must be a finite number from 1 to 6. The recommended CFG is 3.0 for detailed prompts.
+Missing `sampling` uses the quality defaults; null, unknown keys, and invalid values are rejected.
+Changes require a restart. `doctor` and `models` print configured sampling values. For a faster
+preview, 20 steps can be configured explicitly, or a smaller `size` can be requested. High step
+counts may require increasing the generation timeout; only tested combinations are described in
+the [quality guide](quality.md). Per-request `steps` and `cfg_scale` remain unsupported.
+
+See [API limits](api.md). The runtime uses `--offload-to-cpu`, `--flash-attn on`, explicit
 `--backend cuda0`, VAE tiling, eight CPU threads, and one conditioning-cache entry.
 These limits apply only to this service.
 

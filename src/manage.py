@@ -13,8 +13,8 @@ import sys
 import time
 import uuid
 
-from service import (APIError, CONFIG, DEFAULTS, MAX_RESPONSE, WORK, gpu_check, load_config,
-                     missing_files, private_file, runtime_env, validate_request, validate_response)
+from service import (APIError, CONFIG, DEFAULTS, DEFAULT_SIZE, MAX_RESPONSE, WORK, gpu_check, load_config,
+                     missing_files, private_file, runtime_env, sampling_settings, validate_request, validate_response)
 
 UNIT = "local-image-ai.service"
 
@@ -146,7 +146,7 @@ def main(argv=None):
     generation = commands.add_parser("generate", help="Generate one image through the running service API")
     generation.add_argument("--prompt", required=True, help="Image prompt")
     generation.add_argument("--model", choices=sorted(DEFAULTS), help="Must match the loaded model; default: configured model")
-    generation.add_argument("--size", default="768x768", help="WIDTHxHEIGHT; multiples of 64, each 256..1024 (default: 768x768)")
+    generation.add_argument("--size", default=DEFAULT_SIZE, help=f"WIDTHxHEIGHT; multiples of 64, each 256..1024 (default: {DEFAULT_SIZE})")
     generation.add_argument("--seed", type=int, help="Integer 0..2147483647; omitted means random")
     saving = generation.add_mutually_exclusive_group()
     saving.add_argument("--save", action="store_true", help="Save PNG in ~/.local/share/local-image-ai-service-images")
@@ -166,7 +166,7 @@ def main(argv=None):
             print("API is offline")
         return result.returncode
     if args.command == "models":
-        print(json.dumps({"configured_model": cfg["active_model"], "models": {
+        print(json.dumps({"configured_model": cfg["active_model"], "sampling": sampling_settings(cfg), "models": {
             name: {"missing": missing_files(cfg, name), "defaults": defaults}
             for name, defaults in DEFAULTS.items()}}, indent=2))
         return 0
@@ -179,7 +179,8 @@ def main(argv=None):
         version = subprocess.run([cfg["runtime"], "--version"], env=runtime_env(cfg),
                                  capture_output=True, text=True, timeout=10, check=True)
         print(json.dumps({"config": str(CONFIG), "work": str(WORK), "models": "all required files readable",
-                          "gpu": gpu, "backend": backend, "runtime": version.stdout.strip()}, indent=2))
+                          "gpu": gpu, "backend": backend, "runtime": version.stdout.strip(),
+                          "sampling": sampling_settings(cfg)}, indent=2))
         return 0
     CONFIG.parent.mkdir(parents=True, exist_ok=True)
     with (CONFIG.parent / "management.lock").open("a") as lock:

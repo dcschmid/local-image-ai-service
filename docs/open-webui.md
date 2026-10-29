@@ -10,7 +10,7 @@ Under **Admin → Settings → Images**, select an OpenAI-compatible image gener
 | Engine | OpenAI / `openai` |
 | Image API base URL | `http://127.0.0.1:7861/v1` |
 | Model | `moss` only |
-| Size | For example, `512x512` or `768x768` |
+| Size | `1024x1024` for quality; smaller sizes for faster previews |
 | Count | 1 |
 | API key | Configured Bearer key; if the service has none but the field is required, a dummy such as `local-unused` |
 | Response format | Base64 / `b64_json` |
@@ -26,7 +26,7 @@ ENABLE_IMAGE_GENERATION=true
 IMAGE_GENERATION_ENGINE=openai
 IMAGES_OPENAI_API_BASE_URL=http://127.0.0.1:7861/v1
 IMAGE_GENERATION_MODEL=moss
-IMAGE_SIZE=512x512
+IMAGE_SIZE=1024x1024
 IMAGES_OPENAI_API_KEY=<configured-key-or-local-unused>
 ```
 
@@ -36,6 +36,12 @@ on October 28, 2026. Production Open WebUI validation remains outside this task.
 Select `moss` in Open WebUI. Other model IDs return 404. MOSS images are delivered directly,
 without an anatomy checker or hidden review metadata. Only one generation runs at a time;
 additional requests receive 429.
+
+The service now defaults to 50 steps, CFG 3.0, and 1024×1024 when size is omitted. Open WebUI
+sends its own image size: its existing setting is not changed by a service update. Select
+1024×1024 manually to use the tested quality resolution. Allow at least 330 seconds for the
+request, matching the service's generation deadline plus cleanup. See [quality notes](quality.md)
+for measured costs and a clearer four-musician prompt. No automatic prompt rewrite is performed.
 
 The CLI `--save` and `--save-dir` flags apply only to that CLI invocation. They do not enable
 server-side saving for Open WebUI or other HTTP clients.

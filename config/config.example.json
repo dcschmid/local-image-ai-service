@@ -9,6 +9,7 @@
   "load_timeout": 180,
   "generation_timeout": 300,
   "api_key_file": null,
+  "sampling": {"steps": 50, "cfg": 3.0},
   "models": {
     "moss": {
       "diffusion": "/absolute/path/moss/MOSS-Image-SFT-Q4_K.gguf",

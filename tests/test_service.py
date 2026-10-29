@@ -21,7 +21,7 @@ class ValidationTests(unittest.TestCase):
     def test_minimum_request_and_seed(self):
         native, seed = service.validate_request({"prompt": "A tree", "seed": 42}, "moss")
         self.assertEqual(seed, 42)
-        self.assertEqual(native["size"], "768x768")
+        self.assertEqual(native["size"], "1024x1024")
         self.assertEqual(native["n"], 1)
 
     def test_invalid_requests(self):
@@ -77,11 +77,34 @@ class ValidationTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "Only moss"):
                 service.load_config(path)
 
+    def test_sampling_defaults_and_explicit_settings(self):
+        self.assertEqual(service.sampling_settings({}), {"steps": 50, "cfg": 3.0})
+        self.assertEqual(service.sampling_settings({"sampling": {"steps": 30, "cfg": 4}}),
+                         {"steps": 30, "cfg": 4})
+
+    def test_invalid_sampling_is_rejected_during_config_load(self):
+        root = Path(__file__).resolve().parents[1]
+        cfg = json.loads((root / "config/config.example.json").read_text())
+        cfg["gpu_uuid"] = "GPU-1234"
+        cases = [None, [], {}, {"steps": 50}, {"steps": 50, "cfg": 3, "sampler": "random"}]
+        cases += [{"steps": value, "cfg": 3} for value in (True, 9, 101, 50.5, "50")]
+        cases += [{"steps": 50, "cfg": value} for value in (True, 0, 7, "3", float("nan"), float("inf"))]
+        with tempfile.TemporaryDirectory() as work:
+            path = Path(work) / "config.json"
+            for settings in cases:
+                with self.subTest(settings=settings):
+                    cfg["sampling"] = settings
+                    path.write_text(json.dumps(cfg))
+                    path.chmod(0o600)
+                    with self.assertRaisesRegex(ValueError, "sampling"):
+                        service.load_config(path)
+
 
 class DirectGenerationTests(unittest.TestCase):
     def test_backend_restart_accepts_a_port_with_recently_closed_connections(self):
         root = Path(__file__).resolve().parents[1]
         cfg = json.loads((root / "config/config.example.json").read_text())
+        cfg["sampling"] = {"steps": 30, "cfg": 4}
         with socket.socket() as listener:
             # Match cpp-httplib's Linux listener options in the pinned native runtime.
             listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
@@ -106,6 +129,9 @@ class DirectGenerationTests(unittest.TestCase):
                 patch.object(service.subprocess, "Popen", return_value=process) as launch:
             backend.start()
         launch.assert_called_once()
+        arguments = launch.call_args.args[0]
+        for option, expected in (("--steps", "30"), ("--cfg-scale", "4"), ("--scheduler", "discrete"), ("--flow-shift", "5")):
+            self.assertEqual(arguments[arguments.index(option) + 1], expected)
         self.assertEqual(backend.failure, "sd-server exited during load: 1")
 
     def test_backend_start_refuses_an_existing_listener(self):

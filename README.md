@@ -57,6 +57,11 @@ Without `--save` or `--save-dir`, the CLI prints the complete API JSON, includin
 The selected model must already be loaded; `generate` does not start or switch the service.
 This CLI is independent of the existing `imgai` CLI.
 
+Quality defaults are **1024×1024, 50 Euler steps, CFG 3.0, flow shift 5**. The private
+`sampling` configuration can lower the step count for previews. Open WebUI sends an explicit
+image size, so choose 1024×1024 there manually; this service does not change its settings.
+See [quality settings and measured comparisons](docs/quality.md).
+
 ## HTTP API
 
 Base URL: `http://127.0.0.1:7861/v1`. Authentication is optional on loopback.
@@ -86,6 +91,7 @@ this service to avoid GPU resource conflicts.
 
 - [Installation, updates, and uninstallation](docs/installation.md)
 - [Configuration and model paths](docs/configuration.md)
+- [Quality settings, prompts, and comparisons](docs/quality.md)
 - [systemd and resource management](docs/systemd.md)
 - [HTTP API, CLI generation, and errors](docs/api.md)
 - [Future Open WebUI integration](docs/open-webui.md)
