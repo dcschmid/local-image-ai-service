@@ -1,10 +1,11 @@
 # Local Image AI Service
 
-A standalone local image inference service for **MOSS-Image SFT** and **Z-Image Turbo**.
-MOSS is the default. The service does not import or invoke `imgai` and contains no game,
+A standalone local image inference service for **MOSS-Image SFT**.
+`moss` is the only supported model. The service does not import or invoke `imgai` and contains no game,
 Blender, character, vehicle, or track workflow code.
 
-Installed and tested on Fedora 44 / RTX 5070 Laptop 8 GB on October 28, 2026.
+Installed on Fedora 44 / RTX 5070 Laptop 8 GB. As of October 29, 2026, this is a MOSS-only
+service with direct image delivery and no anatomy checker.
 Login autostart is not enabled. No remote repository was created.
 
 ```bash
@@ -12,13 +13,12 @@ local-image-ai-service doctor
 local-image-ai-service start
 local-image-ai-service status
 local-image-ai-service models
-local-image-ai-service use z-image
 local-image-ai-service use moss
 local-image-ai-service logs
 local-image-ai-service stop
 ```
 
-`start`, `restart`, and `use` wait for the selected model to become ready. Direct systemd commands
+`start`, `restart`, and `use moss` wait for MOSS to become ready. Direct systemd commands
 are also supported; `systemctl start` returns before loading finishes, so check `/ready`:
 
 ```bash
@@ -68,17 +68,10 @@ curl --fail-with-body http://127.0.0.1:7861/v1/images/generations \
   -d '{"model":"moss","prompt":"A red teapot on a white table","seed":42,"size":"512x512","n":1,"response_format":"b64_json"}'
 ```
 
-Responses contain PNG bytes as Base64. The HTTP service never retains generated images;
+Responses contain PNG bytes as Base64. The HTTP service never saves images automatically;
 CLI saving happens in the client after a successful response. One generation runs at a time;
-additional requests receive `429`. Requesting the other configured model returns `409` until
-it has been selected with `use`. There is no automatic HTTP model switching.
-
-Every image now receives an automatic, offline CPU anatomy check before the response.
-The reviewer reuses the existing Qwen3.5-9B encoder read-only, with a separate vision projector.
-Clear estimated extra limbs return `422 anatomy_rejected`; images with detected people otherwise
-remain **`REVIEW_REQUIRED`**. Tests showed missed extra legs, so no person is automatically certified
-as anatomically correct. CLI saving preserves the report in its JSON output and shows a review notice.
-See [anatomy screening, accuracy limits, and setup](docs/anatomy.md).
+additional requests receive `429`. Requests for any model other than `moss` return `404`.
+Images are delivered directly from MOSS without an anatomy reviewer, content scoring, or a quality gate.
 
 The runtime is a separate installation of official `sd-server master-987-a77d362`, including
 its own CUDA 13.4 runtime libraries. Existing weights are read through absolute paths.
@@ -95,7 +88,6 @@ this service to avoid GPU resource conflicts.
 - [Configuration and model paths](docs/configuration.md)
 - [systemd and resource management](docs/systemd.md)
 - [HTTP API, CLI generation, and errors](docs/api.md)
-- [Automatic anatomy screening and its limits](docs/anatomy.md)
 - [Future Open WebUI integration](docs/open-webui.md)
 - [Troubleshooting](docs/troubleshooting.md)
 - [Inventory and runtime decision](docs/inspection.md)
@@ -106,12 +98,10 @@ this service to avoid GPU resource conflicts.
 ```bash
 cd ~/dev/github/local-image-ai-service
 python3 -m unittest discover -s tests -v
-# Uses the real GPU, tests both models sequentially, and stops the service afterwards:
+# Uses the real GPU, tests MOSS generation and lifecycle, and stops the service afterwards:
 python3 tests/integration.py
 # With an already running, idle service, test CLI saving without switching or stopping it:
 python3 tests/cli_integration.py
-# Real CPU control images; detection limitations are reported separately:
-python3 tests/anatomy_integration.py
 ```
 
 Requires Python >=3.11, with no additional Python packages. Runtime revision and reference

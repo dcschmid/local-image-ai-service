@@ -13,8 +13,6 @@ import sys
 import time
 import uuid
 
-from anatomy import AnatomyChecker
-
 from service import (APIError, CONFIG, DEFAULTS, MAX_RESPONSE, WORK, gpu_check, load_config,
                      missing_files, private_file, runtime_env, validate_request, validate_response)
 
@@ -95,18 +93,12 @@ def generate(cfg, args):
         directory = (args.save_dir if args.save_dir is not None else default_save_dir()).expanduser().resolve()
         if directory.exists() and not directory.is_dir():
             raise ValueError(f"Save directory is not a directory: {directory}")
-    check_cfg = cfg.get("anatomy", {})
-    check_timeout = check_cfg.get("timeout", 0) if check_cfg.get("enabled") else 0
-    status, result = request(cfg, "/v1/images/generations", body=body,
-                             timeout=cfg["generation_timeout"] + check_timeout + 30)
+    status, result = request(cfg, "/v1/images/generations", body=body, timeout=cfg["generation_timeout"] + 30)
     if not isinstance(result, dict):
         raise RuntimeError("API returned an invalid image response")
     if status != 200:
         error = result.get("error", {})
         if isinstance(error, dict):
-            report = error.get("anatomy_check")
-            if isinstance(report, dict):
-                print(json.dumps({"anatomy_check": report, "seed": error.get("seed")}), file=sys.stderr)
             raise RuntimeError(f"HTTP {status} [{error.get('code', 'api_error')}]: {error.get('message', 'Generation failed')}")
         raise RuntimeError(f"HTTP {status}: Generation failed")
     try:
@@ -119,19 +111,9 @@ def generate(cfg, args):
         raw = base64.b64decode(result["data"][0]["b64_json"], validate=True)
     except (ValueError, KeyError, TypeError) as error:
         raise RuntimeError(f"API returned an invalid image response: {error}") from None
-    report = result.get("anatomy_check")
-    if check_cfg.get("enabled"):
-        if (not isinstance(report, dict) or report.get("checked") is not True
-                or report.get("status") not in ("NOT_APPLICABLE", "NO_OBVIOUS_ISSUE", "REVIEW_REQUIRED")):
-            raise RuntimeError("API returned no valid automatic anatomy assessment; image not saved")
-    if isinstance(report, dict) and report.get("status") == "REVIEW_REQUIRED":
-        print("Anatomy review required: " + report.get("summary", "Please inspect this image manually."), file=sys.stderr)
     if directory is not None:
         path = save_image(raw, directory, model, seed)
-        saved = {"model": model, "seed": seed, "size": args.size, "path": str(path)}
-        if report is not None:
-            saved["anatomy_check"] = report
-        return saved
+        return {"model": model, "seed": seed, "size": args.size, "path": str(path)}
     return result
 
 
@@ -159,9 +141,9 @@ def main(argv=None):
     commands = parser.add_subparsers(dest="command", required=True)
     for name in ("doctor", "status", "models", "logs", "start", "stop", "restart"):
         commands.add_parser(name)
-    switch = commands.add_parser("use", help="Stop this service, select a model, and start it again")
+    switch = commands.add_parser("use", help="Reload MOSS configuration and restart this service")
     switch.add_argument("model", choices=sorted(DEFAULTS))
-    generation = commands.add_parser("generate", help="Generate one image with automatic CPU anatomy screening")
+    generation = commands.add_parser("generate", help="Generate one image through the running service API")
     generation.add_argument("--prompt", required=True, help="Image prompt")
     generation.add_argument("--model", choices=sorted(DEFAULTS), help="Must match the loaded model; default: configured model")
     generation.add_argument("--size", default="768x768", help="WIDTHxHEIGHT; multiples of 64, each 256..1024 (default: 768x768)")
@@ -193,15 +175,11 @@ def main(argv=None):
             missing = missing_files(cfg, name)
             if missing:
                 raise ValueError(f"Missing files for {name}: {missing}")
-        checker = AnatomyChecker(cfg["anatomy"], WORK / "anatomy")
-        if checker.problem():
-            raise ValueError(checker.problem())
         gpu, backend = gpu_check(cfg)
         version = subprocess.run([cfg["runtime"], "--version"], env=runtime_env(cfg),
                                  capture_output=True, text=True, timeout=10, check=True)
         print(json.dumps({"config": str(CONFIG), "work": str(WORK), "models": "all required files readable",
-                          "gpu": gpu, "backend": backend, "runtime": version.stdout.strip(),
-                          "anatomy_check": checker.health()}, indent=2))
+                          "gpu": gpu, "backend": backend, "runtime": version.stdout.strip()}, indent=2))
         return 0
     CONFIG.parent.mkdir(parents=True, exist_ok=True)
     with (CONFIG.parent / "management.lock").open("a") as lock:

@@ -37,7 +37,7 @@ retries. RAM limits do not reserve VRAM. `/health` can remain reachable while `/
 
 ## Missing files or load failure
 
-`doctor` checks both models. Correct absolute paths in private JSON configuration; do not download,
+`doctor` checks the four required MOSS files. Correct absolute paths in private JSON configuration; do not download,
 rename, or move existing weights. MOSS requires `tokenizer_qwen3.5.json` in addition to its DiT,
 encoder, and VAE. Failures appear in `/health.error` and the journal without retry loops.
 After fixing the cause:
@@ -52,13 +52,12 @@ The separate runtime needs the three CUDA libraries recorded in `runtime/receipt
 `cuda_lib` must point to its own absolute library directory. The previous installation is not
 used as a runtime fallback. `doctor` must report CUDA0; CPU fallback is not silent.
 
-## HTTP 409, 429, or 504
+## HTTP 404, 429, or 504
 
-409: load the requested model with `use`, then retry.
+404 `model_not_found`: set the client model to `moss`; no other model is supported.
 429: wait for the current generation; there is no job queue.
-504 `generation_timeout`: the GPU runtime was stopped; inspect logs and restart manually.
-504 `anatomy_timeout`: only the CPU checker was stopped; the healthy GPU runtime is retained.
-Client timeouts must allow generation, CPU review, and cleanup. Stop and model switching cancel active requests.
+504: the owned runtime was stopped. Inspect logs and restart manually. Client timeouts must
+allow the generation deadline plus process cleanup. Stopping or reloading MOSS cancels active requests.
 
 ## CLI saving or generation fails
 
@@ -78,20 +77,6 @@ new partial file. No automatic retry occurs after generation or save failure.
 The default output directory is `~/.local/share/local-image-ai-service-images`, outside the
 installation and cache. It survives uninstall. Use an external custom directory if those images
 should also survive; custom output inside the service cache remains disposable.
-
-## Anatomy review, rejection, or checker failure
-
-The installed service checks every image on CPU. `REVIEW_REQUIRED` is expected for detected
-people: real tests showed extra legs can be missed, so no automatic anatomy approval is offered.
-The CLI still saves review images when explicitly requested and prints a notice. A 422
-`anatomy_rejected` response withholds an image with clearly estimated extra limbs. Inspect the
-report and try another seed or prompt; there is no automatic retry or seed substitution.
-
-503 `anatomy_unavailable`/`anatomy_failed` and 504 `anatomy_timeout` also withhold the image.
-Use `doctor` and `/health.anatomy_check` to inspect readiness, busy state, and the last error.
-Check the configured CPU binary, shared MOSS encoder, and separate vision projector. Rebuild with
-`python3 scripts/install-anatomy.py` if necessary; do not move or redownload existing image models.
-Allow at least 510 seconds in external clients. See [anatomy.md](anatomy.md) for accuracy limits.
 
 ## systemd active but model not ready
 

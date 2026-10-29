@@ -17,20 +17,37 @@ def main():
     target = HOME / ".local/share/local-image-ai-service"
     app = target / "app"
     app.mkdir(parents=True, exist_ok=True)
-    for name in ("service.py", "manage.py", "anatomy.py"):
+    for name in ("service.py", "manage.py"):
         shutil.copyfile(ROOT / "src" / name, app / name)
+    # Retired checker code is not part of the installed application. Model data is retained.
+    (app / "anatomy.py").unlink(missing_ok=True)
+    if (app / "__pycache__").exists():
+        for bytecode in (app / "__pycache__").glob("anatomy.*.pyc"):
+            bytecode.unlink()
     work = HOME / ".cache/local-image-ai-service/work"
     work.mkdir(parents=True, exist_ok=True)
     config = HOME / ".config/local-image-ai-service/config.json"
     config.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
-    if not config.exists():
+    if config.exists():
+        cfg = json.loads(config.read_text())
+        updated = dict(cfg, active_model="moss", models={"moss": cfg["models"]["moss"]})
+        updated.pop("anatomy", None)
+        if cfg != updated:
+            temporary = config.with_name("config.json.install")
+            descriptor = os.open(temporary, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+            try:
+                with os.fdopen(descriptor, "w") as stream:
+                    json.dump(updated, stream, indent=2)
+                    stream.write("\n")
+                    stream.flush()
+                    os.fsync(stream.fileno())
+                os.replace(temporary, config)
+            finally:
+                temporary.unlink(missing_ok=True)
+    else:
         cfg = json.loads((ROOT / "config/config.example.json").read_text())
         cfg["runtime"] = str(target / "runtime/bin/sd-server")
         cfg["cuda_lib"] = str(target / "runtime/lib")
-        anatomy = target / "anatomy"
-        cfg["anatomy"]["runtime"] = str(anatomy / "runtime/llama-mtmd-cli")
-        cfg["anatomy"]["model"] = str(HOME / ".local/share/local-image-ai/models/moss/Qwen3.5-9B-Q4_K_M.gguf")
-        cfg["anatomy"]["mmproj"] = str(anatomy / "models/mmproj-Qwen3.5-9B-F16.gguf")
         gpu_lines = subprocess.check_output(["nvidia-smi", "--query-gpu=uuid", "--format=csv,noheader"], text=True).splitlines()
         if len(gpu_lines) != 1:
             raise SystemExit("Expected one NVIDIA GPU; configure gpu_uuid manually")

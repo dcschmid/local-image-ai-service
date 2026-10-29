@@ -6,7 +6,7 @@ Configuration and API keys must stay out of Git. Changes take effect after a res
 
 | Field | Default / meaning |
 | --- | --- |
-| `active_model` | `moss`; only `moss` or `z-image` |
+| `active_model` | `moss`; this is the only supported model |
 | `host` | Only `127.0.0.1` is accepted |
 | `port` | 7861, client-facing local API |
 | `backend_port` | 17861, internal loopback runtime |
@@ -16,27 +16,7 @@ Configuration and API keys must stay out of Git. Changes take effect after a res
 | `load_timeout` | 180 seconds; allowed range 1–1800 |
 | `generation_timeout` | 300 seconds; allowed range 1–1800 |
 | `api_key_file` | `null` or absolute path to a private key file |
-| `models` | Exactly two entries with absolute, readable file paths |
-| `anatomy` | Automatic offline CPU screening; defaults listed below |
-
-## Automatic anatomy checker
-
-`anatomy.enabled` defaults to `true`, including when this section is omitted from older config.
-It applies to every API/CLI generation. There is no per-request bypass or prompt-keyword trigger.
-The installed configuration explicitly enables it. Administrative opt-out is reported as `DISABLED`.
-
-| Anatomy field | Default / meaning |
-| --- | --- |
-| `enabled` | `true`; boolean |
-| `runtime` | Absolute path to `~/.local/share/local-image-ai-service/anatomy/runtime/llama-mtmd-cli` |
-| `model` | Absolute path to the existing `~/.local/share/local-image-ai/models/moss/Qwen3.5-9B-Q4_K_M.gguf`, never copied |
-| `mmproj` | Absolute path to `~/.local/share/local-image-ai-service/anatomy/models/mmproj-Qwen3.5-9B-F16.gguf` |
-| `timeout` | 180 seconds; allowed range 1–600 |
-| `threads` | 8 CPU threads; allowed range 1–8 |
-
-Missing assets prevent readiness. Invalid or failed checks withhold the image rather than pretending
-it passed. Person images still require manual review because calibration found missed extra legs.
-Full behavior and status meanings are in [anatomy.md](anatomy.md).
+| `models` | Exactly one `moss` entry with absolute, readable file paths |
 
 ## Existing weights
 
@@ -49,32 +29,27 @@ expanded absolute paths. Tildes, environment variables, and relative paths are n
 | moss | llm | `moss/Qwen3.5-9B-Q4_K_M.gguf` |
 | moss | vae | `moss/flux2-vae.safetensors` |
 | moss | tokenizer | `moss/tokenizer_qwen3.5.json` |
-| z-image | diffusion | `z-image/z_image_turbo-Q4_K.gguf` |
-| z-image | llm | `z-image/Qwen3-4B-Instruct-2507-Q4_K_M.gguf` |
-| z-image | vae | `z-image/flux1-ae.safetensors` |
 
 Here, `llm` refers only to the image model's text encoder. No chat API is exposed. Shared encoders
 can be referenced through identical absolute paths. The service never copies, modifies, or deletes them.
 
-## Switch models
+## Reload MOSS
 
 ```bash
-local-image-ai-service use z-image
 local-image-ai-service use moss
 ```
 
-`use` first checks the required files, then stops its complete systemd process group, atomically
-writes private configuration, and starts again. At most one model is loaded. The command waits
-for readiness. Switching cancels requests in progress. There is no HTTP model switch and no
-change to `imgai` or its configuration.
+`use moss` checks the four required files, stops this service, records the MOSS selection, and
+starts it again. It remains available as a reload command. No other model is accepted. The command
+waits for readiness; reloading cancels requests in progress. The existing `imgai` CLI is unchanged.
 
-Missing files detected before switching leave the current service untouched. A later load failure
+Missing files detected before reloading leave the current service untouched. A later load failure
 results in `/ready` = 503 and requires manual repair; there is no automatic rollback or reload.
 
 ## Sampling and memory
 
-MOSS: Euler, 20 steps, CFG 3.0. Z-Image: Euler, 8 steps, CFG 1.0. Default size: 768×768;
-see [API limits](api.md). Both use `--offload-to-cpu`, `--flash-attn on`, explicit
+MOSS: Euler, 20 steps, CFG 3.0. Default size: 768×768;
+see [API limits](api.md). The runtime uses `--offload-to-cpu`, `--flash-attn on`, explicit
 `--backend cuda0`, VAE tiling, eight CPU threads, and one conditioning-cache entry.
 These limits apply only to this service.
 

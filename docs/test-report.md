@@ -1,209 +1,123 @@
-# Test report — October 28, 2026
+# Test report — October 29, 2026
 
-Test environment: Fedora Linux 44 KDE, RTX 5070 Laptop 8 GB, NVIDIA 615.78.08, CUDA 13.4,
-Python 3.14.8. Tests used only the separate official `master-987-a77d362` installation.
-No model rebuild or download was needed.
+This report covers the MOSS-only service after removal of automatic anatomy screening.
+Environment: Fedora Linux 44 KDE, RTX 5070 Laptop 8 GB, NVIDIA 615.78.08, CUDA 13.4,
+Python 3.14.8. Inference uses the separate official `master-987-a77d362` installation.
+No existing model weights were changed, moved, copied, or downloaded during this update.
 
-## Initial automated validation
+## Automated validation
 
-`python3 -m unittest discover -s tests -v`: the initial implementation passed **14 test groups**,
-including 24 invalid request variants as subtests. Coverage includes model/parameter validation,
-sizes, seeds, private file permissions, correct/wrong/missing Bearer keys, browser-origin rejection,
-absent editing/chat/native administration routes, malformed JSON, immediate 429, bounded HTTP workers,
-missing models, and load/generation timeouts that actually terminate owned test processes.
-An isolated install/uninstall test with a simulated user manager also checks file permissions,
-the Fedora timeout drop-in, and preservation of unrelated model, image, and project directories.
-HTTP failure and timeout tests use explicit test doubles; real inference is tested separately.
+`python3 -m unittest discover -s tests -v` passed **30 tests**, including request-validation
+subtests. Coverage includes MOSS-only configuration and API discovery; rejected non-MOSS IDs;
+sizes, seeds, authentication, HTTP limits, concurrency, owned-process cleanup, and timeouts.
 
-`python3 tests/integration.py` tested real models **sequentially**, without parallel GPU benchmarks.
+The direct-delivery regression test supplies an image for a prompt requesting a humanoid with
+three arms. Its bytes are returned unchanged, without review metadata or any extra subprocess.
+Install/upgrade tests remove obsolete reviewer code and settings and non-MOSS mappings, retain
+custom ports, keep configuration private, and preserve all model data. Saving tests cover both
+flags, no-save behavior, unique filenames, private files, collision protection, failed-write cleanup,
+and error responses without creating output. Uninstall preservation is also tested in isolation.
 
-| Required check | Result |
+## Real MOSS and lifecycle validation
+
+`python3 tests/integration.py` passed at `2026-10-29T11:03:02+0100`. Models were never benchmarked in parallel.
+
+| Check | Result |
 | --- | --- |
-| Separate repository / installation | Passed; separate Git directory, private config, runtime checksums |
-| Required model files | All seven readable |
-| CUDA/backend check | CUDA0 with RTX 5070, no CPU fallback |
-| systemd startup and API reachability | Passed |
-| `/v1/models` | Both IDs, exactly one loaded model |
-| MOSS generation | 200, real 512×512 PNG, actual seed 42 |
-| Z-Image generation | 200, real 512×512 PNG, actual seed 42 |
-| Model switching | Previous runtime PID exited before the new model became ready |
-| Stop / restart | Previous adapter/runtime PIDs exited; new runtime ready |
-| Stop during generation | Passed; bounded shutdown, owned runtime terminated |
-| Invalid model | 404 `model_not_found` |
-| Invalid size | 400 `invalid_size` |
-| Other configured model | 409 `model_not_loaded` |
-| Multiple images | 400 `unsupported_n` for n=2 |
-| Concurrent request during real inference | Immediate 429 for both models |
-| After stop | Owned PIDs gone, ports 7861/17861 closed, no owned GPU processes |
-| No login autostart | Unit `static`, not enabled, no automatic restarts |
+| Separate repository and installed runtime | Passed; independent regular files and receipt SHA-256 values |
+| Required model files | All four MOSS files readable |
+| CUDA/backend | CUDA0 on the RTX 5070; no CPU fallback |
+| systemd startup and API | Passed; `/health` and `/ready` report readiness |
+| `/v1/models` | Only `moss`, loaded |
+| Person/band generation | HTTP 200, Base64 PNG, no `anatomy_check` metadata |
+| Invalid or retired model ID | HTTP 404 `model_not_found`, including `z-image` |
+| Invalid size / count | HTTP 400 `invalid_size` / `unsupported_n` |
+| Concurrent request | Immediate HTTP 429 while the single generation runs |
+| Editing route | HTTP 404; no unsupported editing API advertised |
+| Stop and restart | Old owned PIDs exited; new backend became ready |
+| Stop during inference | Bounded shutdown; no background generation left |
+| After stop | Ports 7861/17861 closed and no remaining owned GPU process |
+| Login autostart | Unit `static`, not enabled; no automatic restart |
 
-Each response was Base64-decoded, checked for PNG signature and dimensions, validated for every
-PNG chunk CRC, and successfully decompressed. Nontrivial pixel data and actual seed 42 were checked.
-Test images existed only in a temporary directory under `~/.cache/local-image-ai-service` and
-were removed afterwards.
+The generated band image was decoded, checked for dimensions, validated for every PNG chunk CRC,
+and successfully decompressed. Native PNG metadata confirmed seed 42. Test images were created
+only in a service-specific temporary directory and removed afterwards.
 
-Final initial full run at 11:44 local time, 512×512, including inference and the API response:
+| Model | Size | Steps / CFG | Time | PNG bytes | SHA-256 |
+| --- | --- | --- | --- | --- | --- |
+| moss | 512×512 | 20 / 3.0 | 21.89 s | 511,781 | `67ff8aefb628277817eb14b24b1d853880e052ecf56d010b5a7bfb1bf57a12e4` |
 
-| Model | Steps / CFG | Time | PNG bytes | SHA-256 |
-| --- | --- | --- | --- | --- |
-| moss | 20 / 3.0 | 21.20 s | 381,072 | `7cfb5e75d1a92fd41f7222c9d6e98e7bec021863dc6c0d467bf7ea0414566cfb` |
-| z-image | 8 / 1.0 | 6.98 s | 365,149 | `f6176470009000b3176896436b94dff0ede5a42ab63fca7e557fac139560843c` |
+Fast startup after stopping an active generation initially exposed a port-probe defect: a plain
+bind treated native `SO_REUSEPORT` connections in `TIME_WAIT` as an occupied listener. Startup
+now probes for an actual TCP listener. Regression tests reproduce the native socket options,
+allow recently closed connections, and still reject a genuinely occupied port. The final live run
+also successfully started the service immediately after the active-stop test.
 
-A previous complete run also passed (18.61 s / 7.88 s). MOSS was not byte-identical across
-separate processes with the same seed; deterministic PNG hashes are not promised.
+## CLI saving validation
 
-`systemd-analyze --user verify` passed. Semgrep `p/python` ran 151 rules over executable Python
-implementations with no findings. This report does not claim visual quality assessment, a full
-size/prompt benchmark, a source rebuild, or a completed Open WebUI integration.
-
-## English documentation and CLI saving update
-
-All nine Markdown documents were translated into English. The separate service CLI now supports
-`generate`, with opt-in `--save` and `--save-dir`. The HTTP service and existing `imgai` CLI were
-not changed by this update.
-
-The expanded automated suite passed **25 test groups**. New coverage includes no-save behavior,
-default/custom directories, repeated seeds with distinct filenames, private file permissions,
-exclusive creation on filename collisions, partial-write cleanup, API failures without output,
-invalid image responses, flag validation, and an actual HTTP JSON/Bearer request. The uninstall
-test also verifies retention of the separate default image directory.
-
-`python3 tests/cli_integration.py` passed against the already running MOSS service at 12:41 local
-time. Both saving modes produced real 512×512 PNGs with validated chunk CRCs, decompressed pixels,
-and actual seed 42:
+`python3 tests/cli_integration.py` passed at `2026-10-29T11:03:39+0100` against the running MOSS service.
+Both modes returned real 512×512 PNGs with valid CRCs, decompressed pixels, actual seed 42,
+and private file permissions:
 
 | CLI mode | Time | PNG bytes | SHA-256 |
 | --- | --- | --- | --- |
-| `--save-dir` | 19.99 s | 381,027 | `72e66d6db53013dc2334e52957b32291395210395c70e04047760d67f67acf04` |
-| `--save` | 14.82 s | 381,796 | `02bc7203cc2e06eaa0463acb0fd4c2ea69308baa7e00d895cf7ee79683e2c118` |
+| `--save-dir` | 20.19 s | 380,067 | `ea74981c866bbd517b339132e87ab670dc066a27ed692d5fded7eeded144e1b7` |
+| `--save` | 14.96 s | 378,446 | `42151b2064af402f83457818f97f4f16b6ea289b81afc994ec3daca72c235cf7` |
 
-The default-path test used a temporary home directory, so all test PNGs stayed inside the
-service-specific temporary test folder and were removed afterwards. Invalid CLI size exited
-nonzero without creating output. The existing service process/model remained ready throughout;
-no stop, restart, or model switch was performed. The updated CLI module was installed atomically
-because the user had started the service during this update. Semgrep again reported no findings.
+The default-save test used a temporary home. All test images stayed inside the service's cache
+and were removed afterwards. Invalid CLI size exited nonzero without creating output. The same
+backend PID remained ready throughout both save tests. The final service was left running MOSS.
 
-## Automatic CPU anatomy screening update
+## Security and installation
 
-The expanded software suite passed **47 test groups**. New tests cover schema validation,
-per-person limb counts, uncertain or inconsistent observations, rejection without image bytes,
-review notices and saved CLI JSON, CPU-only/offline arguments, missing models, malformed output,
-deadlines, admission limits, and reaping owned processes on stop. Semgrep found no issues.
+Semgrep `p/python`: 151 rules over seven implementation files, **zero findings**.
+`systemd-analyze --user verify` passed. Installed `service.py` and `manage.py` match the repository.
+No reviewer Python module or bytecode remains in the installed application. Old reviewer data and
+all existing weights are retained, but the reviewer is no longer loaded or executed.
 
-The reviewer uses the existing MOSS Qwen3.5-9B encoder **read-only**, plus a separately installed
-918 MB F16 vision projector and CPU-only llama.cpp binary. The shared encoder's SHA-256 matches
-the pinned GGUF producer. No generation model was copied or downloaded again. The unused 2B and
-4B trial weights created during this update were removed from the service's own model directory.
+The API remains loopback-only. `KillMode=control-group`, bounded termination, private configuration,
+read-only access to home, and write access only to the service cache remain in place. Removal of
+the CPU reviewer restores the generation-only RAM limits: 16 GiB high / 24 GiB maximum.
 
-Real CPU controls produced these results with the selected profile:
+## Protected files and observed unrelated activity
 
-| Control | Actual assessment | Evaluation |
+The read-only SHA-256/mode/mtime comparison against the original October 28 audit confirms:
+
+| Protected area | Entries | Current comparison |
 | --- | --- | --- |
-| Normal figure | `REVIEW_REQUIRED` | No automatic anatomy approval |
-| Three arms | `ISSUE_DETECTED`, estimated three arms | Third arm detected |
-| Three legs | `REVIEW_REQUIRED`, estimated two legs | **Third-leg count missed**, manual review required |
-| Occluded body | `REVIEW_REQUIRED` | Unseen limbs not automatically approved |
-| Blank image | `NOT_APPLICABLE` | No people reported |
+| `~/.local/bin/imgai` | 1 | Unchanged |
+| `~/dev/local-ai/image-stack` | 363 | Unchanged, including workflow code and Git metadata |
+| `~/.local/share/local-image-ai/models` | 10 | Unchanged, including all seven MOSS and Z-Image files |
 
-The conservative-policy checks passed; **limb-detection calibration found limitations**. Those
-are distinct outcomes. Smaller 2B/4B candidates and a different 9B prompt also missed controls,
-and a subjective deformation flag produced false alarms. Therefore only a clear extra-limb
-estimate can reject, subjective concerns cause review, and every detected person otherwise
-requires human review. This update does not establish reliable detection of all extra legs.
+The original audit also covered picture and game directories. Current picture contents differ
+from that older snapshot: 249 added entries, 733 removed entries, and 16 modified entries under
+`~/Pictures/AI-Generated`. Examples concern existing cathedral Blender/workflow projects. The
+historical Riff-Racers comparison had already recorded concurrent project activity. These paths
+were not write or cleanup targets of this implementation, and nothing was reset or repaired.
+Consequently, this report does not claim that those entire directories stayed unchanged since
+October 28. The API process cannot write there under its systemd filesystem restrictions.
 
-The full generation/lifecycle suite passed again with real CPU screening after **both** MOSS
-and Z-Image generation. The teapot samples returned `NOT_APPLICABLE`; end-to-end times were
-41.90 seconds for MOSS and 28.83 seconds for Z-Image at 512×512. Seed 42, PNG dimensions, chunk
-CRCs, decoded pixels, model switching, errors, 429 backpressure, stop, restart, and closed listeners
-were checked again. No parallel GPU benchmarks ran.
+## Scope and limitations
 
-A real generated portrait was saved through the installed CLI with `REVIEW_REQUIRED`, a visible
-stderr notice, and the complete report in compact JSON. Its CPU review took 27.00 seconds.
-No checker process remained afterwards. A second real request was stopped during CPU screening:
-termination took **1.72 seconds**, the CPU child had no NVIDIA compute context, and all owned
-CPU/GPU children exited. The service was restored running with MOSS, still `static` and without
-automatic restarts. Temporary test images were removed from the service-specific cache.
-
-Full details and accuracy limitations: [anatomy.md](anatomy.md).
-
-## Existing file integrity
-
-Before implementation, `scripts/audit.py` recorded **140,000 entries**, including SHA-256 file
-content, modes, modification timestamps, and symlink targets. Nothing is reset automatically.
-Baseline and comparison files stay in the service's own cache.
-
-| Protected area | Baseline entries | Result |
-| --- | --- | --- |
-| `~/.local/bin/imgai` | 1 | Content, mode, and timestamp unchanged |
-| `~/dev/local-ai/image-stack` | 363 | Unchanged, including character, kart, track, blueprint, repair, Blender code, and Git metadata |
-| `~/.local/share/local-image-ai` | 12,391 | Unchanged, including all weights, shared files, previous runtime, and venv |
-| Previous `imgai-api.service` | 1 | Unchanged |
-| `~/Pictures/AI-Generated` | 3,543 | Unchanged; 3,126 regular files including existing images, worlds, and benchmarks |
-| `~/dev/github/riff-racers` | 123,685 | Concurrent changes observed; details below |
-| `~/.local/share/riff-racers` | 3 | Unchanged |
-| `~/.local/share/riff_racers` | 13 | Unchanged |
-
-The first comparison found no modified or removed baseline files and eight new scratch renders.
-A later comparison found further concurrent activity: **33 added entries, 10,572 modified entries,
-no removed entries**, all under `~/dev/github/riff-racers`. Rechecking modified entries found
-**18 changed SHA-256 contents** and **10,554 metadata-only changes**.
-
-The 18 content changes involved `.git/index`, two processed Rhythm-Kaur/Dance-Fusion GLBs, two
-scratch-export GLBs, `rhythm-kaur-work.blend` and `.blend1`, plus Defold build artifacts and
-build/version logs. Additions included scratch renders, capture logs, and directories/images under
-`build/evidence/art-benchmark/rhythm-h1` and `rhythm-h2`. The full comparison is in the audit cache;
-its summary is `audit/summary.json`.
-
-The first eight added renders were:
-
-```text
-~/dev/github/riff-racers/build/scratch/rhythm-kaur/renders/
-  cmp_s1_hero.png
-  cmp_s1_ortho.png
-  cmp_s1_top.png
-  s1_back.png
-  s1_front.png
-  s1_hero.png
-  s1_side.png
-  s1_top.png
-```
-
-This implementation used no write operation on those paths. A separate Blender process had been
-running since October 23. The source of the concurrent changes was not conclusively attributed.
-The new systemd service has `ProtectHome=read-only` and write access only to its own cache.
-No unrelated file or concurrent work was deleted, repaired, or reset.
-
-It would be incorrect to claim that the entire Riff-Racers directory stayed unchanged throughout
-the task. The verified result is that the **existing CLI, Image-AI source and workflows including
-Git metadata, previous runtime/venv, all weights, and every file under `~/Pictures/AI-Generated`
-remained unchanged**. Full integrity of Riff Racers, including its scratch Blender files, cannot
-be asserted because of concurrent work. This task did not modify those files.
+Only `moss` is supported by this service; other installed model weights remain available to their
+original workflows. Sampling remains Euler / 20 steps / CFG 3.0. Images are delivered without
+anatomy assessment, filtering, or automatic regeneration. These tests verify generation and
+service behavior; they do not assess artistic quality or anatomical accuracy. No full resolution
+benchmark or Open WebUI configuration change was performed. Documentation remains in English.
 
 ## Local evidence
 
 ```text
-~/.cache/local-image-ai-service/audit/before.json
-~/.cache/local-image-ai-service/audit/comparison.json
-~/.cache/local-image-ai-service/audit/summary.json
-~/.cache/local-image-ai-service/native-probe.json
-~/.cache/local-image-ai-service/native-probe.log
-~/.cache/local-image-ai-service/unit-tests.log
+~/.cache/local-image-ai-service/moss-only-unit-tests.log
+~/.cache/local-image-ai-service/moss-only-validation.log
+~/.cache/local-image-ai-service/moss-only-integration-output.log
 ~/.cache/local-image-ai-service/integration-report.json
-~/.cache/local-image-ai-service/integration-output.log
-~/.cache/local-image-ai-service/semgrep-report.json
-~/.cache/local-image-ai-service/cli-unit-tests.log
+~/.cache/local-image-ai-service/moss-only-cli-integration-output.log
 ~/.cache/local-image-ai-service/cli-integration-report.json
-~/.cache/local-image-ai-service/cli-integration-output.log
-~/.cache/local-image-ai-service/cli-semgrep-report.json
-~/.cache/local-image-ai-service/anatomy-integration-report.json
-~/.cache/local-image-ai-service/anatomy-api-integration-report.json
-~/.cache/local-image-ai-service/anatomy-generation-integration.log
-~/.cache/local-image-ai-service/anatomy-semgrep-report.json
-~/.cache/local-image-ai-service/anatomy-setup/unit-tests.log
-~/.local/share/local-image-ai-service/anatomy/receipt.json
+~/.cache/local-image-ai-service/moss-only-semgrep-report.json
+~/.cache/local-image-ai-service/moss-only-protected-integrity.json
+~/.cache/local-image-ai-service/audit/before.json
 ~/.local/share/local-image-ai-service/runtime/receipt.json
 ```
 
-Integrity comparison deliberately exits 1 when external changes are found and separates added,
-modified, and removed entries. This is not a reason to alter unrelated work. Full manifests are
-not committed to the repository.
+Full manifests, local configuration, credentials, test PNGs, and binaries are not committed.

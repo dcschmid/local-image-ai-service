@@ -30,9 +30,7 @@ def request(cfg, method, path, body=None):
     headers = {"Content-Type": "application/json"}
     if cfg.get("api_key_file"):
         headers["Authorization"] = "Bearer " + Path(cfg["api_key_file"]).read_text().strip()
-    check_cfg = cfg.get("anatomy", {})
-    check_timeout = check_cfg.get("timeout", 0) if check_cfg.get("enabled") else 0
-    conn = http.client.HTTPConnection(cfg["host"], cfg["port"], timeout=cfg["generation_timeout"] + check_timeout + 30)
+    conn = http.client.HTTPConnection(cfg["host"], cfg["port"], timeout=cfg["generation_timeout"] + 20)
     try:
         conn.request(method, path, json.dumps(body) if body is not None else None, headers)
         response = conn.getresponse()
@@ -99,7 +97,7 @@ def main():
         with path.open("rb") as stream:
             check(hashlib.file_digest(stream, "sha256").hexdigest() == checksum, "Runtime checksum")
     tests["repository_install_runtime_checksums"] = "passed"
-    check(all(not missing_files(cfg, name) for name in ("moss", "z-image")), "All model files")
+    check(all(not missing_files(cfg, name) for name in ("moss",)), "All model files")
     tests["all_model_files"] = "passed"
     run("doctor")
     tests["cuda_backend"] = "passed"
@@ -107,27 +105,22 @@ def main():
     try:
         run("use", "moss")
         tests["systemd_start_api_reachability"] = "passed"
-        for model in ("moss", "z-image"):
-            if model == "z-image":
-                old_pid = request(cfg, "GET", "/health")[1]["backend_pid"]
-                run("use", model)
-                check(not Path(f"/proc/{old_pid}").exists(), "Previous model process must exit")
-                tests["controlled_model_switch"] = "passed"
+        for model in ("moss",):
             status, models = request(cfg, "GET", "/v1/models")
-            check(status == 200 and {m["id"] for m in models["data"]} == {"moss", "z-image"}, "Models response")
+            check(status == 200 and {m["id"] for m in models["data"]} == {"moss"}, "Models response")
             check([m["id"] for m in models["data"] if m["loaded"]] == [model], "Exactly one loaded model")
             tests["models_response"] = "passed"
             check(request(cfg, "GET", "/ready")[0] == 200, "Ready endpoint")
             for body, expected, code in (
                 ({"model": "invalid", "prompt": "tree"}, 404, "model_not_found"),
                 ({"model": model, "prompt": "tree", "size": "513x512"}, 400, "invalid_size"),
-                ({"model": "z-image" if model == "moss" else "moss", "prompt": "tree"}, 409, "model_not_loaded"),
+                ({"model": "z-image", "prompt": "tree"}, 404, "model_not_found"),
                 ({"model": model, "prompt": "tree", "n": 2}, 400, "unsupported_n")):
                 status, error = request(cfg, "POST", "/v1/images/generations", body)
                 check(status == expected and error["error"]["code"] == code, f"Error handling {code}")
                 tests[code] = "passed"
             check(request(cfg, "POST", "/v1/images/edits", {})[0] == 404, "No edits endpoint")
-            body = {"model": model, "prompt": "A red ceramic teapot beside a green apple on a white table, soft studio light",
+            body = {"model": model, "prompt": "A heavy metal band performing live on stage, four band members, 1990s low-poly 3D video game aesthetic, electric guitars, bass, drum kit, energetic poses, colorful stage lights, smoke, crowd silhouettes, chunky geometry, no photorealism",
                     "size": "512x512", "n": 1, "seed": 42, "response_format": "b64_json"}
             start = time.monotonic()
             with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
@@ -144,12 +137,10 @@ def main():
                 tests["real_concurrent_request_429"] = "passed"
                 status, result = generation.result()
             check(status == 200, f"{model} generation failed: {result if status != 200 else status}")
-            assessment = result.get("anatomy_check", {})
-            check(assessment.get("checked") is True and assessment.get("backend") == "local_cpu", "Automatic real CPU screening")
-            tests[f"automatic_cpu_check_{model}"] = "passed"
+            check("anatomy_check" not in result, "No anatomy screening metadata")
+            tests["direct_delivery_without_anatomy_review"] = "passed"
             raw = base64.b64decode(result["data"][0]["b64_json"], validate=True)
             report["images"][model] = png_check(raw, (512, 512))
-            report["images"][model]["anatomy_status"] = assessment["status"]
             report["images"][model]["seconds"] = round(time.monotonic() - start, 2)
             (Path(temporary.name) / f"{model}.png").write_bytes(raw)
             tests[f"real_generation_{model}"] = "passed"

@@ -22,22 +22,19 @@ import threading
 import time
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
-from anatomy import AnatomyChecker, AnatomyError, settings as anatomy_settings
-
 HOME = Path.home()
 CONFIG = HOME / ".config/local-image-ai-service/config.json"
 WORK = HOME / ".cache/local-image-ai-service/work"
-DEFAULTS = {"moss": {"steps": 20, "cfg": 3.0}, "z-image": {"steps": 8, "cfg": 1.0}}
+DEFAULTS = {"moss": {"steps": 20, "cfg": 3.0}}
 MAX_BODY = 65536
 MAX_RESPONSE = 16 * 1024 * 1024
 LOG = logging.getLogger("local-image-ai")
 
 
 class APIError(Exception):
-    def __init__(self, status, message, code, param=None, details=None):
+    def __init__(self, status, message, code, param=None):
         super().__init__(message)
         self.status, self.code, self.param = status, code, param
-        self.details = details or {}
 
 
 def private_file(path):
@@ -52,7 +49,7 @@ def load_config(path=CONFIG):
     if cfg["host"] != "127.0.0.1":
         raise ValueError("This service supports loopback 127.0.0.1 only")
     if cfg["active_model"] not in DEFAULTS or set(cfg["models"]) != set(DEFAULTS):
-        raise ValueError("Exactly moss and z-image must be configured")
+        raise ValueError("Only moss may be configured")
     for key in ("port", "backend_port"):
         if type(cfg[key]) is not int or not 1024 <= cfg[key] <= 65535:
             raise ValueError(f"Invalid {key}")
@@ -77,7 +74,6 @@ def load_config(path=CONFIG):
         private_file(key_path)
         if len(key_path.read_text().strip()) < 24:
             raise ValueError("API key must contain at least 24 characters")
-    cfg["anatomy"] = anatomy_settings(cfg.get("anatomy", {}))
     return cfg
 
 
@@ -128,7 +124,7 @@ def validate_request(body, active):
         raise APIError(400, f"Unsupported parameters: {', '.join(unknown)}", "unsupported_parameter", unknown[0])
     model = body.get("model", active)
     if not isinstance(model, str) or model not in DEFAULTS:
-        raise APIError(404, "Unknown model; choose moss or z-image", "model_not_found", "model")
+        raise APIError(404, "Unknown model; only moss is supported", "model_not_found", "model")
     if model != active:
         raise APIError(409, f"Model is not loaded; run local-image-ai-service use {model}", "model_not_loaded", "model")
     prompt = body.get("prompt")
@@ -173,11 +169,9 @@ class Backend:
         self.stopping = threading.Event()
         self.failure = None
         self.model = cfg["active_model"]
-        self.checker = AnatomyChecker(cfg.get("anatomy", {"enabled": False}), WORK / "anatomy", self.stopping)
 
     def stop(self):
         self.ready.clear()
-        self.checker.stop()
         proc = self.proc
         if proc is not None:
             if proc.poll() is None:
@@ -192,16 +186,19 @@ class Backend:
     def start(self):
         cfg = self.cfg
         try:
-            if self.checker.problem():
-                raise ValueError(self.checker.problem())
             missing = missing_files(cfg, self.model)
             if missing:
                 raise ValueError("Missing model files: " + ", ".join(missing))
             if foreign_compute(cfg):
                 raise ValueError("GPU is occupied by another compute process; stop it yourself before starting")
             gpu_check(cfg)
-            with socket.socket() as probe:
-                probe.bind(("127.0.0.1", cfg["backend_port"]))
+            # Probe for a listener, not a bind: the native runtime uses SO_REUSEPORT,
+            # so its closed connections can prevent a plain bind during TIME_WAIT.
+            try:
+                with socket.create_connection(("127.0.0.1", cfg["backend_port"]), timeout=1):
+                    raise ValueError("Backend port is already in use")
+            except ConnectionRefusedError:
+                pass
             args = [cfg["runtime"], "--listen-ip", "127.0.0.1", "--listen-port", str(cfg["backend_port"]),
                     "--model-dir", str(WORK / "empty-model-catalog"), "--offload-to-cpu", "--flash-attn", "on",
                     "--backend", "cuda0", "--threads", "8", "--conditioning-cache-size", "1",
@@ -240,25 +237,9 @@ class Backend:
         self.stop()
 
     def available(self):
-        return (self.ready.is_set() and self.proc is not None and self.proc.poll() is None
-                and not self.stopping.is_set() and not self.checker.problem())
+        return self.ready.is_set() and self.proc is not None and self.proc.poll() is None and not self.stopping.is_set()
 
     def generate(self, body, seed):
-        result = self._generate_image(body, seed)
-        try:
-            report = self.checker.check(base64.b64decode(result["data"][0]["b64_json"], validate=True))
-        except AnatomyError as error:
-            LOG.error("CPU anatomy check failed code=%s; image withheld", error.code)
-            raise APIError(504 if error.code == "anatomy_timeout" else 503, str(error), error.code,
-                           details={"model": self.model, "seed": seed}) from None
-        LOG.info("Anatomy result status=%s model=%s seed=%s", report["status"], self.model, seed)
-        if report["status"] == "ISSUE_DETECTED":
-            raise APIError(422, "CPU reviewer estimated extra limbs; image withheld. Inspect the report and try another seed or prompt.",
-                           "anatomy_rejected", details={"anatomy_check": report, "model": self.model, "seed": seed})
-        result["anatomy_check"] = report
-        return result
-
-    def _generate_image(self, body, seed):
         if not self.available():
             raise APIError(503, "Backend not ready; inspect /health and service logs", "backend_not_ready")
         # The official OpenAI route accepts seed only through this documented native extension.
@@ -387,8 +368,7 @@ def make_handler(backend, api_key):
                     if self.path == "/health":
                         return self.send_json(200, {"status": "ready" if backend.available() else "unavailable",
                             "active_model": backend.model, "backend_pid": backend.proc.pid if backend.proc else None,
-                            "error": backend.failure, "busy": self.server.generation.locked(),
-                            "anatomy_check": backend.checker.health()})
+                            "error": backend.failure, "busy": self.server.generation.locked()})
                     if self.path == "/ready":
                         return self.send_json(200 if backend.available() else 503, {"ready": backend.available()})
                     if self.path == "/v1/models":
@@ -428,7 +408,7 @@ def make_handler(backend, api_key):
             except APIError as error:
                 self.send_json(error.status, {"error": {"message": str(error),
                     "type": "rate_limit_error" if error.status == 429 else "invalid_request_error" if error.status < 500 else "server_error",
-                    "code": error.code, "param": error.param, **error.details}})
+                    "code": error.code, "param": error.param}})
             except (TimeoutError, OSError):
                 self.send_json(408, {"error": {"message": "HTTP read deadline exceeded", "type": "invalid_request_error",
                                               "code": "request_timeout", "param": None}})

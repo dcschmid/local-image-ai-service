@@ -9,7 +9,7 @@ Under **Admin → Settings → Images**, select an OpenAI-compatible image gener
 | --- | --- |
 | Engine | OpenAI / `openai` |
 | Image API base URL | `http://127.0.0.1:7861/v1` |
-| Model | `moss` (default) or `z-image`, matching the loaded model |
+| Model | `moss` only |
 | Size | For example, `512x512` or `768x768` |
 | Count | 1 |
 | API key | Configured Bearer key; if the service has none but the field is required, a dummy such as `local-unused` |
@@ -33,16 +33,12 @@ IMAGES_OPENAI_API_KEY=<configured-key-or-local-unused>
 Names were checked against the [official Open WebUI documentation](https://docs.openwebui.com/troubleshooting/image-generation/)
 on October 28, 2026. Production Open WebUI validation remains outside this task.
 
-To switch, first run `local-image-ai-service use z-image` and wait for readiness, then select
-`z-image` in Open WebUI. An unloaded model returns 409 `model_not_loaded`; it is not switched
-automatically. Only one generation runs at a time; additional requests receive 429.
+Select `moss` in Open WebUI. Other model IDs return 404. MOSS images are delivered directly,
+without an anatomy checker or hidden review metadata. Only one generation runs at a time;
+additional requests receive 429.
 
 The CLI `--save` and `--save-dir` flags apply only to that CLI invocation. They do not enable
 server-side saving for Open WebUI or other HTTP clients.
-Automatic CPU anatomy screening applies to Open WebUI requests too. Clear estimated extra limbs
-return HTTP 422 with `anatomy_rejected`; other detected-person images carry `REVIEW_REQUIRED` in
-the local `anatomy_check` extension. An unmodified Open WebUI may ignore that extension, so it
-must not be treated as anatomy approval. Allow at least 510 seconds for a request with review.
 
 ## Container networking
 

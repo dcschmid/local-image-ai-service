@@ -6,12 +6,8 @@ Python >=3.11, a systemd user manager with cgroup v2, and NVIDIA drivers with wo
 Tested on Fedora 44 KDE, Python 3.14.8, NVIDIA 615.78.08, CUDA 13.4, RTX 5070 Laptop / SM 120,
 and 64 GB RAM. No root installation or system Python packages are required.
 
-Generation weights must already exist and are never downloaded by these scripts. Explicit anatomy
-setup downloads only its separate vision projector. The separate
+Model weights must already exist. Installation scripts do not download models. The separate
 runtime requires approximately 690 MiB of additional disk space.
-Automatic anatomy screening adds a 918 MB vision projector and a small CPU binary. Its 9B text
-encoder is the existing MOSS encoder, read in place. Building the checker requires Git, CMake,
-Ninja, and a C++ compiler. See [screening setup and accuracy limits](anatomy.md).
 
 ## Separately install the existing official build
 
@@ -21,7 +17,6 @@ python3 scripts/install-runtime.py \
   --binary "$HOME/.local/share/local-image-ai/engines/sd-install/bin/sd-server" \
   --cuda-lib "$HOME/.local/share/local-image-ai/engines/cuda/lib" \
   --source "$HOME/.local/share/local-image-ai/engines/stable-diffusion.cpp"
-python3 scripts/install-anatomy.py
 python3 scripts/install.py
 local-image-ai-service doctor
 local-image-ai-service start
@@ -35,7 +30,11 @@ System libraries and the NVIDIA driver remain operating-system dependencies.
 
 `install.py` installs the application, a separate launcher, the user unit, and its bounded-stop
 drop-in. On first installation, it creates configuration with local absolute paths and the GPU UUID.
-Existing configuration is retained. It neither starts nor enables the service. Ensure `~/.local/bin`
+Existing paths, port, and authentication settings are retained. An upgrade removes retired review
+settings and non-MOSS model mappings from this service configuration, without deleting model files.
+It removes obsolete reviewer application code. Previously downloaded reviewer data is retained but
+is no longer loaded or executed; MOSS's existing text encoder remains required for generation.
+It neither starts nor enables the service. Ensure `~/.local/bin`
 is on `PATH`.
 
 ## Reproduce a separate source build
@@ -99,8 +98,7 @@ Removes only this user unit and its own drop-in, this launcher, and these three 
 - `~/.config/local-image-ai-service`
 - `~/.cache/local-image-ai-service`, including its own test and audit logs
 
-The service-owned anatomy binary and separately installed projector are removed with the application.
-The repository, previous `local-image-ai` installation, original generation models, existing images, game projects,
+The repository, previous `local-image-ai` installation, models, existing images, game projects,
 and the default CLI image directory `~/.local/share/local-image-ai-service-images` are retained.
 Back up audit logs before uninstalling if needed. Neither `~/.local/share/local-image-ai` nor
 `~/Pictures/AI-Generated` is removed.

@@ -1,5 +1,5 @@
 [Unit]
-Description=Standalone Local Image AI (MOSS / Z-Image, CUDA, loopback)
+Description=Standalone Local Image AI (MOSS, CUDA, loopback)
 StartLimitIntervalSec=60
 StartLimitBurst=2
 
@@ -14,8 +14,8 @@ Restart=no
 KillMode=control-group
 TimeoutStopSec=20
 SendSIGKILL=yes
-MemoryHigh=20G
-MemoryMax=28G
+MemoryHigh=16G
+MemoryMax=24G
 MemorySwapMax=2G
 TasksMax=128
 CPUQuota=800%

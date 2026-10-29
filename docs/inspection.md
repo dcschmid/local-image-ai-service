@@ -11,8 +11,8 @@
 - Build: Release, `SD_CUDA=ON`, `CMAKE_CUDA_ARCHITECTURES=120`, CUDA flag `-allow-unsupported-compiler`.
 - GPU: RTX 5070 **Laptop** GPU, 8151 MiB reported by the driver, compute capability 12.0; NVIDIA 615.78.08.
 - Reference parameters from the existing `registry.py`, `build-engine.sh`, and recorded benchmarks:
-  CPU offload, Flash Attention, Euler; MOSS 20 steps / CFG 3, Z-Image 8 steps / CFG 1.
-- All seven required files exist; roles and names are in [configuration.md](configuration.md).
+  CPU offload, Flash Attention, Euler; MOSS 20 steps / CFG 3.
+- All four required MOSS files exist; roles and names are in [configuration.md](configuration.md).
 - `sd-server --list-devices` reports CUDA0. Without the correct library path, `libcudart.so.13` is missing.
 - The old `imgai-api.service` existed and was inactive, also using 7861. It was not changed.
 
@@ -47,7 +47,7 @@ optional authentication, nonwaiting generation admission, process readiness and 
 and timeouts. It uses no FastAPI, third-party packages, or modules from the previous project.
 The official binary performs all inference.
 
-Exactly one model is loaded per start. Model switching stops and starts this service's unit,
+Only MOSS is supported as of October 29, 2026. Reloading MOSS stops and starts this service's unit,
 keeping process ownership and the 8 GB GPU constraint straightforward. An HTTP request cannot
 load arbitrary models or access native administration, video, WebUI, or file-path APIs.
 
