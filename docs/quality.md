@@ -110,3 +110,35 @@ provide full-resolution images, the original prompt, timings, and native metadat
 
 The example prompt assigning four explicit roles above has not been separately benchmarked.
 It is a composition suggestion, not a measured claim that it fixes person count or anatomy.
+
+## Prompt fidelity and a real 16:9 request
+
+A later concert example confirmed another distinction: the image was generated at 1024×1024
+and 50 steps even though its prompt requested 16:9. The actual output dimensions come from
+the API `size` field or Open WebUI's explicit image-size setting. Writing an aspect ratio in
+the prompt does not replace those dimensions. Within this service's current bounds,
+**1024×576** is an exact supported 16:9 size. It contains fewer pixels than 1024×1024.
+
+Read-only inspection of the native PNG metadata also confirmed that Open WebUI's enabled
+Image Prompt Generation had reformulated the submitted concert description. The requested
+female guitarist was still present in that reformulation, so its omission from the picture
+cannot be attributed to a deleted instruction. To evaluate an exact prompt, call the service
+CLI directly, or manually disable Image Prompt Generation in Open WebUI. No Open WebUI setting
+was changed by this diagnosis or test.
+
+The revised scene assigns three separate front-stage positions to the vocalist, female lead
+guitarist, and bassist, with the drummer behind them on a low riser. The vocalist holds a
+microphone and has an empty other hand. Speaker cabinets and trusses are behind the band; a
+few audience silhouettes appear only along the lower edge. This resolves the competing
+viewpoints of a photo-pit camera and a large audience behind the stage.
+
+A direct service trial at 1024×576, seed 223972791, 50 steps, and CFG 3.0 completed in
+**93.62 seconds**. Native metadata verified the exact unmodified prompt, seed, dimensions,
+steps, and CFG. Visual inspection found a clearer role assignment and a more coherent stage.
+This example changes both the prompt and aspect ratio and is not a controlled attribution
+of improvement to one parameter. It is not an anatomy approval. Sampling, weights, and the
+running service configuration were retained.
+
+The exact tested prompt, PNG, and report are in the service-cache directory identified by
+`~/.cache/local-image-ai-service/prompt-quality-current.txt` (`prompt.txt` and `report.json`).
+All test output remains outside existing picture, project, and benchmark directories.
