@@ -87,8 +87,6 @@ def load_config(path=CONFIG):
     for name, files in cfg["models"].items():
         required = {"diffusion", "llm", "vae"} | ({"tokenizer"} if name == "moss" else set())
         if name == 'krea-pixel':required |= {'lora32','lora64','lora128','pixel32','pixel64','pixel128'}
-        if MODELS[name].get('lora_strength') is not None:required.add('lora')
-        if name=='anima-lowpoly':required.add('lora_source')
         if set(files) != required or any(not Path(p).is_absolute() for p in files.values()):
             raise ValueError(f"Invalid model paths for {name}")
         if name == 'krea-pixel' and len({str(Path(files['lora'+str(grid)]).parent) for grid in (32,64,128)})!=1:
@@ -273,8 +271,6 @@ class Backend:
                     # DoRA is already baked into this variant; do not apply it twice.
                     path=cfg['models'][self.model]['pixel'+str(self.pixel_grid)]
                 args.extend([flags[role], path])
-            if MODELS[self.model].get('lora_strength') is not None:
-                args.extend(['--lora-model-dir',str(Path(cfg['models'][self.model]['lora']).parent)])
             if self.stopping.is_set():
                 return
             LOG.info("Loading model=%s steps=%s cfg=%s sampler=%s scheduler=%s flow-shift=%s; offload=cpu flash-attn=on backend=cuda0",
@@ -322,9 +318,6 @@ class Backend:
             sample.update(scheduler='flux',extra_sample_args=MODELS[self.model]['extra_sample_args'])
         if sample: extra["sample_params"] = sample
         if "negative_prompt" in native: extra["negative_prompt"] = native.pop("negative_prompt")
-        from catalog import model_loras
-        loras=model_loras(self.model,self.cfg.get('models',{}).get(self.model,{}))
-        if loras:extra['lora']=loras
         native["prompt"] += "<sd_cpp_extra_args>" + json.dumps(extra) + "</sd_cpp_extra_args>"
         conn = http.client.HTTPConnection("127.0.0.1", self.cfg["backend_port"], timeout=self.cfg["generation_timeout"])
         expired = threading.Event()

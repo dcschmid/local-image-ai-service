@@ -1,5 +1,4 @@
 """Curated model capabilities and visible, editable style recipes (checked 2026-10-30)."""
-from pathlib import Path
 CHECKED = '2026-10-30'
 MODELS = {
     'moss': dict(name='MOSS SFT', license='Apache-2.0', source='https://huggingface.co/OpenMOSS-Team/MOSS-Image-SFT',
@@ -10,18 +9,6 @@ MODELS['anima'] = dict(name='Anima Aesthetic · 1.1', license='CircleStone (comm
     license_url='https://huggingface.co/circlestone-labs/Anima/blob/main/LICENSE.md',
     source='https://huggingface.co/circlestone-labs/Anima', steps=35,cfg=4.5,sampler='euler',scheduler='discrete',shift=None,
     modes=['text'],negative=True,tip='For anime and illustration: choose a recipe and describe your subject. Aesthetic needs no score_* tags.')
-for identifier,name,source,weight,tip in (
-    ('anima-psx','Anima · Low Poly PS1 / PSX','https://civitai.com/models/2485743?modelVersionId=2794693',.9,
-     'A trained Anima style for retro game characters, scenes and props. Describe a clear silhouette and simple materials. The PSX LoRA is applied automatically.'),
-    ('anima-lowpoly','Anima · Low Poly Style','https://civitai.com/models/2204336?modelVersionId=2692813',.75,
-     'A trained Anima style for angular characters, miniature dioramas and game worlds. The recipe adds the l0wp0ly trigger and the Low Poly Style LoRA.'),
-):
-    # Each style is a selectable profile over the same Anima base components.
-    # Keep its adapter identity separate so saved images retain the exact style.
-    MODELS[identifier]=dict(MODELS['anima'],name=name,base_model='anima',source=source,license_url=source,
-        license='Base: CircleStone · LoRA: creator terms (commercial images allowed)',
-        lora_strength=weight,tip=tip)
-MODELS['anima-lowpoly']['adapter_revision']='qwen-names-v1'
 MODELS['qwen21'] = dict(name='Qwen Image 2.1 · Uncensored GGUF', license='Qwen Research (non-commercial research/evaluation)',
     license_url='https://huggingface.co/Qwen/Qwen-Image-2.1/blob/main/LICENSE',
     source='https://huggingface.co/abenzerps/Qwen-Image-2.1-Uncensored-Quantized',
@@ -50,16 +37,11 @@ def quality_profiles(model):
     m=MODELS[model]
     if not m['negative']:
         return [{'id':'standard','name':'Recommended · fewer steps','steps':m['steps']}]
-    anima=model=='anima' or m.get('base_model')=='anima'
+    anima=model=='anima'
     preview=30 if anima else 20
     return [{'id':'preview','name':'Draft · faster','steps':preview},
             {'id':'standard','name':'Recommended','steps':m['steps']},
             {'id':'compare','name':'More steps · compare','steps':45 if anima else 50}]
-
-def model_loras(model,files):
-    """Build native adapter settings from trusted configuration, never prompt text."""
-    strength=MODELS[model].get('lora_strength')
-    return [] if strength is None else [dict(path=Path(files['lora']).name,multiplier=strength)]
 
 def presets():
     return [dict(id=i, name=n, suffix=s, negative=neg, tip=t, source='https://huggingface.co/circlestone-labs/Anima',

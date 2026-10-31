@@ -1,0 +1,28 @@
+{
+  "model": "moss",
+  "inputs": {
+    "recipe": "lowpoly-vehicle",
+    "subject": "a compact low-poly racing kart with four exposed black tires, one seat and a simple tubular chassis",
+    "scene": "short front bumper, two axles, centered seat and steering wheel, no driver",
+    "details": "matte orange body panels, dark blue seat and frame, gray wheel hubs; large solid color regions",
+    "modeling_view": "three-quarter",
+    "modeling_asset": "vehicle"
+  },
+  "seed": 42,
+  "size": "832x576",
+  "steps": 30,
+  "quality": "preview",
+  "sampling": {
+    "steps": 30,
+    "cfg": 3.0,
+    "sampler": "euler",
+    "scheduler": "discrete",
+    "shift": 5.0
+  },
+  "prompt": "low-poly 3D asset modeling reference, flat-shaded polygon geometry, simple matte base colors. a compact low-poly racing kart with four exposed black tires, one seat and a simple tubular chassis. One orthographic-style three-quarter view shows the front and left side with only a modest elevation. Parallel edges remain parallel and there is no wide-angle distortion. Show the complete assembled vehicle with wheels straight, the chassis level and a readable relationship between chassis, axles, wheels and seat. Keep panels, wheel attachments and mechanical joins simple and physically connected. There is no driver. Construction and pose requirements: short front bumper, two axles, centered seat and steering wheel, no driver. Design details and material colors: matte orange body panels, dark blue seat and frame, gray wheel hubs; large solid color regions. The complete asset fits inside the frame with clear space around every edge, centered on a plain light gray background. Use broad simple polygon faces, clear part boundaries and a small palette of solid material colors. Neutral even studio lighting reveals the forms with only a faint contact shadow. Keep material color separate from lighting: no painted shadows, highlights or reflections in the textures. Show a single asset in a single view without text, grids, measurement lines or a surrounding scene.",
+  "negative_prompt": "worst quality, low quality, blurry, jpeg artifacts, watermark, signature, cropped asset, cut off feet, close-up portrait, dramatic pose, motion blur, depth of field, fog, dramatic lighting, hard cast shadows, glossy reflections, baked lighting, photorealistic textures, smooth subdivided geometry, tiny surface details, floating disconnected parts, collage, split screen, turnaround sheet, multiple views, duplicated asset, text, labels, dimension arrows, wireframe overlay, background scenery",
+  "modeling_version": 1,
+  "seconds": 44.39,
+  "runtime_revision": "a77d3623180b2bc1886f3dd04c0aa04156a987ef",
+  "note": "A MOSS single-view modeling concept; geometric consistency is not verified."
+}

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Local Image AI"
+  short_description: "Create local images and discover models and presets"
+  default_prompt: "Use $local-image-ai to choose a preset and generate an image with my local service."

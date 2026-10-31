@@ -11,14 +11,12 @@ spec=importlib.util.spec_from_file_location('example_builder',Path(__file__).res
 builder=importlib.util.module_from_spec(spec);spec.loader.exec_module(builder)
 
 class ExampleTests(unittest.TestCase):
-    def test_lowpoly_example_requires_the_complete_text_encoder_mapping(self):
-        recipe=next(r for r in recipes() if r['id']=='anima3d-diorama')
-        inputs=dict(recipe=recipe['id'],**recipe['example'],quality='standard')
-        item=dict(request=dict(compose(dict(inputs,seed=42)),recipe_inputs=inputs),sampling={'lora_strength':.75})
-        self.assertFalse(builder.matches(item,recipe))
-        item['sampling']['adapter_revision']='qwen-names-v1'
+    def test_moss_reference_example_matches_all_modeling_inputs(self):
+        recipe=next(r for r in recipes() if r['id']=='lowpoly-prop')
+        inputs=dict(recipe=recipe['id'],**recipe['example'],quality='preview')
+        item=dict(request=dict(compose(dict(inputs,seed=42)),recipe_inputs=inputs),sampling={})
         self.assertTrue(builder.matches(item,recipe))
-        item['sampling']['lora_strength']=.9
+        item['request']['recipe_inputs']['modeling_view']='front'
         self.assertFalse(builder.matches(item,recipe))
 
     def test_custom_inputs_and_outdated_compiled_prompts_are_not_reused(self):

@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 """Management for this service only; never imports or calls imgai."""
-import argparse
 import base64
 from datetime import datetime, timezone
 import fcntl
@@ -15,6 +14,7 @@ import uuid
 
 from service import (APIError, CONFIG, DEFAULTS, DEFAULT_SIZE, MAX_RESPONSE, WORK, gpu_check, load_config,
                      missing_files, private_file, runtime_env, sampling_settings, validate_request, validate_response)
+import agent_cli
 
 UNIT = "local-image-ai.service"
 
@@ -37,7 +37,7 @@ def atomic_config(cfg):
         temporary.unlink(missing_ok=True)
 
 
-def request(cfg, path, *, body=None, timeout=2):
+def request(cfg, path, *, body=None, timeout=2, raw=False, limit=None):
     connection = http.client.HTTPConnection(cfg["host"], cfg["port"], timeout=timeout)
     headers = {}
     if cfg.get("api_key_file"):
@@ -51,11 +51,12 @@ def request(cfg, path, *, body=None, timeout=2):
             headers["Content-Type"] = "application/json"
         connection.request("POST" if body is not None else "GET", path, body=payload, headers=headers)
         response = connection.getresponse()
-        limit = MAX_RESPONSE if body is not None else 65536
+        if limit is None:
+            limit = MAX_RESPONSE if body is not None else 65536
         data = response.read(limit + 1)
         if len(data) > limit:
             raise RuntimeError("API response exceeds the size limit")
-        return response.status, json.loads(data)
+        return response.status, data if raw else json.loads(data)
     finally:
         connection.close()
 
@@ -140,11 +141,14 @@ def wait_ready(cfg):
     raise TimeoutError("Readiness deadline exceeded; inspect logs (no automatic restart)")
 
 
-def main(argv=None):
-    parser = argparse.ArgumentParser(prog="local-image-ai-service", description=__doc__)
+def build_parser():
+    parser = agent_cli.ArgumentParser(prog="local-image-ai-service", description=__doc__)
     commands = parser.add_subparsers(dest="command", required=True)
-    for name in ("doctor", "status", "models", "logs", "start", "stop", "restart", "studio"):
+    for name in ("doctor", "logs", "start", "stop", "restart", "studio"):
         commands.add_parser(name)
+    status_parser = commands.add_parser('status')
+    status_parser.add_argument('--json', action='store_true', help='Only health JSON; no systemctl output')
+    agent_cli.add_commands(commands)
     switch = commands.add_parser("use", help="Load a configured model and restart this service")
     switch.add_argument("model", choices=sorted(DEFAULTS))
     generation = commands.add_parser("generate", help="Generate one image through the running service API")
@@ -159,8 +163,33 @@ def main(argv=None):
     saving = generation.add_mutually_exclusive_group()
     saving.add_argument("--save", action="store_true", help="Save PNG in ~/.local/share/local-image-ai-service-images")
     saving.add_argument("--save-dir", type=Path, help="Save PNG in this directory instead (implies saving)")
-    args = parser.parse_args(argv)
-    cfg = load_config()
+    commands.add_parser('mcp', help='Run the optional local image MCP server over stdio')
+    import agent_integration
+    agent_integration.add_commands(commands)
+    return parser
+
+
+def main(argv=None):
+    args = build_parser().parse_args(argv)
+    if args.command == 'agents':
+        import agent_integration
+        return agent_integration.run(args)
+    if args.command == 'mcp':
+        python = Path.home() / '.local/share/local-image-ai-service/mcp/venv/bin/python'
+        server = Path(__file__).with_name('mcp_server.py')
+        if not python.is_file() or not server.is_file():
+            raise RuntimeError('Install MCP first: local-image-ai-service agents install --mcp')
+        os.environ['OTEL_SDK_DISABLED'] = 'true'
+        os.execv(str(python), [str(python), str(server)])
+    if args.command in agent_cli.COMMANDS:
+        return agent_cli.run(args, load_config=load_config, request=request, save_image=save_image, default_save_dir=default_save_dir)
+    try:
+        cfg = load_config()
+    except (OSError, ValueError, KeyError) as error:
+        if args.command == 'status' and args.json:
+            print(json.dumps(dict(error=dict(code='configuration_error', message=str(error)))), file=sys.stderr)
+            return 1
+        raise
     if args.command == "generate":
         print(json.dumps(generate(cfg, args), indent=2))
         return 0
@@ -175,17 +204,20 @@ def main(argv=None):
     if args.command == "logs":
         os.execvp("journalctl", ["journalctl", "--user", "-u", UNIT, "-f"])
     if args.command == "status":
+        if args.json:
+            try:
+                status, health = request(cfg, '/health')
+                print(json.dumps(health, indent=2))
+                return 0 if status == 200 and health.get('status') == 'ready' else 1
+            except (OSError, ValueError, RuntimeError, http.client.HTTPException) as error:
+                print(json.dumps(dict(error=dict(code='service_offline', message=str(error)))), file=sys.stderr)
+                return 1
         result = systemctl("status", "--no-pager", check=False)
         try:
             print(json.dumps(request(cfg, "/health")[1], indent=2))
         except OSError:
             print("API is offline")
         return result.returncode
-    if args.command == "models":
-        print(json.dumps({"configured_model": cfg["active_model"], "sampling": sampling_settings(cfg) if cfg["active_model"] == "moss" else DEFAULTS[cfg["active_model"]], "models": {
-            name: {"missing": missing_files(cfg, name), "defaults": defaults}
-            for name, defaults in DEFAULTS.items()}}, indent=2))
-        return 0
     if args.command == "doctor":
         for name in cfg["models"]:
             missing = missing_files(cfg, name)

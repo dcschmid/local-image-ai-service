@@ -1,5 +1,7 @@
 # Anima Low Poly validation — October 31, 2026
 
+Historical report: the Anima low-poly profiles have since been retired. See [the current MOSS Low Poly workflow](moss-lowpoly.md). Measurements below describe the earlier installation.
+
 Both user-selected Anima adapters are installed as curated model choices, sharing the existing Anima Aesthetic 1.1 diffusion model, Qwen3 0.6B encoder and Qwen Image VAE. The installed studio has six choices, 44 recipes and 44 real examples. The previous 38 recipes compile identically across all three existing quality profiles.
 
 ## Weight and loader checks

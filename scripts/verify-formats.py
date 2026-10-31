@@ -40,7 +40,7 @@ def store(path,receipts):
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--model',choices=('anima-psx','anima-lowpoly','krea-pixel','qwen21','anima','moss'))
+    parser.add_argument('--model',choices=('krea-pixel','qwen21','anima','moss'))
     parser.add_argument('--standard-only',action='store_true',help='Verify the seven final-output aspect-ratio sizes')
     args=parser.parse_args()
     os.umask(0o077)
@@ -52,7 +52,7 @@ def main():
     roots=[root,DATA,CACHE/'recipe-examples-20261031',CACHE/'moss-photography-20261031']
     WORK.mkdir(parents=True,exist_ok=True);(WORK/'empty-model-catalog').mkdir(exist_ok=True)
     try:
-        for model in ('anima-psx','anima-lowpoly','krea-pixel','qwen21','anima','moss'):
+        for model in ('krea-pixel','qwen21','anima','moss'):
             if args.model and model!=args.model:continue
             if model not in cfg['models']:continue
             desired={f[key] for f in formats() for key in (('size',) if model=='krea-pixel' or args.standard_only else ('size','preview_size'))}

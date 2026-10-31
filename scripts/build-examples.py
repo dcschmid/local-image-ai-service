@@ -35,12 +35,8 @@ def matches(item,recipe):
     # and adapter revision produced this image. Check all of them before export.
     request=item.get('request',{});inputs=request.get('recipe_inputs',{})
     if recipe['model']=='krea-pixel' and item.get('pixel',{}).get('weights')!='dora-v1':return False
-    strength=MODELS[recipe['model']].get('lora_strength')
-    if strength is not None and item.get('sampling',{}).get('lora_strength')!=strength:return False
-    revision=MODELS[recipe['model']].get('adapter_revision')
-    if revision and item.get('sampling',{}).get('adapter_revision')!=revision:return False
     if inputs.get('recipe')!=recipe['id']:return False
-    for key in ('subject','scene','details','text','pixel_grid','pixel_colors'):
+    for key in ('subject','scene','details','text','pixel_grid','pixel_colors','modeling_view','modeling_asset'):
         if inputs.get(key,'')!=recipe['example'].get(key,''):return False
     body=dict(model=recipe['model'],recipe=recipe['id'],**recipe['example'],quality=inputs.get('quality','standard'),seed=request.get('seed',42))
     expected=compose(body)
@@ -62,8 +58,6 @@ def export(item,recipe,target):
                 seed=request['seed'],size=request['size'],steps=request['steps'],cfg_scale=request['cfg_scale'],sampler=request['sampler'],
                 prompt=request['prompt'],negative_prompt=request.get('negative_prompt',''),seconds=item.get('seconds'),
                 runtime_revision=item.get('runtime_revision'),transparent=alpha)
-    if item.get('sampling',{}).get('lora_strength') is not None:
-        entry['lora_strength']=item['sampling']['lora_strength']
     if item.get('pixel'):
         name=recipe['id']+'-pixels.png'
         shutil.copyfile(item['_root']/(item['id']+'.pixels.png'),target/name)
@@ -85,6 +79,7 @@ def main():
     items=candidates(sources)
     manifest_path=target/'manifest.json'
     manifest=json.loads(manifest_path.read_text()) if manifest_path.exists() else {}
+    manifest={key:value for key,value in manifest.items() if key in {r['id'] for r in recipes()}}
     pending=[]
     for recipe in recipes():
         if args.only and recipe['id'] not in args.only:continue
@@ -101,7 +96,7 @@ def main():
         if subprocess.run(['systemctl','--user','is-active','--quiet','local-image-ai.service']).returncode==0:raise SystemExit('Stop the service before GPU generation. Existing examples were exported.')
         WORK.mkdir(parents=True,exist_ok=True);(WORK/'empty-model-catalog').mkdir(exist_ok=True)
         try:
-            for model in ('anima-psx','anima-lowpoly','krea-pixel','qwen21','anima','moss'):
+            for model in ('moss','krea-pixel','qwen21','anima'):
                 selected=[r for r in pending if r['model']==model]
                 if not selected:continue
                 backend.stop();backend.model=model;backend.start()

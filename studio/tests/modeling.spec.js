@@ -1,0 +1,76 @@
+import { test, expect } from '@playwright/test';
+
+test('Blender references preserve concept examples and offer character and kart construction', async ({ page }) => {
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.goto('/studio/');
+ await expect(page.locator('#modeling-fields')).toBeHidden();
+ await page.locator('#recipe').selectOption('lowpoly-character');
+ await expect(page.locator('#modeling-view')).toHaveValue('three-quarter');
+ await expect(page.locator('#modeling-asset')).toHaveValue('character');
+ await page.getByRole('button',{name:'Use Blender starter'}).click();
+ await expect(page.locator('#recipe-preview')).toContainText('neutral standing A-pose');
+ await expect(page.locator('#recipe-preview')).toContainText('head to soles');
+ await expect(page.locator('#format-note')).toContainText('832 × 1216');
+ await page.getByLabel('Image purpose and view').selectOption('front');
+ await expect(page.locator('#recipe-preview')).toContainText('straight-on front view');
+ await expect(page.getByLabel('Construction or pose notes')).toBeVisible();
+ await page.getByRole('button',{name:'Use recipe example'}).click();
+ await expect(page.locator('#modeling-view')).toHaveValue('three-quarter');
+ await page.locator('#recipe').selectOption('lowpoly-retro');
+ await page.getByRole('button',{name:'Use recipe example'}).click();
+ await expect(page.locator('#modeling-view')).toHaveValue('off');
+ await expect(page.locator('#modeling-asset-fields')).toBeHidden();
+ await page.goto('/studio/lowpoly-guide/#blender');
+ await expect(page.getByRole('heading',{name:'A reference you can rebuild in Blender'})).toBeVisible();
+ await page.screenshot({path:'test-results/modeling-guide-desktop.png'});
+ await page.setViewportSize({width:390,height:844});
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();
+ await page.locator('#blender-title').scrollIntoViewIfNeeded();
+ await page.screenshot({path:'test-results/modeling-guide-mobile.png'});
+ await page.setViewportSize({width:1440,height:1080});
+ await page.getByRole('link',{name:'Kart starter'}).click();
+ await expect(page.locator('#recipe')).toHaveValue('lowpoly-vehicle');
+ await expect(page.locator('#modeling-asset')).toHaveValue('vehicle');
+ await expect(page.locator('#subject')).toHaveValue(/racing kart/);
+ await expect(page.locator('#recipe-preview')).toContainText('axles');
+ await page.locator('#recipe-quality').selectOption('standard');
+ await expect(page.locator('#format-note')).toContainText('1216 × 832');
+ await page.locator('#modeling-view').selectOption('top');
+ await expect(page.locator('#recipe-preview')).toContainText('looking vertically down');
+ await page.locator('#aspect-ratio').selectOption('1:1');
+ await expect(page.locator('#recipe-preview')).toContainText('1024x1024');
+ await page.locator('#recipe-quality').selectOption('preview');
+ await expect(page.locator('#recipe-preview')).toContainText('768x768');
+ await page.locator('#modeling-view').focus();await page.keyboard.press('Tab');
+ await expect(page.locator('#modeling-asset')).toBeFocused();
+ await page.screenshot({path:'test-results/modeling-desktop.png'});
+ await page.setViewportSize({width:390,height:844});
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();
+ await page.locator('#modeling-fields').scrollIntoViewIfNeeded();
+ await page.screenshot({path:'test-results/modeling-mobile.png'});
+ await page.locator('#recipe').selectOption('photo-portrait');
+ await expect(page.locator('#modeling-fields')).toBeHidden();
+ await page.locator('#recipe').selectOption('lowpoly-retro');
+ await expect(page.locator('#modeling-fields')).toBeVisible();
+ await expect(page.locator('#modeling-view')).toHaveValue('three-quarter');
+ expect(errors).toEqual([]);
+});
+
+test('saved modeling reference restores its original asset and view without generating',async({page})=>{
+ const response=await page.request.post('/studio/api/compose',{data:{recipe:'lowpoly-vehicle',subject:'a small orange racing kart',modeling_asset:'vehicle',modeling_view:'side',quality:'preview',seed:42}});
+ expect(response.ok()).toBeTruthy();const prepared=await response.json();
+ const image=await(await page.request.get('/studio/recipe-examples/lowpoly-retro.webp')).body();
+ const item={id:'b'.repeat(32),request:prepared,seconds:1,favorite:false,sampling:{cfg:3}};
+ await page.route('**/studio/api/gallery?**',route=>route.fulfill({json:[item]}));
+ await page.route('**/studio/api/files/'+item.id,route=>route.fulfill({body:image,contentType:'image/webp'}));
+ try{
+  await page.goto('/studio/');
+  await page.locator('.card').first().getByRole('button').first().click();
+  await page.locator('#reuse').click();
+  await expect(page.locator('#modeling-view')).toHaveValue('side');
+  await expect(page.locator('#modeling-asset')).toHaveValue('vehicle');
+  await expect(page.locator('#subject')).toHaveValue('a small orange racing kart');
+  await expect(page.locator('#recipe-preview')).toContainText('strict left-side profile');
+  await expect(page.locator('#seed')).toHaveValue('42');
+ }finally{await page.unrouteAll({behavior:'wait'});}
+});

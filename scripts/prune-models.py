@@ -5,7 +5,7 @@ import os
 from pathlib import Path
 import subprocess
 
-KEEP={'anima','moss','qwen21','krea-pixel','anima-psx','anima-lowpoly'}
+KEEP={'anima','moss','qwen21','krea-pixel'}
 
 def main():
     os.umask(0o077)
@@ -20,7 +20,7 @@ def main():
     owned=(Path.home()/'.local/share/local-image-ai-service/models').resolve()
     candidates={Path(p) for name,files in cfg['models'].items() if name not in KEEP for p in files.values()}
     cfg['models']=kept
-    if cfg['active_model'] not in kept:cfg['active_model']='anima' if 'anima' in kept else 'moss'
+    if cfg['active_model'] not in kept:cfg['active_model']='moss' if 'moss' in kept else 'anima'
     temporary=config.with_suffix('.prune.tmp')
     with temporary.open('x') as stream:
         json.dump(cfg,stream,indent=2);stream.flush();os.fsync(stream.fileno())
@@ -31,6 +31,8 @@ def main():
         if actual in protected:continue
         if actual.is_relative_to(owned) and path.is_file() and not path.is_symlink():
             size=path.stat().st_size;path.unlink();deleted.append({'file':str(path),'bytes':size})
+            if path.name=='AnimaLowPoly-native-v1.safetensors':
+                path.with_suffix('.json').unlink(missing_ok=True)
         elif path.exists():external.append(str(path))
     print(json.dumps({'deleted':deleted,'freed_bytes':sum(f['bytes'] for f in deleted),'external_weights_untouched':external},indent=2))
 

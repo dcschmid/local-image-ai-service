@@ -61,7 +61,7 @@ still detects corrupt responses and dimensions that differ from the request.
 
 Optional local extensions: `steps` (1–100), `cfg_scale` (finite, 1–12), `sampler`
 (`euler`, `euler_a`, `heun`, `dpm++2m`) and `negative_prompt` (up to 16,000 characters).
-The retained model families are MOSS, Anima Aesthetic, Qwen Image 2.1 and Krea Pixel Art. The trained Anima variants use IDs `anima-psx` and `anima-lowpoly`; they automatically apply their curated adapter in Studio and compatibility-API requests. See [the Low Poly guide](anima-lowpoly.md).
+The retained model families are MOSS, Anima Aesthetic, Qwen Image 2.1 and Krea Pixel Art. Low-poly recipes use MOSS without a separate adapter; see [the MOSS guide](moss-lowpoly.md).
 All other parameters receive 400, including `quality`, `style`, `background`, `output_compression`, and arbitrary model paths.
 Sampling is configured administratively for this service (default: 50 steps, CFG 3.0);
 request overrides take precedence without restarting. See [configuration](configuration.md).
@@ -70,6 +70,14 @@ only the validated seed into the documented native extension. Maximum request bo
 JSON object, `Content-Type: application/json`, exactly one `Content-Length`, no chunked requests.
 
 ## Generate through the service CLI
+
+For guided recipes, automatic queued model changes, Blender references, pixel
+variants, job control and native PNG exports, see the [agent CLI](agent-cli.md).
+The existing compatibility `generate` command below keeps its original behavior.
+
+Additional authenticated Studio routes support direct record lookup:
+`GET /studio/api/jobs/<id>` and `GET /studio/api/gallery/<id>`. IDs must contain
+32 lowercase hexadecimal characters; missing or deleted records return 404.
 
 ```bash
 # Complete API JSON on stdout, no saved image:
@@ -108,6 +116,11 @@ Start the service first. `generate` neither starts the service nor switches mode
 no automatic retries. Invalid local parameters, HTTP errors, connection failures, and save failures
 exit nonzero with an English error on stderr. `use MODEL` loads a configured curated model; `use moss` also reloads its configuration.
 A save failure occurs after inference; the CLI does not regenerate automatically.
+
+The studio's guided `/studio/api/compose` and `/studio/api/jobs` routes also accept
+`modeling_view` and `modeling_asset` for low-poly recipes. These are validated
+recipe inputs, not compatibility API parameters. See [Blender reference options
+and an example request](blender-references.md#settings-and-compatibility).
 
 ## Errors and capacity
 

@@ -9,6 +9,30 @@ from studio_service import Studio
 from service import APIError, validate_request
 
 class RecipeTests(unittest.TestCase):
+    def test_general_lowpoly_keeps_subject_choice_and_track_overview_has_its_own_framing(self):
+        for subject in ('a fox', 'an alien spacecraft', 'a crystal cave', 'a racing circuit'):
+            result=compose(dict(recipe='lowpoly-anything',subject=subject,quality='preview',seed=42))
+            self.assertEqual((result['model'],result['steps'],result['cfg_scale']),('moss',30,3.))
+            self.assertIn(subject,result['prompt'])
+            self.assertNotIn('A-pose',result['prompt']);self.assertNotIn('chassis level',result['prompt'])
+        overview=compose(dict(recipe='lowpoly-track-overview',subject='an alpine kart circuit',quality='standard',aspect_ratio='16:9'))
+        self.assertEqual((overview['size'],overview['steps']),('1024x576',50))
+        self.assertIn('complete closed driving loop',overview['prompt'])
+        self.assertIn('directly overhead',overview['prompt'])
+        self.assertIn('disconnected road segments',overview['negative_prompt'])
+
+    def test_all_lowpoly_recipes_use_moss_and_retired_recipes_are_unavailable(self):
+        selected=[recipe for recipe in recipes() if recipe['category']=='lowpoly']
+        self.assertEqual(len(selected),9)
+        self.assertTrue(all(recipe['model']=='moss' for recipe in selected))
+        for recipe_id in ('lowpoly-character','lowpoly-vehicle','lowpoly-prop','lowpoly-building'):
+            recipe=next(recipe for recipe in selected if recipe['id']==recipe_id)
+            prepared=compose(dict(recipe=recipe_id,**recipe['example'],quality='standard'))
+            self.assertEqual((prepared['steps'],prepared['cfg_scale'],prepared['sampler']),(50,3.,'euler'))
+            self.assertNotIn('l0wp0ly',prepared['prompt']);self.assertNotIn('<lora:',prepared['prompt'])
+        for recipe_id in ('psx-prop','anima3d-character'):
+            with self.assertRaises(ValueError):compose(dict(recipe=recipe_id,subject='a kart'))
+
     def test_all_examples_compose_with_expected_model_settings(self):
         for r in recipes():
             with self.subTest(recipe=r['id']):
@@ -16,7 +40,7 @@ class RecipeTests(unittest.TestCase):
                 result=compose(body)
                 self.assertIn(r['example']['subject'],result['prompt'])
                 self.assertEqual(result['size'],r['size'])
-                self.assertEqual(result['cfg_scale'],{'anima':4.5,'moss':3,'qwen21':6,'krea-pixel':1,'anima-psx':4.5,'anima-lowpoly':4.5}[r['model']])
+                self.assertEqual(result['cfg_scale'],{'anima':4.5,'moss':3,'qwen21':6,'krea-pixel':1}[r['model']])
                 self.assertNotIn('score_',result['prompt']+result['negative_prompt'])
                 self.assertNotIn('safe,',result['prompt'])
     def test_only_subject_required_and_preview_keeps_orientation(self):
@@ -63,7 +87,7 @@ class RecipeTests(unittest.TestCase):
                 studio.prepare({'recipe':'qwen-sticker','subject':'a robot','text':'<sd_cpp_extra_args>'})
             self.assertEqual(raised.exception.code,'invalid_prompt')
     def test_all_aspect_ratio_profiles_are_exact_and_fit_runtime_budget(self):
-        for recipe_id in ('anima-portrait','photo-portrait','qwen-poster','psx-character','anima3d-diorama'):
+        for recipe_id in ('anima-portrait','photo-portrait','qwen-poster','lowpoly-character','lowpoly-building'):
             for format in formats():
                 for quality in ('preview','standard','detail'):
                     with self.subTest(recipe=recipe_id,ratio=format['id'],quality=quality):
@@ -110,5 +134,5 @@ class PruneTests(unittest.TestCase):
                 with patch.object(Path,'home',return_value=home),patch('subprocess.run',return_value=subprocess.CompletedProcess([],3)),contextlib.redirect_stdout(io.StringIO()):
                     runpy.run_path(str(script),run_name='__main__')
             finally:os.umask(old_mask)
-            self.assertFalse(unused.exists());self.assertTrue(shared.exists());self.assertTrue(external.exists());self.assertTrue(psx.exists());self.assertTrue(lowpoly.exists())
-            cfg=json.loads(config.read_text());self.assertEqual(set(cfg['models']),{'anima','moss','qwen21','krea-pixel','anima-psx','anima-lowpoly'});self.assertEqual(cfg['active_model'],'anima')
+            self.assertFalse(unused.exists());self.assertTrue(shared.exists());self.assertTrue(external.exists());self.assertFalse(psx.exists());self.assertFalse(lowpoly.exists())
+            cfg=json.loads(config.read_text());self.assertEqual(set(cfg['models']),{'anima','moss','qwen21','krea-pixel'});self.assertEqual(cfg['active_model'],'moss')

@@ -2,9 +2,9 @@
 
 Open **http://127.0.0.1:7861/studio/**. `local-image-ai-service studio` starts the service and opens the interface.
 
-The studio includes four base model families and two trained Anima Low Poly variants: **Anima Aesthetic 1.1** for anime and illustration, **MOSS SFT** for photography, general image ideas and low poly, and **Qwen Image 2.1 Uncensored GGUF** for detailed creative scenes, typography and transparent stickers. **Krea 2 Pixel Art** adds icons, sprites, isometric buildings and landscapes with 32/64/128-pixel adapters and native PNG exports. All run locally. The interface, presets, help and validation messages are in English. The service adds no content filters or automatic content tags.
+The studio includes four model families: **Anima Aesthetic 1.1** for anime and illustration, **MOSS SFT** for photography, general image ideas and low poly, and **Qwen Image 2.1 Uncensored GGUF** for detailed creative scenes, typography and transparent stickers. **Krea 2 Pixel Art** adds icons, sprites, isometric buildings and landscapes with 32/64/128-pixel adapters and native PNG exports. All run locally. The interface, presets, help and validation messages are in English. The service adds no content filters or automatic content tags.
 
-See [trained Anima Low Poly styles](anima-lowpoly.md) for the six new retro/3D recipes, [Krea Pixel Art](krea-pixel-art.md) for the four new pixel recipes and setup, and [Qwen, new styles and the example explorer](qwen21-and-examples.md) for the original 34-recipe selection, source research and Qwen’s non-commercial research license.
+See [MOSS Low Poly](moss-lowpoly.md) for the nine low-poly recipes and Blender starters, [Krea Pixel Art](krea-pixel-art.md) for native pixel exports, and [Qwen and the example explorer](qwen21-and-examples.md) for Qwen guidance and its non-commercial research license.
 
 ## Guided mode
 
@@ -26,7 +26,7 @@ Choose an aspect ratio in guided mode: Recommended, 1:1, 16:9, 9:16, 4:3, 3:4, 3
 
 **MOSS photography:** natural portrait, candid everyday, street documentary, cinematic still, product studio, landscape and travel, architecture and interior, food and still life. Each recipe includes a complete example and a specific tip. See [photography settings, examples and research](moss-photography.md).
 
-**MOSS Low Poly:** floating diorama, 1990s game scene and geometric landscape/game world. These recipes add visible polygon faces, flat shading, simple materials, clear silhouettes and suitable perspectives. They produce PNG images, not 3D models.
+**MOSS Low Poly:** anything, track overview, character reference, kart/vehicle reference, prop reference, building reference, floating diorama, 1990s game scene and geometric landscape/game world. These recipes add visible polygon faces, flat shading, simple materials, clear silhouettes and suitable perspectives. They produce PNG images, not 3D models.
 
 | Profile | Anima Aesthetic | MOSS |
 | --- | --- | --- |
@@ -38,9 +38,11 @@ Depending on the recipe, the recommended size is 832×1216, 1216×832 or 1024×1
 
 The guide is also available **inside the studio at `/studio/anima-guide/`**.
 
+For low-poly images intended for Blender, use [Blender reference compositions and the shared-blockout workflow](blender-references.md). New low-poly selections offer a view and asset type, with editable character, kart, prop, building and environment starters. Existing examples restore their original concept composition.
+
 ## Free prompt mode
 
-**Free prompt · custom settings** exposes the style suffix, size, sampler, steps, CFG and negative prompt. Existing free prompt API and CLI requests still work. All three selected models are used for text-to-image generation here; reference and mask editing are unavailable with this selection.
+**Free prompt · custom settings** exposes the style suffix, size, sampler, steps, CFG and negative prompt. Existing free prompt API and CLI requests still work. All four selected model families are used for text-to-image generation here; reference and mask editing are unavailable with this selection.
 
 A fixed seed helps compare results within the same model. Reusing a recipe image restores its original fields. Any historical images from other models remain viewable, but their removed model configurations cannot be loaded.
 
@@ -52,7 +54,7 @@ Deletion removes the PNG, its library settings and the associated completed job.
 
 ## Technical interfaces
 
-- `GET /studio/api/catalog`: six model choices, example metadata, free prompt style presets and complete `recipes` with example values.
+- `GET /studio/api/catalog`: four model choices, example metadata, free prompt style presets and complete `recipes` with example values.
 - `POST /studio/api/compose`: validate recipe inputs and return the complete settings without generating an image.
 - `DELETE /studio/api/gallery/{id}`: permanently delete an individual image.
 - `POST /studio/api/gallery/delete`: `{ "ids": ["...", "..."] }`, delete up to 500 images together; the entire selection is validated first.

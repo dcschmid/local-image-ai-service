@@ -17,12 +17,19 @@ def main():
     target = HOME / ".local/share/local-image-ai-service"
     app = target / "app"
     app.mkdir(parents=True, exist_ok=True)
-    for name in ("service.py", "manage.py", "catalog.py", "studio_service.py", "recipes.py", "pixel_art.py", "lora_adapter.py"):
+    for name in ("service.py", "manage.py", "agent_cli.py", "agent_integration.py", "mcp_server.py", "catalog.py", "studio_service.py", "recipes.py", "pixel_art.py", "modeling_reference.py"):
         shutil.copyfile(ROOT / "src" / name, app / name)
+    shutil.copytree(ROOT / 'skills/local-image-ai', app / 'skills/local-image-ai', dirs_exist_ok=True)
     web = ROOT / "studio/dist"
     if not (web / "index.html").is_file():
         raise SystemExit("Build the studio first: npm ci --prefix studio && npm run build --prefix studio")
     shutil.copytree(web, app / "web", dirs_exist_ok=True)
+    # Retired profile code and bundled examples must disappear on an upgrade too.
+    (app / 'lora_adapter.py').unlink(missing_ok=True)
+    for path in (app / '__pycache__').glob('lora_adapter.*.pyc'):
+        path.unlink()
+    for identifier in ('psx-character', 'psx-world', 'psx-prop', 'anima3d-character', 'anima3d-diorama', 'anima3d-landscape'):
+        (app / 'web/recipe-examples' / (identifier + '.webp')).unlink(missing_ok=True)
     from PIL import Image  # Required for safe decoding, masks and PNG validation.
     images = HOME / ".local/share/local-image-ai-service-images/studio"
     images.mkdir(parents=True, exist_ok=True, mode=0o700)
@@ -39,9 +46,9 @@ def main():
         cfg = json.loads(config.read_text())
         updated = dict(cfg)
         updated["models"] = dict(cfg["models"])
-        updated["models"] = {k:v for k,v in updated["models"].items() if k in ("moss", "anima", "qwen21", "krea-pixel", "anima-psx", "anima-lowpoly")}
+        updated["models"] = {k:v for k,v in updated["models"].items() if k in ("moss", "anima", "qwen21", "krea-pixel")}
         if updated["active_model"] not in updated["models"]:
-            updated["active_model"] = "anima" if "anima" in updated["models"] else "moss"
+            updated["active_model"] = "moss" if "moss" in updated["models"] else "anima"
         updated.pop("anatomy", None)
         if cfg != updated:
             temporary = config.with_name("config.json.install")

@@ -8,9 +8,23 @@ choose one of 44 Anima, MOSS, Qwen and pixel-art recipes, optionally add
 scene/details, then generate. The service supplies composition, lighting, format and sampling.
 A full prompt preview and free-prompt mode remain available.
 
+AI agents can use the same models and recipes through the [JSON CLI workflow](docs/agent-cli.md):
+
+```bash
+local-image-ai-service recipes --model moss
+local-image-ai-service compose --recipe lowpoly-vehicle --example --modeling-view three-quarter --modeling-asset vehicle
+local-image-ai-service render --recipe lowpoly-vehicle --example --modeling-view three-quarter --modeling-asset vehicle --seed 42 --save-dir ./artifacts
+```
+
+Install the [portable agent skill and local MCP server](docs/agents-integration.md)
+with `local-image-ai-service agents install --mcp --route-images`. Agents can then
+discover the [available models and all 44 guided presets](skills/local-image-ai/references/catalog.md),
+generate/export images, and manage the library through the same service.
+Create an installable package with `local-image-ai-service agents package`.
+
 [Guide and examples](docs/studio.md) · [Browser guide](http://127.0.0.1:7861/studio/anima-guide/)
 
-[Trained Anima Low Poly styles](docs/anima-lowpoly.md) · [Krea Pixel Art, native PNGs and setup](docs/krea-pixel-art.md) · [Explore Qwen and the example library](docs/qwen21-and-examples.md) · [MOSS photography research](docs/moss-photography.md). Browse real examples in the studio and reuse their inputs and seeds.
+[MOSS Low Poly presets](docs/moss-lowpoly.md) · [Krea Pixel Art, native PNGs and setup](docs/krea-pixel-art.md) · [Explore Qwen and the example library](docs/qwen21-and-examples.md) · [MOSS photography research](docs/moss-photography.md). Browse real examples in the studio and reuse their inputs and seeds.
 
 Previously removed models remain outside the catalog. The archive keeps current images; individual or selected images can be deleted through the studio.
 Login autostart remains disabled; inference stays local without an additional content filter.
@@ -102,11 +116,14 @@ this service to avoid GPU resource conflicts.
 - [Quality settings, prompts, and comparisons](docs/quality.md)
 - [systemd and resource management](docs/systemd.md)
 - [HTTP API, CLI generation, and errors](docs/api.md)
+- [CLI for AI agents: models, recipes, jobs and exports](docs/agent-cli.md)
+- [MCP, installable agent skill and model/preset discovery](docs/agents-integration.md)
 - [Atelier studio, models and presets](docs/studio.md)
 - [Open WebUI integration](docs/open-webui.md)
 - [Troubleshooting](docs/troubleshooting.md)
 - [Inventory and runtime decision](docs/inspection.md)
 - [Architecture and maintenance notes](docs/architecture.md)
+- [Low-poly references and consistent Blender sheets](docs/blender-references.md)
 - [Guided recipe checks](docs/recipes-test-report.md)
 - [Historical studio GPU measurements](docs/studio-test-report.md)
 - [Historical MOSS test report](docs/test-report.md)

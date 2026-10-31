@@ -1,5 +1,6 @@
 """Deterministic Anima and MOSS recipes; no prompt translation or content filter."""
 from catalog import defaults, MODELS
+import modeling_reference
 # Change this when existing recipe semantics change; additive recipes keep old inputs valid.
 VERSION = 3
 SOURCE = 'https://huggingface.co/circlestone-labs/Anima'
@@ -304,63 +305,63 @@ PIXEL_RECIPES = [
 RECIPES += [dict(r,model='krea-pixel',category='pixel',size='1024x1024',featured=True,
                  example_quality='standard',checked='2026-10-31') for r in PIXEL_RECIPES]
 
-ANIMA_3D_RECIPES = [
-    dict(id='psx-character',model='anima-psx',name='PSX · retro adventurer',size='832x1216',
-         description='A complete game character with angular geometry and a late-1990s console look.',
-         example=dict(subject='an adult elven ranger with short dark hair, a green tunic and brown leather boots',scene='standing on a small stone platform against a plain warm gray background',details='a small wooden bow, a confident relaxed pose, a simple green cape'),
-         scene='standing on a small stone platform against a plain warm gray background',
-         style='solo, full body, single character, lowpoly, ps1, psx, low poly, 3d, retro console game character render, angular geometry, simple low-resolution textures',
-         composition='One complete character is visible from head to feet, centered in a readable three-quarter pose. Keep the silhouette clear, the equipment simple, and leave space around the entire figure.',
-         tip='Start with one character and two or three defining features. Simple clothing and a clear pose suit the PSX look.'),
-    dict(id='psx-world',model='anima-psx',name='PSX · game world',size='1216x832',
-         description='A nostalgic 3D game scene with chunky architecture and a clear camera angle.',
-         example=dict(subject='a small seaside village with a red lighthouse, three timber houses and a stone bridge',scene='seen from an elevated game camera at golden hour',details='a winding path, blocky pine trees, simple blue water, a quiet orange sky'),
-         scene='seen from an elevated game camera at golden hour',
-         style='lowpoly, ps1, psx, low poly, 3d, late-1990s console game screenshot, chunky polygon geometry, simple low-resolution textures',
-         composition='One coherent game environment has a clear foreground path, a focal building and distant scenery. Use consistent perspective, broad shapes and simple material colors. No interface or lettering.',
-         tip='Give the scene one focal building and a clear route through it. Describe the camera as carefully as the scenery.'),
-    dict(id='psx-prop',model='anima-psx',name='PSX · inventory prop',size='1024x1024',
-         description='One readable retro game object with a simple silhouette and chunky details.',
-         example=dict(subject='a small wooden treasure chest reinforced with dark iron bands and a brass lock',scene='on a square stone plinth against a plain dark teal background',details='a slightly open lid, a few gold coins, warm light from the upper left'),
-         scene='on a square stone plinth against a plain dark teal background',
-         style='lowpoly, ps1, psx, low poly, 3d, retro game inventory prop render, chunky polygon geometry, low-resolution painted textures',
-         composition='Show one complete object in an elevated three-quarter view. A bold silhouette and simple large details make it readable at small sizes. Keep a clear margin and an uncluttered background.',
-         tip='Choose one object and a recognizable shape. This is an image concept; a game-ready mesh still needs modeling.'),
-    dict(id='anima3d-character',model='anima-lowpoly',name='Low Poly · character portrait',size='832x1216',
-         description='A close character portrait with angular clothing, grouped colors and clear lighting.',
-         example=dict(subject='an adult sky courier with short copper hair wearing a blue jacket',scene='in a waist-up three-quarter view against a plain light blue background',details='a small shoulder satchel, a yellow scarf, a relaxed smile, bright daylight'),
-         scene='in a waist-up three-quarter view against a plain light blue background',
-         style='solo, upper body, portrait, l0wp0ly, 3d, low poly game character, flat-shaded polygon geometry, angular clothing, simple matte materials',
-         composition='One waist-up character fills most of the frame at eye level. Keep the face and clothing clearly readable, the silhouette distinct, and the lighting bright and consistent.',
-         tip='Name a role, two main clothing colors and one accessory. Let the trained style supply the geometry.'),
-    dict(id='anima3d-diorama',model='anima-lowpoly',name='Low Poly · miniature diorama',size='1024x1024',
-         description='A compact miniature scene with visible polygon faces and a tidy isometric composition.',
-         example=dict(subject='a tiny mountain observatory with a blue dome and a small wooden cabin',scene='on one isolated grassy rock island against a pale cream background',details='a short stone stairway, two angular pine trees, warm evening light'),
-         scene='on one isolated grassy rock island against a pale cream background',
-         style='l0wp0ly, 3d, low poly miniature diorama, flat shading, angular polygon faces, simple matte materials, isometric view',
-         composition='The complete island fits in the frame with space around all edges. Use one focal structure, two small supporting props, consistent isometric perspective and clearly separated color planes.',
-         tip='One main building and a few props make a stronger diorama than a long list of tiny objects.'),
-    dict(id='anima3d-landscape',model='anima-lowpoly',name='Low Poly · angular landscape',size='1216x832',
-         description='An expansive game landscape built from distinct faceted shapes and a restrained palette.',
-         example=dict(subject='a turquoise river winding through a valley of angular mountains and pine forests',scene='seen from an elevated viewpoint in warm early morning light',details='a small stone bridge, pale purple mountain shadows, a few golden clouds'),
-         scene='seen from an elevated viewpoint in warm early morning light',
-         style='l0wp0ly, 3d, low poly game environment, faceted terrain, flat shading, broad color planes, matte polygon surfaces',
-         composition='A coherent landscape has a strong foreground, a winding route through the middle distance and a clear distant horizon. Keep the polygon faces visible and the lighting simple and consistent.',
-         tip='Use a river, road or ridge to guide the eye. Describe three main colors and a clear time of day.'),
+# MOSS handles the low-poly workflow without separate Anima style adapters.
+RECIPES += [
+    dict(id='lowpoly-anything', model='moss', category='lowpoly', name='Low Poly · anything',
+         size='1024x1024', featured=True, example_quality='preview', preview_steps=30,
+         description='A flexible low-poly look for animals, creatures, objects, characters, vehicles, places or complete scenes.',
+         example=dict(subject='an orange fox with a cream chest, dark paws and a large angular tail',
+                      scene='standing on a mossy rock beside a small blue pond',
+                      details='two simple pine trees, broad faceted shapes, soft daylight, a warm restrained palette'),
+         scene='in a simple, clearly readable setting that supports the subject',
+         style='stylized low-poly 3D game art, visible flat-shaded polygon faces, broad geometric forms, simple matte material colors',
+         composition='Adapt the framing and camera to the requested subject and viewpoint. Keep the main subject complete and readable, with clear silhouettes and physically understandable forms. For a scene, separate the foreground, focal subject and background. Use a small harmonious palette, consistent soft light and sparse supporting details. Preserve any requested setting without forcing a character pose, a vehicle layout or an isolated terrain tile. No lettering or interface.',
+         negative_extra='wireframe overlay, triangle grid, mesh overlay, tiny surface details',
+         tip='Describe anything you want in low poly. Use Setting or action for the camera: for example a bird’s-eye view, a close-up or a wide landscape. Choose Track overview for a complete circuit layout.'),
+    dict(id='lowpoly-track-overview', model='moss', category='lowpoly', name='Low Poly · track overview',
+         size='1216x832', featured=True, example_quality='preview', preview_steps=30,
+         description='An overhead racing-circuit concept with the entire route visible and simple low-poly surroundings.',
+         example=dict(subject='a compact coastal kart circuit with one closed kidney-shaped asphalt loop, a small pit garage and two grandstands',
+                      scene='seen from directly above, with the entire circuit centered on one rectangular terrain tile',
+                      details='a consistent-width dark gray track, red and white curbs, one short checkered start-finish stripe, sparse pine trees and blue water beyond the tile'),
+         scene='seen from directly above, with the whole racing circuit visible inside the image',
+         style='low-poly 3D racing game track overview, top-down circuit concept, flat-shaded terrain, simple modular structures, broad solid material colors',
+         composition='Show one complete closed driving loop in a directly overhead orthographic-style view. Keep its full route visible, continuous and easy to follow, with consistent road width and open space around the outside of the circuit. Use gentle readable corners and clear track boundaries. Place sparse buildings, trees and terrain details beside the route without covering it. Keep a single driving route without branches, intersections, overpasses or a second circuit. No cars, labels, arrows, text, legend or interface.',
+         negative_extra='crossroads, road junctions, disconnected road segments, cropped track edges, hidden track sections, overpasses, multiple separate circuits, low camera angle, cars covering the road',
+         tip='Describe one circuit, its shape and its environment. The preset requests the complete overhead layout. Treat it as a concept image; inspect continuity and rebuild the drivable route as explicit geometry in Blender.'),
 ]
-RECIPES += [dict(r,category='anima3d',featured=True,example_quality='standard',checked='2026-10-31') for r in ANIMA_3D_RECIPES]
+
+# Example inputs explicitly select the shared Blender composition, so the web
+# example, CLI --example and isolated example builder all reproduce the same request.
+MOSS_ASSET_RECIPES = [
+    ('lowpoly-character', 'character', 'Low Poly · character reference', 'One full-body low-poly character with simple clothing, a neutral pose and a readable silhouette.'),
+    ('lowpoly-vehicle', 'vehicle', 'Low Poly · kart and vehicle reference', 'One complete low-poly vehicle with clear wheels, chassis and panel connections.'),
+    ('lowpoly-prop', 'prop', 'Low Poly · prop reference', 'A single low-poly object with clear thicknesses, simple joins and a plain background.'),
+    ('lowpoly-building', 'building', 'Low Poly · building reference', 'A complete modular building with readable wall, roof, door and window volumes.'),
+]
+for identifier, asset, name, description in MOSS_ASSET_RECIPES:
+    settings = modeling_reference.ASSETS[asset]
+    RECIPES.append(dict(id=identifier, model='moss', category='lowpoly', name=name, size=settings['size'],
+        description=description, featured=True, example_quality='preview',
+        example=dict(settings['example'], modeling_view='three-quarter', modeling_asset=asset),
+        scene='isolated on a plain light gray background',
+        style='low-poly 3D asset concept, flat-shaded polygon geometry, broad angular forms, simple matte material colors',
+        composition=modeling_reference.VIEWS['three-quarter']['prompt']+' '+settings['construction']+
+                    ' The complete asset fits inside the frame with space around all edges. Use neutral even lighting, a faint contact shadow and a small solid-color palette. No labels, grid or surrounding scenery.',
+        tip='MOSS prepares the low-poly look. Use Blender reference for a clear asset view; choose one main subject and a few large material colors.'))
 
 def recipes():
     return [dict(r, model=r.get('model','anima'), version=VERSION,preview_size=r['size'] if r.get('model')=='krea-pixel' else preview_size(r['size']),
+                 modeling_asset=modeling_reference.RECIPE_ASSETS.get(r['id']),
                  category=r.get('category','anime' if r.get('model','anima')=='anima' else 'lowpoly'),
                  source={'anima':SOURCE,'moss':MOSS_SOURCE,'qwen21':QWEN_SOURCE,'krea-pixel':'https://huggingface.co/e-n-v-y/Krea-2-Pixel-Art'}.get(r.get('model','anima'),MODELS[r.get('model','anima')]['source']),
                  checked=r.get('checked','2026-10-31'), steps=defaults(r.get('model','anima'))['steps'],
                  cfg_scale=defaults(r.get('model','anima'))['cfg'],sampler='euler') for r in RECIPES]
 
 def compose(body):
-    allowed={'model','recipe','subject','scene','details','text','aspect_ratio','quality','seed','pixel_grid','pixel_colors'}
+    allowed={'model','recipe','subject','scene','details','text','aspect_ratio','quality','seed','pixel_grid','pixel_colors','modeling_view','modeling_asset'}
     if set(body)-allowed:
-        raise ValueError('In guided mode, send only the subject, setting, details, visible text, aspect ratio, quality and seed. Use free prompt mode for custom parameters.')
+        raise ValueError('Unknown guided settings. Use recipe inputs, Blender reference options or free prompt mode for custom parameters.')
     recipe=next((r for r in RECIPES if r['id']==body.get('recipe')),None)
     if recipe is None: raise ValueError('Unknown recipe.')
     model=recipe.get('model','anima')
@@ -377,6 +378,7 @@ def compose(body):
     if not isinstance(ratio,str) or (ratio!='auto' and ratio not in FORMATS):raise ValueError('Choose a supported aspect ratio or Recommended.')
     quality=body.get('quality','standard')
     if quality not in ('preview','standard','detail'):raise ValueError('Unknown quality profile.')
+    reference=modeling_reference.compose(body,dict(recipe,model=model),fields)
     scene=fields['scene'] or recipe['scene']
     prompt=f"single image, single scene, {recipe['style']}. Main subject: {fields['subject']}. Setting and action: {scene}. {recipe['composition']}"
     if fields['details']:prompt+=' Additional requested details: '+fields['details']+'.'
@@ -409,12 +411,6 @@ def compose(body):
         if recipe.get('transparent'):prompt='This is an RGBA image with transparency. '+prompt+' The image has alpha channel and the background is transparent.'
         negative=PHOTO_NEGATIVE if recipe.get('photographic') else 'worst quality, low quality, watermark, jpeg artifacts, collage, split screen, cropped main subject'
     if recipe.get('negative_extra'):negative+=', '+recipe['negative_extra']
-    if MODELS[model].get('base_model')=='anima':
-        prompt=f"{recipe['style']}. {fields['subject']}, {scene}. {recipe['composition']}"
-        if fields['details']:prompt+=' Additional details: '+fields['details']+'.'
-        negative=NEGATIVE+', photorealistic, photograph, skin pores, smooth subdivided geometry, hand-drawn illustration, manga, ink outlines'
-        if recipe['id'] in ('psx-character','anima3d-character'):
-            negative+=', duplicate, cloned character, two characters, multiple people, character turnaround, side-by-side figures'
     if model=='krea-pixel':
         from pixel_art import settings
         grid,colors=settings(body.get('pixel_grid',recipe['pixel_grid']),body.get('pixel_colors',recipe['pixel_colors']))
@@ -426,10 +422,12 @@ def compose(body):
         negative=''
     elif 'pixel_grid' in body or 'pixel_colors' in body:
         raise ValueError('Pixel settings are available with Krea Pixel Art.')
-    size=recipe['size'] if ratio=='auto' else FORMATS[ratio][1]
+    if reference:
+        prompt,negative=reference['prompt'],reference['negative_prompt']
+    size=(reference['size'] if reference else recipe['size']) if ratio=='auto' else FORMATS[ratio][1]
     draft_size=preview_size(size) if ratio=='auto' else FORMATS[ratio][2]
-    sampling_model=MODELS[model].get('base_model',model)
-    steps={'anima':{'preview':30,'standard':35,'detail':45},'moss':{'preview':30 if photo else 20,'standard':50,'detail':60},'qwen21':{'preview':20,'standard':40,'detail':50},'krea-pixel':dict.fromkeys(('preview','standard','detail'),8)}[sampling_model]
+    sampling_model=model
+    steps={'anima':{'preview':30,'standard':35,'detail':45},'moss':{'preview':recipe.get('preview_steps',30 if photo or reference else 20),'standard':50,'detail':60},'qwen21':{'preview':20,'standard':40,'detail':50},'krea-pixel':dict.fromkeys(('preview','standard','detail'),8)}[sampling_model]
     result=dict(model=model,prompt=prompt,size=draft_size if quality=='preview' and model!='krea-pixel' else size,
                 steps=steps[quality],cfg_scale=defaults(model)['cfg'],sampler='euler',negative_prompt=negative,preset='none')
     if model=='krea-pixel': result.update(pixel_grid=grid,pixel_colors=colors)

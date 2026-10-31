@@ -7,10 +7,36 @@ or compatibility request uses the GPU at a time.
 
 ## Request flow
 
+`src/agent_cli.py` adds JSON discovery plus `compose`, queued `render`, job
+inspection/cancellation and validated PNG exports to the management CLI. It uses
+the same Studio HTTP validation/worker as the browser. Direct job/image lookups
+support agents independently of recent-list pagination. Client wait deadlines
+leave server work intact; accepted or uncertain submissions are not retried.
+
+`src/mcp_server.py` wraps the same CLI execution functions in a stdio MCP server:
+17 typed tools cover discovery, preview, asynchronous generation, jobs, exports
+and library management. A catalog resource exposes the current definitions.
+Individual MCP waits are bounded; pending jobs continue on the service worker.
+The bridge uses a separately installed optional SDK and opens no network port.
+
+`src/agent_integration.py` installs and packages the portable skill, regenerates
+its model/preset reference, and optionally registers Codex's MCP server and local
+image preference. Managed receipts detect local skill edits; global instructions
+and unrelated MCP settings are preserved. Claude Code and OMP use the same skill
+and launcher through their private profile configuration. See
+[agent installation and client setup](agents-integration.md).
+
 The studio loads its catalog from `/studio/api/catalog`. Guided requests contain
 a recipe and the user's subject, scene and optional details. `src/recipes.py`
 compiles these deterministically into a prompt and sampling settings; it does not
 call a language model. The prompt preview uses the same compiler as generation.
+
+For low-poly Blender references, `src/modeling_reference.py` replaces the original
+composition with an asset-specific single view. Its separate version is recorded
+with the saved request. Omitting these options keeps existing recipes unchanged;
+the catalog supplies the permitted asset/view choices and starter briefs. This
+path requests readable concepts and does not assert geometric consistency between
+independent generations. See [the Blender workflow](blender-references.md).
 
 `Studio.prepare()` routes compiled recipes through the common request validator
 used for free prompts. The service checks installed components, capabilities,
@@ -28,7 +54,7 @@ image bytes, with optional saving handled by the CLI client.
 
 ## Model profiles and adapters
 
-`src/catalog.py` defines the six selectable profiles and their capabilities,
+`src/catalog.py` defines the four selectable profiles and their capabilities,
 licenses and sampling defaults. `config/models.lock.json` pins downloaded
 components by source revision, size and checksum. Actual model files live outside
 the repository. `scripts/install-models.py` prepares the files and updates the
@@ -38,18 +64,13 @@ private configuration while the service is stopped.
 | --- | --- |
 | MOSS SFT | Diffusion model, text encoder, VAE and tokenizer; photography, illustration and low-poly recipes. |
 | Anima Aesthetic | Shared Anima diffusion model, text encoder and VAE; anime and illustration recipes. |
-| Anima Low Poly PS1 / PSX | The same Anima base plus the curated PSX LoRA at strength 0.9. |
-| Anima Low Poly Style | The same Anima base plus Low Poly Style at strength 0.75; a compatibility copy maps text-encoder tensor names. |
 | Qwen Image 2.1 | Dedicated diffusion model, encoder and VAE; its non-commercial research license is displayed in the UI. |
 | Krea Pixel Art | Krea Turbo components with separately prepared 32, 64 and 128-grid DoRA variants, followed by deterministic pixel cleanup. |
 
-Anima adapters are passed through structured native settings using a configured
-basename and fixed profile strength. User prompts cannot supply runtime control
-tags or arbitrary LoRA paths. `src/lora_adapter.py` changes only the Low Poly
-Style adapter's safetensors header names for the pinned native loader: tensor
-relative offsets and numerical payload bytes stay unchanged. Checksums and a conversion
-receipt distinguish the original adapter from the prepared copy. Downloads are
-preserved.
+MOSS handles all low-poly compositions through visible prompts and sampling
+presets. The retired Anima PSX/Low Poly Style profiles and their separate adapter
+loader are removed. Their historical images remain readable/exportable, and the
+shared Anima Aesthetic base components remain available.
 
 Krea's DoRA adapters need a different preparation path. The pinned native runtime
 does not apply their learned magnitudes directly. `scripts/prepare-pixel-models.py`
@@ -103,6 +124,8 @@ Jobs interrupted by a service restart become failed rather than generating again
 | `~/.config/local-image-ai-service/config.json` | Private machine configuration and model paths. |
 | `~/.local/share/local-image-ai-service/app/` | Installed Python sources and the built studio under `web/`. |
 | `~/.local/share/local-image-ai-service/runtime/` | Pinned native executable, CUDA libraries and runtime receipt. |
+| `~/.local/share/local-image-ai-service/mcp/venv/` | Optional isolated Python MCP SDK environment. |
+| Repository `skills/local-image-ai/` | Portable agent instructions and catalog/workflow references; packaged by `agents package`. |
 | `~/.local/share/local-image-ai-service-images/` | User-owned generated images and the studio archive; retained on uninstall. |
 | `~/.cache/local-image-ai-service/` | Runtime work files and isolated verification/example archives. |
 
@@ -119,6 +142,9 @@ existing model sources and unrelated image/game directories are not cleanup
 targets. See [installation](installation.md) and [configuration](configuration.md)
 for commands and supported paths.
 
+The [Blender reference check report](blender-reference-test-report.md) records
+single-view generation results and the observed limits of AI camera consistency.
+
 ## Verification
 
 Run `python3 -m unittest discover -s tests -v` for request, recipe, archive,
@@ -130,5 +156,5 @@ The `scripts/verify-*.py` tools perform explicit GPU checks with their documente
 service lifecycle requirements. Prefer their isolated archives for new model QA;
 do not generate disposable checks into the user's gallery. Existing measurements
 and limitations are recorded in the model-specific test reports, including
-[Anima Low Poly](anima-lowpoly-test-report.md) and
+[historical Anima Low Poly](anima-lowpoly-test-report.md) and
 [Krea Pixel Art](krea-pixel-test-report.md).

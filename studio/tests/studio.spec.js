@@ -4,7 +4,7 @@ test('guided recipes, photography, low poly, free prompt, guide and mobile layou
  await expect(page.locator('html')).toHaveAttribute('lang','en');
  await expect(page.getByRole('heading',{name:'From idea to image.'})).toBeVisible();
  await expect(page.getByRole('button',{name:'Generate image'})).toBeVisible();
- await expect(page.locator('#model option')).toHaveCount(6);
+ await expect(page.locator('#model option')).toHaveCount(4);
  await expect(page.locator('#model')).toHaveValue('anima');
  await expect(page.locator('#workflow')).toHaveValue('guided');
  await expect(page.locator('#recipe option')).toHaveCount(44);

@@ -18,9 +18,10 @@ from urllib.parse import urlsplit, parse_qs
 import warnings
 
 from PIL import Image, ImageFilter, ImageOps, PngImagePlugin
-from catalog import MODELS, SAMPLERS, defaults, presets, quality_profiles, model_loras
+from catalog import MODELS, SAMPLERS, defaults, presets, quality_profiles
 from recipes import compose, recipes, formats, VERSION as RECIPE_VERSION
 import pixel_art
+import modeling_reference
 
 DATA = Path.home() / '.local/share/local-image-ai-service-images/studio'
 STATIC = Path(__file__).resolve().parent / 'web'
@@ -266,6 +267,8 @@ class Studio:
             prepared=self.prepare(resolved,verification)
             prepared['recipe_inputs']={k:v for k,v in body.items() if k not in ('model','seed')}
             prepared['recipe_version']=RECIPE_VERSION
+            if body.get('modeling_view','off')!='off':
+                prepared['modeling_version']=modeling_reference.VERSION
             return prepared
         allowed = {'model','prompt','size','seed','steps','cfg_scale','sampler','negative_prompt','mode','image_id','mask_id','strength','feather','preset','pixel_grid','pixel_colors'}
         if set(body) - allowed:
@@ -436,8 +439,6 @@ class Studio:
                        vae_tiling_params={'enabled':True},preview='proj',preview_interval=1)
         if req['model']=='krea-pixel' and self.backend.pixel_grid!=req['pixel_grid']:
             raise ValueError('The loaded pixel variant does not match the requested grid.')
-        loras=model_loras(req['model'],self.backend.cfg['models'][req['model']])
-        if loras:payload['lora']=loras
         if req['mode']=='reference':
             payload['ref_images'] = [self.encoded(req['image_id'])]
         elif req['mode'] in ('img2img','inpaint'):
@@ -514,10 +515,6 @@ class Studio:
             self.write_file(identifier,small,pixel=True)
         self.write_file(identifier,raw)
         sampling = dict(defaults(req['model']), steps=req['steps'], cfg=req['cfg_scale'], sampler=req['sampler'])
-        if MODELS[req['model']].get('lora_strength') is not None:
-            sampling['lora_strength']=MODELS[req['model']]['lora_strength']
-        if MODELS[req['model']].get('adapter_revision'):
-            sampling['adapter_revision']=MODELS[req['model']]['adapter_revision']
         if MODELS[req['model']].get('extra_sample_args'):
             sampling['extra_sample_args']=MODELS[req['model']]['extra_sample_args']
         receipt_path = Path(self.backend.cfg['runtime']).parent.parent / 'receipt.json'
@@ -574,8 +571,12 @@ class Studio:
                 self.worker.start()
         if h.command=='GET':
             if route=='/studio/api/status': return h.send_json(200,dict(ready=self.backend.available(),model=self.backend.model,error=self.backend.failure))
-            if route=='/studio/api/catalog': return h.send_json(200,dict(models=self.catalog(),presets=presets(),samplers=SAMPLERS,recipes=recipes(),formats=formats(),examples=self.examples()))
+            if route=='/studio/api/catalog': return h.send_json(200,dict(models=self.catalog(),presets=presets(),samplers=SAMPLERS,recipes=recipes(),formats=formats(),examples=self.examples(),modeling=modeling_reference.options()))
             if route=='/studio/api/jobs': return h.send_json(200,self.listing('job'))
+            match=re.fullmatch('/studio/api/jobs/([a-f0-9]{32})',route)
+            if match: return h.send_json(200,self.get(match[1],'job'))
+            match=re.fullmatch('/studio/api/gallery/([a-f0-9]{32})',route)
+            if match: return h.send_json(200,self.get(match[1],'image'))
             if route=='/studio/api/gallery':
                 try:
                     offset=int(parse_qs(urlsplit(h.path).query).get('offset',['0'])[0])
