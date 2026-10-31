@@ -1,6 +1,8 @@
 # Qwen Image 2.1 and the recipe explorer
 
-Research checked October 31, 2026. The studio now includes **Anima Aesthetic, MOSS SFT and Qwen Image 2.1 Uncensored GGUF**, with **34 guided recipes** and locally generated example images.
+Try Qwen when your image needs a clear headline, a detailed product scene or a transparent sticker. The Studio includes **Anima Aesthetic, MOSS SFT, Qwen Image 2.1 Uncensored GGUF and Krea Pixel Art**, with **44 guided presets** and real local examples. [See a Qwen poster](examples.md#posters) or [take the Studio tour](studio.md).
+
+Model research checked October 31, 2026.
 
 ## Qwen model choice
 

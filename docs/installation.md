@@ -1,106 +1,150 @@
-# Installation and maintenance
+# Install Atelier
 
-The studio also needs a frontend build and Pillow. Follow the [current studio installation steps](studio.md#build-and-installation) before running the installer.
+Atelier has three parts: a small Python service, a built Studio interface, and a separate CUDA inference runtime. The model files live outside the repository.
 
-## Requirements
-
-Python >=3.11, a systemd user manager with cgroup v2, and NVIDIA drivers with working `nvidia-smi`.
-Tested on Fedora 44 KDE, Python 3.14.8, NVIDIA 615.78.08, CUDA 13.4, RTX 5070 Laptop / SM 120,
-and 64 GB RAM. No root installation or system Python packages are required.
-
-Model weights must already exist. Installation scripts do not download models. The separate
-runtime requires approximately 690 MiB of additional disk space.
-
-## Separately install the existing official build
+If it is already installed, you can skip setup and run:
 
 ```bash
-cd ~/dev/github/local-image-ai-service
+local-image-ai-service studio
+```
+
+That starts the service and opens the browser. For a first installation, work through the steps below from the repository root.
+
+## Check what you need
+
+The current setup is for **Linux with a systemd user manager, cgroup v2 and NVIDIA CUDA**. It has been tested on Fedora 44 KDE with an RTX 5070 Laptop, 8 GB VRAM and 64 GB RAM. CPU offloading is part of that setup; rendering time depends on the model, resolution and available memory.
+
+You need:
+
+- Python **3.11+** with **Pillow 12.3+** available to the Python used by the launcher.
+- `nvidia-smi` working with the NVIDIA driver.
+- Node/npm for building the Studio. The project pins its build-time Node package.
+- The supported `stable-diffusion.cpp` build and its CUDA libraries, or the tools to build that pinned revision.
+- Existing **MOSS SFT** components. The installer creates paths for them; check those paths before starting the service.
+
+The tested runtime uses NVIDIA 615.78.08 and CUDA 13.4. It needs roughly 690 MiB for its separate runtime copies, plus disk space for whichever models you install. This guide assumes you can reuse the known working build paths shown below; adapt them to your machine.
+
+## 1. Build the Studio
+
+```bash
+npm ci --prefix studio
+npm run build --prefix studio
+```
+
+The result is a static site under `studio/dist/`. Python serves those pages alongside the API, so the installed application does not need a separate Node server.
+
+## 2. Install the inference runtime
+
+To reuse the existing verified build:
+
+```bash
 python3 scripts/install-runtime.py \
   --binary "$HOME/.local/share/local-image-ai/engines/sd-install/bin/sd-server" \
   --cuda-lib "$HOME/.local/share/local-image-ai/engines/cuda/lib" \
   --source "$HOME/.local/share/local-image-ai/engines/stable-diffusion.cpp"
-python3 scripts/install.py
-local-image-ai-service doctor
-local-image-ai-service start
 ```
 
-The first script checks the pinned source revision and known binary checksum. It installs
-separate copies of the official binary, `libcudart.so.13`, `libcublas.so.13`, and `libcublasLt.so.13`.
-It copies **no model weights**. All copies are verified with SHA-256. At runtime, neither the
-previous project's source, binary, Python environment, nor CUDA installation path is required.
-System libraries and the NVIDIA driver remain operating-system dependencies.
+The script checks the pinned revision and binary checksum, then copies the executable and required CUDA libraries into this service's own runtime directory. It does not copy model weights or change the original runtime. The NVIDIA driver and system libraries remain operating-system dependencies.
 
-`install.py` installs the application, a separate launcher, the user unit, and its bounded-stop
-drop-in. On first installation, it creates configuration with local absolute paths and the GPU UUID.
-Existing paths, port, and authentication settings are retained. An upgrade removes retired review
-settings and non-MOSS model mappings from this service configuration, without deleting model files.
-It removes obsolete reviewer application code. Previously downloaded reviewer data is retained but
-is no longer loaded or executed; MOSS's existing text encoder remains required for generation.
-It neither starts nor enables the service. Ensure `~/.local/bin`
-is on `PATH`.
+If those build paths do not exist, use [the source-build option below](#build-the-pinned-runtime-from-source). The exact pin is recorded in [runtime.lock.json](../runtime.lock.json).
 
-## Reproduce a separate source build
+## 3. Install the application and check its paths
 
-Alternatively, build from the official repository at the exact pinned revision and submodules:
+If this is an update, stop the existing instance with `local-image-ai-service stop` first. For a first installation, run:
 
 ```bash
-cd ~/dev/github/local-image-ai-service
-local-image-ai-service stop
-CUDA_TOOLKIT_ROOT="$HOME/.local/share/local-image-ai/engines/cuda" \
-  bash scripts/build-runtime.sh
 python3 scripts/install.py
 local-image-ai-service doctor
-local-image-ai-service start
 ```
 
-Requires Git, CMake, Ninja, C/C++ compilers, and an existing CUDA 13.4 toolkit. The toolkit is
-read-only input. Downloads and build output stay under `~/.cache/local-image-ai-service/build`;
-the previous stable-diffusion.cpp source directory is not used. Build configuration is reproducible;
-bit-identical binaries across different compilers are not guaranteed. This is a maintenance path;
-the initial installation used and tested a separate copy of the known working official build.
+The installer creates the launcher, application files, user unit and a private configuration at:
+
+```text
+~/.config/local-image-ai-service/config.json
+```
+
+Make sure the MOSS `diffusion`, `llm`, `vae` and `tokenizer` paths point to your actual files. The [configuration guide](configuration.md) explains the fields, and [the example configuration](../config/config.example.json) shows their layout. `doctor` checks the configured model files and runtime before you try a render.
+
+Keep `~/.local/bin` on your `PATH`. The application installer does not start the service or enable login autostart. During an upgrade it keeps supported model mappings and removes retired profiles; it does not delete shared model files.
+
+## 4. Add the other models you want
+
+With the service stopped, the model installer can download and verify the pinned Anima and Qwen components:
+
+```bash
+python3 scripts/install-models.py anima
+python3 scripts/install-models.py qwen21
+```
+
+These downloads are optional and explicit. MOSS continues to use your existing components. For Krea Pixel Art, follow [the pixel-art setup](krea-pixel-art.md), which also prepares the grid-specific DoRA weights. Model files are large, so check available disk space first.
+
+The catalog explains the model licenses. Qwen's configured release uses a non-commercial research/evaluation license; it is not an unrestricted commercial model.
+
+## 5. Start creating
+
+```bash
+local-image-ai-service studio
+```
+
+Once loading finishes, open **[Atelier](http://127.0.0.1:7861/studio/)** and try an example from **Explore**. [The Studio tour](studio.md) walks through your first image.
+
+To check or stop the service later:
+
+```bash
+local-image-ai-service status
+local-image-ai-service stop
+```
+
+For terminal generation, use [the CLI walkthrough](agent-cli.md). To let Codex, Claude Code or OMP create assets, follow [the agent setup](agents-integration.md).
 
 ## Update the application
 
+From the repository root, after reviewing the changes:
+
 ```bash
-cd ~/dev/github/local-image-ai-service
 local-image-ai-service stop
 python3 -m unittest discover -s tests -v
+npm ci --prefix studio
+npm run build --prefix studio
 python3 scripts/install.py
 local-image-ai-service start
 ```
 
-Runtime upgrades require a deliberate change to the pinned revision and build verification,
-followed by a build, Doctor, and integration tests. There is no automatic `git pull` on a running
-runtime. `build-runtime.sh` rebuilds the current pin. There are no automatic updates, model downloads,
-or restart loops.
+The image archive and existing configuration stay outside the application directory. Reinstall/update the managed skill if its instructions changed, following [the client setup guide](agents-integration.md).
 
-## Save CLI-generated images
+The runtime has a separate pin and verification process. Application updates do not silently rebuild it, download models or enable autostart.
+
+## Build the pinned runtime from source
+
+This is the alternative when you are not copying a known working build. It needs Git, CMake, Ninja, C/C++ compilers and an existing CUDA 13.4 toolkit:
 
 ```bash
-local-image-ai-service generate --prompt 'A red ceramic teapot' --save
-local-image-ai-service generate --prompt 'A small lighthouse' \
-  --save-dir "$HOME/.local/share/my-image-experiments"
+CUDA_TOOLKIT_ROOT="$HOME/.local/share/local-image-ai/engines/cuda" \
+  bash scripts/build-runtime.sh
 ```
 
-The default `--save` directory, `~/.local/share/local-image-ai-service-images`, is separate from
-the application and cache and survives updates and uninstallation. Choose a custom directory outside
-the installation, configuration, and cache trees if those outputs should also survive uninstallation.
-No saving flag changes the HTTP API or the existing `imgai` installation.
+The toolkit is read-only input. Downloads and build output stay under `~/.cache/local-image-ai-service/build`; the previous source directory is not modified. Continue with application installation and `doctor` afterward. Compiler differences can change binary hashes even when the source revision is the same.
 
-## Uninstall
+## Where your images go
+
+Studio images and metadata are saved automatically under:
+
+```text
+~/.local/share/local-image-ai-service-images/studio/
+```
+
+CLI `render --save-dir ./assets` also exports the result into your project. The compatibility `generate` command saves only when you pass `--save` or `--save-dir`; without those flags it returns API JSON containing the image bytes. See [CLI generation](agent-cli.md) for the difference.
+
+Choose a project directory outside the application/configuration/cache trees when you want exported assets to survive service removal.
+
+## Remove the service
 
 ```bash
-cd ~/dev/github/local-image-ai-service
 python3 scripts/uninstall.py
 ```
 
-Removes only this user unit and its own drop-in, this launcher, and these three directories:
+This removes the user unit, launcher, application/runtime, configuration and the service's own cache. It retains the repository, shared external model files, the previous `local-image-ai` installation and the separate generated-image directory. Downloads and prepared weights inside `~/.local/share/local-image-ai-service/models/` are part of the removed service data tree; move any copies you want to keep out of that tree first. `~/Pictures/AI-Generated` and game projects are not cleanup targets. Save audit logs elsewhere first if you need them, because the service cache is removed.
 
-- `~/.local/share/local-image-ai-service`
-- `~/.config/local-image-ai-service`
-- `~/.cache/local-image-ai-service`, including its own test and audit logs
+Agent registrations and portable skills are separate. Remove a registration through the corresponding client if you no longer want it advertised after uninstalling the service; the [agent guide](agents-integration.md) lists where each client stores it.
 
-The repository, previous `local-image-ai` installation, models, existing images, game projects,
-and the default CLI image directory `~/.local/share/local-image-ai-service-images` are retained.
-Back up audit logs before uninstalling if needed. Neither `~/.local/share/local-image-ai` nor
-`~/Pictures/AI-Generated` is removed.
+[Back to the Studio tour](studio.md) · [Troubleshooting](troubleshooting.md) · [All documentation](README.md)

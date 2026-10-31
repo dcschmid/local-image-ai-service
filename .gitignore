@@ -20,5 +20,7 @@ test-results/
 node_modules/
 studio/dist/
 studio/.astro/
+.playwright-cli/
 !studio/public/recipe-examples/*.webp
 !studio/public/recipe-examples/*-pixels.png
+!docs/images/*.webp

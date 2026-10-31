@@ -1,9 +1,16 @@
-# Use the local image service from AI agents
+# Let your agent create local image assets
 
-Agents can discover the current models and presets, preview the exact prompt,
-queue images, follow progress, and export project assets through either the
-JSON CLI or a local stdio MCP server. Both interfaces use the Studio worker,
-validation, model switching and image archive. Inference runs locally.
+You can ask Codex, Claude Code or OMP for an image without remembering model IDs,
+sampling settings or a long prompt template. Give it the subject, the look and
+the folder where the result belongs:
+
+> Create a low-poly wooden chest with two iron bands and a brass latch. Use the
+> local image service and save the finished PNG in this project's assets folder.
+
+The `local-image-ai` skill teaches the agent to discover the available models
+and presets, preview the request, follow the job and export the finished image.
+MCP provides tools for those steps; the JSON CLI is the fallback. Both use the
+same worker and image archive as the Studio, with inference on your computer.
 
 ## Install the skill and MCP integration
 

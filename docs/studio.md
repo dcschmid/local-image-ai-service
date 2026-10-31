@@ -1,116 +1,124 @@
-# Atelier: Anima, MOSS, Qwen and Krea Pixel Art
+# Your first image in Atelier
 
-Open **http://127.0.0.1:7861/studio/**. `local-image-ai-service studio` starts the service and opens the interface.
+You do not need to know the right sampler or assemble a page of prompt tags. Start with a picture you like, change the subject, and see what happens.
 
-The studio includes four model families: **Anima Aesthetic 1.1** for anime and illustration, **MOSS SFT** for photography, general image ideas and low poly, and **Qwen Image 2.1 Uncensored GGUF** for detailed creative scenes, typography and transparent stickers. **Krea 2 Pixel Art** adds icons, sprites, isometric buildings and landscapes with 32/64/128-pixel adapters and native PNG exports. All run locally. The interface, presets, help and validation messages are in English. The service adds no content filters or automatic content tags.
-
-See [MOSS Low Poly](moss-lowpoly.md) for the nine low-poly recipes and Blender starters, [Krea Pixel Art](krea-pixel-art.md) for native pixel exports, and [Qwen and the example explorer](qwen21-and-examples.md) for Qwen guidance and its non-commercial research license.
-
-## Guided mode
-
-1. Choose an image recipe. The matching model is selected automatically.
-2. Fill in **What would you like to create?** This is the only required field.
-3. Optionally add a setting or action and extra details.
-4. Choose **Recommended** for the final image or **Draft** for experiments.
-5. Click **Generate image**.
-
-**Use example** is the quickest starting point: load a complete example and change only the subject. When a recorded example exists, its quality profile and seed are restored too. Browse and inspect example images under **Explore**. The service adds style, lighting, camera, composition, image size and technical settings. **View full prompt and settings** shows the actual composed prompt, negative prompt and settings before generation.
-
-Recipes are deterministic and versioned. No additional language model is used. Input is passed through in its original language; the English examples follow the official model prompting guides. The original fields and complete prompt are saved with the image and can be reused.
-
-Choose an aspect ratio in guided mode: Recommended, 1:1, 16:9, 9:16, 4:3, 3:4, 3:2 or 2:3. Output shows the actual dimensions. See [the format table](qwen21-and-examples.md#aspect-ratios).
-
-## Recipes
-
-**Anima Aesthetic:** cinematic character portrait, wide anime film scene, fantasy hero, cyberpunk/neon night, landscape, cozy slice of life, manga, watercolor and chibi.
-
-**MOSS photography:** natural portrait, candid everyday, street documentary, cinematic still, product studio, landscape and travel, architecture and interior, food and still life. Each recipe includes a complete example and a specific tip. See [photography settings, examples and research](moss-photography.md).
-
-**MOSS Low Poly:** anything, track overview, character reference, kart/vehicle reference, prop reference, building reference, floating diorama, 1990s game scene and geometric landscape/game world. These recipes add visible polygon faces, flat shading, simple materials, clear silhouettes and suitable perspectives. They produce PNG images, not 3D models.
-
-| Profile | Anima Aesthetic | MOSS |
-| --- | --- | --- |
-| Draft | 30 steps, reduced size where possible | Photography: 30 steps; Low Poly: 20 steps; reduced size where possible |
-| Recommended | 35 steps, CFG 4.5, Euler | 50 steps, CFG 3, Euler, Shift 5 |
-| More detail | 45 steps | 60 steps |
-
-Depending on the recipe, the recommended size is 832×1216, 1216×832 or 1024×1024. Anima Aesthetic uses neither positive nor negative `score_*` tags. More steps do not guarantee a better composition. Sizes are verified on the local GPU; new large formats become available only after successful verification.
-
-The guide is also available **inside the studio at `/studio/anima-guide/`**.
-
-For low-poly images intended for Blender, use [Blender reference compositions and the shared-blockout workflow](blender-references.md). New low-poly selections offer a view and asset type, with editable character, kart, prop, building and environment starters. Existing examples restore their original concept composition.
-
-## Free prompt mode
-
-**Free prompt · custom settings** exposes the style suffix, size, sampler, steps, CFG and negative prompt. Existing free prompt API and CLI requests still work. All four selected model families are used for text-to-image generation here; reference and mask editing are unavailable with this selection.
-
-A fixed seed helps compare results within the same model. Reusing a recipe image restores its original fields. Any historical images from other models remain viewable, but their removed model configurations cannot be loaded.
-
-## Deleting images
-
-In the image library, use **Delete** to remove an individual image, or select several images with the checkboxes. **Select all displayed** selects the images already loaded; **Clear selection** resets the checkboxes. **Delete selected** removes the entire selection after one confirmation. Select exactly two images to compare them.
-
-Deletion removes the PNG, its library settings and the associated completed job. Related entries in local GPU test reports are also removed. Active jobs cannot be deleted as images. An invalid selection is rejected before anything is removed. If a file operation fails, deletion remains pending and is completed on the next service start. Deleted images stay removed after a reload or restart.
-
-## Technical interfaces
-
-- `GET /studio/api/catalog`: four model choices, example metadata, free prompt style presets and complete `recipes` with example values.
-- `POST /studio/api/compose`: validate recipe inputs and return the complete settings without generating an image.
-- `DELETE /studio/api/gallery/{id}`: permanently delete an individual image.
-- `POST /studio/api/gallery/delete`: `{ "ids": ["...", "..."] }`, delete up to 500 images together; the entire selection is validated first.
-- `POST /studio/api/jobs`: create a job from the same recipe inputs, or supply a free `prompt` and custom settings.
-
-```json
-{
-  "model": "anima",
-  "recipe": "anima-portrait",
-  "subject": "an adult mage with red hair and a green cloak",
-  "quality": "standard"
-}
+```bash
+local-image-ai-service studio
 ```
 
-Optional: `scene`, `details`, `seed`, `aspect_ratio`; Qwen recipes also accept `text`. The `subject`, `scene` and `details` fields are limited to 2000 characters each. Custom `steps`, `size` or `prompt` values are not allowed in guided mode; use free prompt mode instead. `quality` is `preview`, `standard` or `detail`. The compiled prompt, original fields and recipe version are saved.
+The command starts the service and opens [the Studio](http://127.0.0.1:7861/studio/). If it is your first setup, follow [the installation guide](installation.md) first.
 
-The existing `/v1/images/generations` endpoint remains a synchronous API call with an unchanged prompt. It uses no recipe and does not save automatically. Recipes are used only when an explicit `recipe` is supplied in studio requests.
+![Atelier's creation workspace with a low-poly fox preview and its editable subject fields](images/studio-create.webp)
 
-## Data and model maintenance
+*Screenshots show the real interface with bundled public examples in an isolated documentation demo.*
 
-Images, inputs, SQLite history and GPU reports remain under `~/.local/share/local-image-ai-service-images/studio/`. New images stay saved until you explicitly delete them. Each new file receives its own ID and does not overwrite another file.
+## Find a starting point
 
-The additional model installation contains Anima Aesthetic and Qwen Image 2.1 with their required components. With the service stopped, `scripts/prune-models.py` removes all other models from the configuration and deletes their unused weights only inside its own download directory. Shared external weights used by other programs are preserved. Files needed by MOSS, Anima, Qwen or Krea Pixel Art are retained.
+Open **Explore**. Browse by model or search for a look such as `portrait`, `neon`, `clay`, `sticker` or `low poly`.
+
+![Explore shows illustrated example cards with buttons to inspect or reuse each recipe](images/studio-explore.webp)
+
+Click a picture to inspect its original inputs and settings. Click **Use this example** when you want to start from it. The Studio restores the inputs, quality and seed that produced that example.
+
+This is often the easiest way to learn a model: keep the look, change one thing, and compare the result. [The example gallery](examples.md) also includes terminal commands for the same pictures.
+
+## Make it yours
+
+In **Guided · fill in a recipe**, these are the fields that matter:
+
+| Field | What to put in it | Example |
+| --- | --- | --- |
+| **Image recipe** | The kind of picture you want | Low Poly · anything |
+| **What would you like to create?** | Your main subject; this is required | An orange fox with a cream chest and a large angular tail |
+| **Setting or action** | Where it is and what it is doing | Standing beside a small pond in a pine forest |
+| **Extra details** | A few features that distinguish your idea | Broad polygon faces, soft daylight, muted green surroundings |
+
+Leave the optional fields empty when you do not need them. One clear subject usually gives you a more useful starting point than several unrelated ideas competing in the same frame.
+
+The preset supplies style, composition, lighting, image size and sampling settings. Open **View full prompt and settings** to see exactly what the service will send to the model. This composition is deterministic; it does not call another language model to rewrite your idea.
+
+English is a useful starting point because the bundled examples and model guides use it. Other languages are passed through as entered, without automatic translation.
+
+## Choose a look
+
+| You want… | Try… |
+| --- | --- |
+| Anime characters, manga or illustrated backgrounds | **Anima Aesthetic** — portrait, film, neon, fantasy, cozy, manga, watercolor, chibi, retro, mecha, storybook and action presets |
+| A believable photo | **MOSS** — portrait, candid, street, cinematic, product, landscape, interior, food or macro |
+| Flat-shaded 3D-style art | **MOSS Low Poly** — anything, tracks, characters, vehicles, props, buildings, dioramas and game worlds |
+| Paper, clay or bold ink | **MOSS** — paper cut, clay miniature or comic |
+| A poster, cover or sticker | **Qwen** — optional **Visible text** supplies your exact short wording |
+| Small game art on a pixel grid | **Krea Pixel Art** — loot, character, isometric or landscape |
+
+There are [44 guided presets](../skills/local-image-ai/references/catalog.md). Choosing one selects its matching model. The service loads the required model when its job reaches the worker.
+
+Each model has a license link. Qwen's configured profile uses a non-commercial research/evaluation license. For pixel art, the adapter and base-model licenses both apply.
+
+## Pick a shape and quality
+
+Use **Aspect ratio** for square images, wide scenes, portraits or covers: 1:1, 16:9, 9:16, 4:3, 3:4, 3:2 and 2:3. **Recommended · recipe format** keeps the preset's original shape. The size note shows the actual output dimensions.
+
+| Quality | When to use it |
+| --- | --- |
+| **Draft · faster** | Try the subject, framing and camera before spending longer on detail |
+| **Recommended** | Use the model's prepared settings for the larger final image |
+| **More detail · slower** | Try a longer run once the composition is already working |
+
+Draft settings depend on the recipe. MOSS photography and modeling references use 30 steps; the older MOSS scene presets use 20. Anima usually uses 30 for Draft and 35 for Recommended. Krea's prepared pixel workflow stays at eight steps. The full prompt preview shows the settings for your actual choice.
+
+More steps can refine detail, but they do not fix an unclear brief or guarantee a better pose. Keep the seed fixed and change one field at a time when comparing results. [See the quality notes](quality.md) for measured comparisons.
+
+## Generate, keep, compare
+
+Click **Generate image**. The job appears beside the preview, with progress when available. Only one job uses the GPU at a time; other Studio jobs wait in the queue.
+
+Completed Studio images are saved automatically with their original inputs, prompt, seed and sampling settings. Download the PNG from the result. Pixel presets also offer a separate **native pixel PNG**; use that file when you need the actual small grid rather than the enlarged preview.
+
+![The image library showing eight public examples, selection checkboxes and favorite and comparison controls](images/studio-library.webp)
+
+In **Image library** you can:
+
+- Open an image to inspect its settings, mark it as a favorite or reuse its inputs.
+- Select exactly two images and choose **Compare 2 images**.
+- Select several images and choose **Delete selected**. **Select all displayed** includes only the loaded images.
+
+Deletion asks for confirmation and removes the selected archive images and saved settings. Copies you have already exported to a project folder remain there. Use **Cancel** in the job controls to stop a pending or running job. Library deletion applies to saved images.
+
+## Want more control?
+
+Switch to **Free prompt · custom settings** to write the full prompt and adjust size, sampler, steps, CFG and the negative prompt directly. Ten free-prompt styles can add a starting look.
+
+The current four profiles are text-to-image workflows. Image-to-image, reference-image editing and mask editing are not available with this selection. For a low-poly reference you intend to model in Blender, use [the dedicated workflow](blender-references.md): separate generated views can change the design.
+
+## Where everything lives
+
+The Studio's private archive is under `~/.local/share/local-image-ai-service-images/studio/`. It contains images and their SQLite history. The application, model files and image archive have separate locations, so application updates do not replace your pictures.
+
+You can use the same workflow through [the CLI](agent-cli.md) or [MCP and the agent skill](agents-integration.md). For application integration, see [the HTTP API](api.md).
+
+## Build and installation
+
+See [installation and updates](installation.md) for the full sequence. After changing the frontend, build it before installing the application:
 
 ```bash
 npm ci --prefix studio
 npm run build --prefix studio
 local-image-ai-service stop
-python3 scripts/prune-models.py
 python3 scripts/install.py
 local-image-ai-service start
 ```
 
-For a new Anima installation, run `python3 scripts/install-models.py anima` with the service stopped. Pinned revisions and checksums are in `config/models.lock.json`. Runtime requirements: Python 3.11+, Pillow 12.3+ and the existing separate CUDA runtime; Astro/Node is needed only for the build.
+Installing does not enable login autostart. The installed Python service serves both the API and the built Astro pages; there is no separate frontend server to start.
 
-## Sources and rights
+## Further reading
 
-- [Anima model card](https://huggingface.co/circlestone-labs/Anima): Aesthetic-specific tags, natural language, sampling and permitted commercial image use.
-- [Official ComfyUI guide](https://github.com/Comfy-Org/docs/blob/main/tutorials/image/anima/anima.mdx): architecture and workflow; some examples refer to Anima Base rather than Aesthetic.
-- [MOSS user guide](https://github.com/OpenMOSS/MOSS-Image/blob/main/USERGUIDE.md): image descriptions and sampling. MOSS uses Apache 2.0.
-- [Low-poly scenes by a Blender artist](https://github.com/emrelab/blender-projects): diorama, architecture and small game world examples as style inspiration. No assets are downloaded or included.
+[Example gallery](examples.md) · [MOSS photography](moss-photography.md) · [MOSS Low Poly](moss-lowpoly.md) · [Qwen](qwen21-and-examples.md) · [Pixel art](krea-pixel-art.md) · [All documentation](README.md)
 
-The built-in image recipes are custom, editable recipes. They are not official presets or additional LoRAs. Anima permits commercially used generated images, but requires a separate license for paid model hosting. Model licenses do not replace rights relating to depicted trademarks or characters.
+The recipes are curated, editable prompts rather than official model presets. Source links and research notes remain in the model guides. Verification details are in [the recipe report](recipes-test-report.md) and [the agent integration report](agent-integration-test-report.md).
 
-## Verification
+<details>
+<summary>Historical library cleanup — October 31, 2026</summary>
 
-```bash
-python3 -m unittest discover -s tests -v
-python3 scripts/verify-recipes.py  # real GPU; the service must be stopped
-npx --prefix studio playwright test --config studio/playwright.config.js
-```
+The earlier cleanup retained 17 recipe images and newer custom results. It removed 100 older test/comparison images, eight unused uploads and six stale jobs from the Studio library. Deletion checks used temporary copies; the 17 retained images remained intact. These counts describe that cleanup, not the current library.
 
-`verify-recipes.py` generates examples of every recipe in the draft profile and one large landscape image each with Anima and MOSS. Its report is saved alongside the images in `recipe-report.json`. See the [current recipe checks](recipes-test-report.md). [Earlier GPU measurements](studio-test-report.md) remain available as a historical comparison.
-
-## Cleanup on October 31, 2026
-
-17 current recipe images and newer custom results were retained. 100 older test/comparison images, eight unused reference uploads and six stale jobs were removed. The cleanup affected only the studio library.
-
-Deletion verification: 54 Python tests passed, the Astro build succeeded and Semgrep reported no findings. Two Firefox tests covered the existing interface and the full deletion flow: cancel, delete one image from the detail view, compare two images, select more than two, clear the selection, delete all displayed images and reload. Only temporary test copies were used; all 17 retained images remained intact.
+</details>
