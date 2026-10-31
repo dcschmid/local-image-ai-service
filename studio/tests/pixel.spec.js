@@ -1,0 +1,42 @@
+import { test, expect } from '@playwright/test';
+test('pixel presets, native exports, palette controls and keyboard access',async({page})=>{
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ const catalog=await(await page.request.get('/studio/api/catalog')).json();
+ expect(catalog.models.map(m=>m.id)).toEqual(expect.arrayContaining(['anima','moss','qwen21','krea-pixel']));
+ for(const id of ['pixel-loot','pixel-character','pixel-isometric','pixel-landscape']){
+  const sample=catalog.examples[id];expect(sample.pixel.weights).toBe('dora-v1');
+  const response=await page.request.get(sample.native_url);expect(response.ok()).toBeTruthy();
+  const raw=await response.body();expect(raw.subarray(1,4).toString()).toBe('PNG');
+  expect(raw.readUInt32BE(16)).toBe(sample.pixel.width);expect(raw.readUInt32BE(20)).toBe(sample.pixel.height);
+ }
+ await page.goto('/studio/');await page.locator('#recipe-model-filter').selectOption('krea-pixel');
+ await expect(page.locator('.recipe-card')).toHaveCount(4);
+ const open=page.locator('[data-recipe-id="pixel-character"]').getByRole('button',{name:'View example:'});
+ await open.focus();await page.keyboard.press('Enter');await expect(page.locator('#recipe-example')).toBeVisible();
+ await expect(page.locator('#example-settings')).toContainText('64 × 64 native pixels');
+ await expect(page.locator('#example-native')).toBeVisible();
+ await page.keyboard.press('Escape');await expect(open).toBeFocused();
+ await open.click();await page.locator('#use-preview-example').click();
+ await expect(page.locator('#model')).toHaveValue('krea-pixel');
+ await expect(page.locator('#pixel-grid')).toHaveValue('64');await expect(page.locator('#pixel-colors')).toHaveValue('24');
+ await expect(page.locator('#recipe-quality')).toBeDisabled();
+ await expect(page.locator('#recipe-preview')).toContainText('1024x1024 · 8 steps · CFG 1');
+ const prepared=await(await page.request.post('/studio/api/compose',{data:{...catalog.examples['pixel-character'].inputs,model:'krea-pixel',quality:'standard',seed:42}})).json();
+ expect(prepared.prompt).toBe(catalog.examples['pixel-character'].prompt);
+ expect(prepared.prompt).not.toContain('pixel art');
+ await page.locator('#pixel-grid').focus();await page.keyboard.press('Home');await page.keyboard.press('Tab');
+ await expect(page.locator('#pixel-grid')).toHaveValue('32');await expect(page.locator('#pixel-colors')).toBeFocused();
+ await expect(page.locator('#recipe-preview')).toContainText('pixel art');
+ await page.locator('#pixel-colors').selectOption('16');await page.locator('#aspect-ratio').selectOption('16:9');
+ await expect(page.locator('#format-note')).toContainText('32 × 18 native pixels');
+ await expect(page.locator('#recipe-preview')).toContainText('1024x576');
+ await page.locator('#recipe').selectOption('pixel-landscape');await expect(page.locator('#pixel-grid')).toHaveValue('128');await expect(page.locator('#pixel-colors')).toHaveValue('32');
+ await page.locator('#model').selectOption('anima');await expect(page.locator('#pixel-fields')).toBeHidden();await expect(page.locator('#recipe-quality')).toBeEnabled();
+ await expect(page.locator('#recipe-preview')).not.toContainText('Pixel settings');
+ await page.locator('#model').selectOption('krea-pixel');await page.locator('#workflow').selectOption('free');await expect(page.locator('#pixel-fields')).toBeVisible();
+ await page.setViewportSize({width:390,height:844});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();
+ await page.screenshot({path:'test-results/pixel-mobile.png',fullPage:true});
+ await page.goto('/studio/pixel-guide/');await expect(page.getByRole('heading',{name:'Build a little world.'})).toBeVisible();
+ await expect(page.locator('.recipe-card')).toHaveCount(4);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();
+ expect(errors).toEqual([]);
+});

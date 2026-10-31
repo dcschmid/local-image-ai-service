@@ -1,5 +1,7 @@
 # Installation and maintenance
 
+The studio also needs a frontend build and Pillow. Follow the [current studio installation steps](studio.md#build-and-installation) before running the installer.
+
 ## Requirements
 
 Python >=3.11, a systemd user manager with cgroup v2, and NVIDIA drivers with working `nvidia-smi`.

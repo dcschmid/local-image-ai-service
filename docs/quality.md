@@ -1,6 +1,6 @@
 # MOSS quality settings and comparison
 
-This service uses only the existing MOSS-Image SFT weights. Quality tuning changes sampling and
+This page documents the existing MOSS-Image SFT weights. Other models and presets are covered in the [studio guide](studio.md). Quality tuning changes sampling and
 resolution; it adds no image reviewer, automatic rejection, prompt rewriting, or regeneration.
 
 ## Recommended starting point
@@ -49,8 +49,8 @@ local-image-ai-service doctor
 ```
 
 Set `steps` back to 50 for the quality default. A 512×512 or 768×768 request also provides a
-faster preview. Sampling is administrative configuration, shared by requests until the next
-restart; `steps`, `cfg_scale`, and `quality` are not accepted per-request API parameters.
+faster preview. Administrative sampling provides defaults until the next restart. Per-request `steps` and
+`cfg_scale` now override them; the generic `quality` API field remains unsupported.
 See [configuration](configuration.md) for validation bounds and memory settings.
 
 ## Describe a four-person band clearly

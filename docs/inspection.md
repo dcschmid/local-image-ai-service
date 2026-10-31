@@ -1,5 +1,7 @@
 # Inventory and architecture decision — October 28, 2026
 
+Historical MOSS-only baseline (October 28–29). For the October 30 multi-model studio, see [studio guide](studio.md) and [studio test report](studio-test-report.md).
+
 ## Existing installation: read-only inspection
 
 - CLI: `~/.local/bin/imgai`, a 188-byte shell launcher for its existing virtual environment.

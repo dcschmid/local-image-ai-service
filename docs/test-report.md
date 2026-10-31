@@ -1,5 +1,7 @@
 # Test report — October 29, 2026
 
+Historical MOSS-only baseline (October 28–29). For the October 30 multi-model studio, see [studio guide](studio.md) and [studio test report](studio-test-report.md).
+
 This report covers the MOSS-only service after removal of automatic anatomy screening.
 Environment: Fedora Linux 44 KDE, RTX 5070 Laptop 8 GB, NVIDIA 615.78.08, CUDA 13.4,
 Python 3.14.8. Inference uses the separate official `master-987-a77d362` installation.

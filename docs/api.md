@@ -1,20 +1,20 @@
 # HTTP API and CLI generation
 
-Base URL: `http://127.0.0.1:7861/v1`, for image generation only. JSON over HTTP, no public
-network exposure or CORS access. Requests containing `Origin` are rejected; Open WebUI calls
-from its server. Optional Bearer key: see [configuration](configuration.md).
+Base URL: `http://127.0.0.1:7861/v1`, for the compatibility image-generation API. The [studio API](studio.md) additionally handles jobs,
+editing and history. No public network exposure or CORS access. Same-origin browser access is
+allowed only under `/studio/`; Open WebUI calls `/v1` from its server. Optional Bearer key: see [configuration](configuration.md).
 
 ## Endpoints
 
 | Method | Path | Behavior |
 | --- | --- | --- |
-| GET | `/v1/models` | OpenAI model list containing only `moss`, with `installed`, `loaded`, and `capabilities` |
+| GET | `/v1/models` | OpenAI model list containing configured curated models, with `installed`, `loaded`, and `capabilities` |
 | POST | `/v1/images/generations` | Synchronous generation of exactly one Base64 PNG |
 | GET | `/health` | 200 for a live adapter; `status`, `active_model`, `backend_pid`, `error`, and `busy` |
 | GET | `/ready` | 200 with a ready backend, otherwise 503 |
 
-Image editing, chat, embeddings, video, SDAPI, native administration, and other endpoints
-are unavailable on the service port (404). MOSS is configured for text-to-image.
+Chat, embeddings, video, native SDAPI and native administration are unavailable on the service port.
+Image editing is exposed through validated studio jobs. MOSS is configured for text-to-image.
 A native editing route does not establish model editing support.
 
 `/v1/models` remains reachable after a load failure. `installed` checks readable files;
@@ -50,7 +50,7 @@ still detects corrupt responses and dimensions that differ from the request.
 
 | Request field | Handling |
 | --- | --- |
-| `model` | Optional; defaults to `moss`. Only `moss` is supported; every other model returns 404 |
+| `model` | Optional; defaults to the loaded model. Unknown model: 404; different loaded model: 409 |
 | `prompt` | Required nonblank string, up to 16,000 characters |
 | `seed` | Optional local extension; integer 0–2147483647, otherwise generated randomly |
 | `size` | Optional, default `1024x1024`; `WIDTHxHEIGHT`, each 256–1024 and a multiple of 64; rectangles accepted |
@@ -59,10 +59,12 @@ still detects corrupt responses and dimensions that differ from the request.
 | `output_format` | Optional; only `png` |
 | `user` | Optional string up to 256 characters; accepted as compatibility metadata, unused and not stored |
 
-All other parameters receive 400, including `quality`, `style`, `steps`, `cfg_scale`,
-`negative_prompt`, `background`, `output_compression`, and arbitrary model paths.
+Optional local extensions: `steps` (1–100), `cfg_scale` (finite, 1–12), `sampler`
+(`euler`, `euler_a`, `heun`, `dpm++2m`) and `negative_prompt` (up to 16,000 characters).
+The retained model families are MOSS, Anima Aesthetic, Qwen Image 2.1 and Krea Pixel Art. The trained Anima variants use IDs `anima-psx` and `anima-lowpoly`; they automatically apply their curated adapter in Studio and compatibility-API requests. See [the Low Poly guide](anima-lowpoly.md).
+All other parameters receive 400, including `quality`, `style`, `background`, `output_compression`, and arbitrary model paths.
 Sampling is configured administratively for this service (default: 50 steps, CFG 3.0);
-unsupported per-request features are not silently simulated. See [configuration](configuration.md).
+request overrides take precedence without restarting. See [configuration](configuration.md).
 Prompts containing `sd_cpp_extra_args` or LoRA control tags are rejected. The adapter translates
 only the validated seed into the documented native extension. Maximum request body: 64 KiB;
 JSON object, `Content-Type: application/json`, exactly one `Content-Length`, no chunked requests.
@@ -104,13 +106,13 @@ service-wide storage setting is changed. The CLI reads the configured API key au
 
 Start the service first. `generate` neither starts the service nor switches models, and performs
 no automatic retries. Invalid local parameters, HTTP errors, connection failures, and save failures
-exit nonzero with an English error on stderr. Only `moss` is supported; `use moss` reloads its configuration.
+exit nonzero with an English error on stderr. `use MODEL` loads a configured curated model; `use moss` also reloads its configuration.
 A save failure occurs after inference; the CLI does not regenerate automatically.
 
 ## Errors and capacity
 
 ```json
-{"error":{"message":"Unknown model; only moss is supported","type":"invalid_request_error","code":"model_not_found","param":"model"}}
+{"error":{"message":"Unknown model","type":"invalid_request_error","code":"model_not_found","param":"model"}}
 ```
 
 | HTTP | Code / meaning |
@@ -131,5 +133,5 @@ An early client disconnect does not guarantee cancellation: a started generation
 until its service deadline, occupying the single generation slot. Errors do not trigger automatic
 retries or model reloads.
 
-The HTTP service creates no output URLs and saves no images. PNG bytes and responses stay in
-memory. Optional CLI saving is performed by the client after receiving them.
+The compatibility HTTP API creates no output URLs and saves no images. Optional CLI saving
+is performed by the client. Studio jobs separately save PNGs and metadata automatically.

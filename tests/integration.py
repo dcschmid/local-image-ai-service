@@ -107,7 +107,7 @@ def main():
         tests["systemd_start_api_reachability"] = "passed"
         for model in ("moss",):
             status, models = request(cfg, "GET", "/v1/models")
-            check(status == 200 and {m["id"] for m in models["data"]} == {"moss"}, "Models response")
+            check(status == 200 and {m["id"] for m in models["data"]} == set(cfg["models"]), "Models response")
             check([m["id"] for m in models["data"] if m["loaded"]] == [model], "Exactly one loaded model")
             tests["models_response"] = "passed"
             check(request(cfg, "GET", "/ready")[0] == 200, "Ready endpoint")
@@ -115,6 +115,7 @@ def main():
                 ({"model": "invalid", "prompt": "tree"}, 404, "model_not_found"),
                 ({"model": model, "prompt": "tree", "size": "513x512"}, 400, "invalid_size"),
                 ({"model": "z-image", "prompt": "tree"}, 404, "model_not_found"),
+                ({"model": "anima", "prompt": "tree"}, 409, "model_not_loaded"),
                 ({"model": model, "prompt": "tree", "n": 2}, 400, "unsupported_n")):
                 status, error = request(cfg, "POST", "/v1/images/generations", body)
                 check(status == expected and error["error"]["code"] == code, f"Error handling {code}")

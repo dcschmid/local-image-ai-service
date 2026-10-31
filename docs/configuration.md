@@ -6,7 +6,7 @@ Configuration and API keys must stay out of Git. Changes take effect after a res
 
 | Field | Default / meaning |
 | --- | --- |
-| `active_model` | `moss`; this is the only supported model |
+| `active_model` | `moss` initially; `moss`, `anima`, `anima-psx`, `anima-lowpoly`, `qwen21` or `krea-pixel` |
 | `host` | Only `127.0.0.1` is accepted |
 | `port` | 7861, client-facing local API |
 | `backend_port` | 17861, internal loopback runtime |
@@ -16,8 +16,8 @@ Configuration and API keys must stay out of Git. Changes take effect after a res
 | `load_timeout` | 180 seconds; allowed range 1–1800 |
 | `generation_timeout` | 300 seconds; allowed range 1–1800 |
 | `api_key_file` | `null` or absolute path to a private key file |
-| `sampling` | Optional object with `steps` and `cfg`; defaults to 50 and 3.0 |
-| `models` | Exactly one `moss` entry with absolute, readable file paths |
+| `sampling` | Optional MOSS defaults with `steps` and `cfg`; defaults to 50 and 3.0 |
+| `models` | Curated model entries with absolute component paths; see [studio guide](studio.md) |
 
 ## Existing weights
 
@@ -41,7 +41,7 @@ local-image-ai-service use moss
 ```
 
 `use moss` checks the four required files, stops this service, records the MOSS selection, and
-starts it again. It remains available as a reload command. No other model is accepted. The command
+starts it again. It remains available as a reload command. Anima Aesthetic can also be selected with `use anima`. The command
 waits for readiness; reloading cancels requests in progress. The existing `imgai` CLI is unchanged.
 
 Missing files detected before reloading leave the current service untouched. A later load failure
@@ -66,7 +66,7 @@ Missing `sampling` uses the quality defaults; null, unknown keys, and invalid va
 Changes require a restart. `doctor` and `models` print configured sampling values. For a faster
 preview, 20 steps can be configured explicitly, or a smaller `size` can be requested. High step
 counts may require increasing the generation timeout; only tested combinations are described in
-the [quality guide](quality.md). Per-request `steps` and `cfg_scale` remain unsupported.
+the [quality guide](quality.md). Per-request `steps`, `cfg_scale`, `sampler`, and `negative_prompt` are supported; see the API and studio guide.
 
 See [API limits](api.md). The runtime uses `--offload-to-cpu`, `--flash-attn on`, explicit
 `--backend cuda0`, VAE tiling, eight CPU threads, and one conditioning-cache entry.
@@ -85,8 +85,8 @@ Saving is a per-call client option, not a service configuration setting:
 - Neither flag: return API JSON only, without writing an image.
 
 The default image directory is outside the application and cache and is not removed by uninstall.
-The service's systemd filesystem permissions do not need to change: the CLI writes the response
-in the caller's process. Existing picture and project folders remain unused by default.
+The CLI writes in the caller's process. The studio writes to its own subdirectory, permitted
+by the service unit. Existing picture and project folders remain unused by default.
 
 ## Optional Bearer key
 

@@ -17,3 +17,8 @@ test-results/
 *.webp
 *.blend*
 *.log
+node_modules/
+studio/dist/
+studio/.astro/
+!studio/public/recipe-examples/*.webp
+!studio/public/recipe-examples/*-pixels.png

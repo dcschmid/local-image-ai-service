@@ -1,5 +1,5 @@
 [Unit]
-Description=Standalone Local Image AI (MOSS, CUDA, loopback)
+Description=Standalone Local Image AI (Studio, CUDA, loopback)
 StartLimitIntervalSec=60
 StartLimitBurst=2
 
@@ -26,7 +26,7 @@ NoNewPrivileges=yes
 PrivateTmp=yes
 ProtectSystem=strict
 ProtectHome=read-only
-ReadWritePaths=%h/.cache/local-image-ai-service
+ReadWritePaths=%h/.cache/local-image-ai-service %h/.local/share/local-image-ai-service-images %h/.config/local-image-ai-service
 RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
 RestrictSUIDSGID=yes
 LockPersonality=yes

@@ -1,0 +1,46 @@
+import { test, expect } from '@playwright/test';
+test('example browser filters all models and restores real example inputs',async({page})=>{
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ const reply=await page.request.get('/studio/api/catalog');expect(reply.ok()).toBeTruthy();
+ const catalog=await reply.json();expect(catalog.recipes).toHaveLength(44);expect(Object.keys(catalog.examples)).toHaveLength(44);
+ for(const recipe of catalog.recipes){
+  const sample=catalog.examples[recipe.id];expect(sample.inputs.subject).toBe(recipe.example.subject);
+  const asset=await page.request.get(sample.url);expect(asset.ok()).toBeTruthy();
+  const raw=await asset.body();expect(raw.subarray(0,4).toString()).toBe('RIFF');expect(raw.subarray(8,12).toString()).toBe('WEBP');
+ }
+ await page.goto('/studio/');await expect(page.locator('.recipe-card')).toHaveCount(6);
+ await expect(page.locator('#recipe-total')).toHaveText('6 of 44 recipes');
+ await page.locator('#recipe-model-filter').selectOption('qwen21');await expect(page.locator('.recipe-card')).toHaveCount(6);
+ const sticker=page.locator('[data-recipe-id="qwen-sticker"]');
+ await sticker.getByRole('button',{name:'View example:'}).click();
+ await expect(page.locator('#recipe-example')).toBeVisible();await expect(page.locator('#example-settings')).toContainText('Transparent background');
+ await expect.poll(()=>page.locator('#example-image').evaluate(img=>img.complete&&img.naturalWidth>0)).toBeTruthy();
+ await page.locator('#use-preview-example').click();
+ await expect(page.locator('#model')).toHaveValue('qwen21');await expect(page.locator('#recipe')).toHaveValue('qwen-sticker');
+ await expect(page.locator('#subject')).toHaveValue(catalog.examples['qwen-sticker'].inputs.subject);
+ await expect(page.locator('#seed')).toHaveValue(String(catalog.examples['qwen-sticker'].seed));
+ await expect(page.locator('#recipe-quality')).toHaveValue(catalog.examples['qwen-sticker'].quality);
+ await expect(page.locator('#recipe-preview')).toContainText('RGBA image with transparency');
+ await expect(page.locator('#aspect-ratio')).toHaveValue('auto');
+ await page.locator('#aspect-ratio').selectOption('16:9');await expect(page.locator('#format-note')).toContainText('1024 × 576');await expect(page.locator('#recipe-preview')).toContainText('1024x576');
+ await page.locator('#aspect-ratio').selectOption('1:1');await expect(page.locator('#recipe-preview')).toContainText('1024x1024');
+ await page.locator('#aspect-ratio').selectOption('2:3');await expect(page.locator('#recipe-preview')).toContainText('768x1152');
+ await page.locator('#recipe-search').fill('poster');
+ await page.locator('[data-recipe-id="qwen-poster"]').getByRole('button',{name:'Use this example',exact:true}).click();
+ await expect(page.locator('#visible-text')).toHaveValue('EXPLORE');await expect(page.locator('#aspect-ratio')).toHaveValue('auto');
+ await page.locator('#visible-text').fill('NEW WORLDS');await expect(page.locator('#recipe-preview')).toContainText('NEW WORLDS');
+ await expect(page.locator('#model-note')).toContainText('non-commercial');
+ await page.locator('#recipe-model-filter').selectOption('anima');await page.locator('#recipe-search').fill('mecha');
+ await page.locator('[data-recipe-id="anima-mecha"]').getByRole('button',{name:'Use this example',exact:true}).click();
+ await expect(page.locator('#model')).toHaveValue('anima');await expect(page.locator('#visible-text-fields')).toBeHidden();
+ await expect(page.locator('#recipe-preview')).not.toContainText('NEW WORLDS');
+ await page.locator('#recipe-model-filter').selectOption('moss');await page.locator('#recipe-search').fill('clay');
+ await page.locator('[data-recipe-id="moss-clay"]').getByRole('button',{name:'Use this example',exact:true}).click();
+ await expect(page.locator('#model')).toHaveValue('moss');await expect(page.locator('#recipe-preview')).toContainText('modeling clay');
+ await page.locator('#recipe-model-filter').selectOption('all');await page.locator('#recipe-search').fill('');
+ await page.locator('#more-recipes').click();await expect(page.locator('.recipe-card')).toHaveCount(12);
+ await page.setViewportSize({width:390,height:844});await page.locator('#explore').scrollIntoViewIfNeeded();
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();
+ await page.screenshot({path:'test-results/explore-mobile.png',fullPage:true});
+ expect(errors).toEqual([]);
+});

@@ -87,6 +87,10 @@ def generate(cfg, args):
     body = {"model": model, "prompt": args.prompt, "size": args.size, "n": 1, "response_format": "b64_json"}
     if args.seed is not None:
         body["seed"] = args.seed
+    for option in ("steps", "cfg_scale", "sampler", "negative_prompt"):
+        value = getattr(args, option, None)
+        if value is not None:
+            body[option] = value
     validate_request(body, cfg["active_model"])
     directory = None
     if args.save or args.save_dir is not None:
@@ -139,15 +143,19 @@ def wait_ready(cfg):
 def main(argv=None):
     parser = argparse.ArgumentParser(prog="local-image-ai-service", description=__doc__)
     commands = parser.add_subparsers(dest="command", required=True)
-    for name in ("doctor", "status", "models", "logs", "start", "stop", "restart"):
+    for name in ("doctor", "status", "models", "logs", "start", "stop", "restart", "studio"):
         commands.add_parser(name)
-    switch = commands.add_parser("use", help="Reload MOSS configuration and restart this service")
+    switch = commands.add_parser("use", help="Load a configured model and restart this service")
     switch.add_argument("model", choices=sorted(DEFAULTS))
     generation = commands.add_parser("generate", help="Generate one image through the running service API")
     generation.add_argument("--prompt", required=True, help="Image prompt")
     generation.add_argument("--model", choices=sorted(DEFAULTS), help="Must match the loaded model; default: configured model")
     generation.add_argument("--size", default=DEFAULT_SIZE, help=f"WIDTHxHEIGHT; multiples of 64, each 256..1024 (default: {DEFAULT_SIZE})")
     generation.add_argument("--seed", type=int, help="Integer 0..2147483647; omitted means random")
+    generation.add_argument("--steps", type=int)
+    generation.add_argument("--cfg-scale", type=float)
+    generation.add_argument("--sampler", choices=["euler", "euler_a", "heun", "dpm++2m"])
+    generation.add_argument("--negative-prompt")
     saving = generation.add_mutually_exclusive_group()
     saving.add_argument("--save", action="store_true", help="Save PNG in ~/.local/share/local-image-ai-service-images")
     saving.add_argument("--save-dir", type=Path, help="Save PNG in this directory instead (implies saving)")
@@ -155,6 +163,14 @@ def main(argv=None):
     cfg = load_config()
     if args.command == "generate":
         print(json.dumps(generate(cfg, args), indent=2))
+        return 0
+    if args.command == "studio":
+        systemctl("start")
+        wait_ready(cfg)
+        import webbrowser
+        url = f"http://{cfg['host']}:{cfg['port']}/studio/"
+        webbrowser.open(url)
+        print(url)
         return 0
     if args.command == "logs":
         os.execvp("journalctl", ["journalctl", "--user", "-u", UNIT, "-f"])
@@ -166,12 +182,12 @@ def main(argv=None):
             print("API is offline")
         return result.returncode
     if args.command == "models":
-        print(json.dumps({"configured_model": cfg["active_model"], "sampling": sampling_settings(cfg), "models": {
+        print(json.dumps({"configured_model": cfg["active_model"], "sampling": sampling_settings(cfg) if cfg["active_model"] == "moss" else DEFAULTS[cfg["active_model"]], "models": {
             name: {"missing": missing_files(cfg, name), "defaults": defaults}
             for name, defaults in DEFAULTS.items()}}, indent=2))
         return 0
     if args.command == "doctor":
-        for name in DEFAULTS:
+        for name in cfg["models"]:
             missing = missing_files(cfg, name)
             if missing:
                 raise ValueError(f"Missing files for {name}: {missing}")
@@ -180,7 +196,7 @@ def main(argv=None):
                                  capture_output=True, text=True, timeout=10, check=True)
         print(json.dumps({"config": str(CONFIG), "work": str(WORK), "models": "all required files readable",
                           "gpu": gpu, "backend": backend, "runtime": version.stdout.strip(),
-                          "sampling": sampling_settings(cfg)}, indent=2))
+                          "sampling": sampling_settings(cfg) if cfg["active_model"] == "moss" else DEFAULTS[cfg["active_model"]]}, indent=2))
         return 0
     CONFIG.parent.mkdir(parents=True, exist_ok=True)
     with (CONFIG.parent / "management.lock").open("a") as lock:

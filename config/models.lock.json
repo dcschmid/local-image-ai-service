@@ -1,0 +1,165 @@
+{
+  "anima": {
+    "diffusion": {
+      "repo": "circlestone-labs/Anima",
+      "revision": "f973fc41ec7545364ac9776c2440285f43ff2a30",
+      "file": "split_files/diffusion_models/anima-aesthetic-v1.1.safetensors",
+      "sha256": "3c1868387a3a1ff504bbb87c33678321965ead381fcf87afbd0264daa600c082",
+      "size": 4182230656,
+      "pointerSize": 135
+    },
+    "llm": {
+      "repo": "circlestone-labs/Anima",
+      "revision": "f973fc41ec7545364ac9776c2440285f43ff2a30",
+      "file": "split_files/text_encoders/qwen_3_06b_base.safetensors",
+      "sha256": "cd2a512003e2f9f3cd3c32a9c3573f820bb28c940f73c57b1ddaa983d9223eba",
+      "size": 1192135096,
+      "pointerSize": 135
+    },
+    "vae": {
+      "repo": "circlestone-labs/Anima",
+      "revision": "f973fc41ec7545364ac9776c2440285f43ff2a30",
+      "file": "split_files/vae/qwen_image_vae.safetensors",
+      "sha256": "a70580f0213e67967ee9c95f05bb400e8fb08307e017a924bf3441223e023d1f",
+      "size": 253806246,
+      "pointerSize": 134
+    }
+  },
+  "qwen21": {
+    "diffusion": {
+      "repo": "abenzerps/Qwen-Image-2.1-Uncensored-Quantized",
+      "revision": "7959e658915f52274897fb573ffeda49de8dc16b",
+      "file": "qwen-image-2.1-UC-Q4_K_M.gguf",
+      "sha256": "e79c8a009f2ecbdb6c70fd663d9aea9ee304a0d91f347e4169a756b8ad141b41",
+      "size": 4604558112
+    },
+    "llm": {
+      "repo": "Qwen/Qwen3-VL-8B-Instruct-GGUF",
+      "revision": "f982a07559d4a2f6c8744d840bf6fccab30eea96",
+      "file": "Qwen3VL-8B-Instruct-Q4_K_M.gguf",
+      "sha256": "67d1659bfe71b89d50b45a4ad1a9e5b997e5bb16ce5da66a6a6167abd569e9e2",
+      "size": 5027784800
+    },
+    "vae": {
+      "repo": "Comfy-Org/Qwen-Image-2.1",
+      "revision": "aacf31a6d48e707f352ecba714cee0680da3479b",
+      "file": "vae/qwen_image_2.1_vae_bf16.safetensors",
+      "sha256": "bb21f7473051e1ac368515dd3f2e15cd44d7a11748ee8823e1ddca3e4876b7c9",
+      "size": 675509688
+    }
+  },
+  "krea-pixel": {
+    "diffusion": {
+      "repo": "realrebelai/KREA-2_GGUFs",
+      "revision": "9721c3ec932c43dff6dbb5793a816d9ad105277f",
+      "file": "TURBO/Krea-2-Turbo-Q3_K_M.gguf",
+      "size": 5514578016,
+      "sha256": "9a8917ac175e0287d86f43da7d520ee0efe4a24f5250d9cd7ae0b0abf4ef5f62"
+    },
+    "llm": {
+      "repo": "Qwen/Qwen3-VL-4B-Instruct-GGUF",
+      "revision": "1cd86afb9a95c410a6038ab3b40d8b578c892266",
+      "file": "Qwen3VL-4B-Instruct-Q4_K_M.gguf",
+      "size": 2497281664,
+      "sha256": "66358cb18bb6b3b1b6675aa412c7a88ef01d228f481184d13668e5201c730a0a"
+    },
+    "vae": {
+      "repo": "Comfy-Org/Wan_2.1_ComfyUI_repackaged",
+      "revision": "123acf1cc74bccbb9bfff8ac1ee72edc08c2341d",
+      "file": "split_files/vae/wan_2.1_vae.safetensors",
+      "size": 253815318,
+      "sha256": "2fc39d31359a4b0a64f55876d8ff7fa8d780956ae2cb13463b0223e15148976b"
+    },
+    "lora32": {
+      "repo": "e-n-v-y/Krea-2-Pixel-Art",
+      "revision": "2fa8d14a24a62f5f3679326f782548c97039d9c2",
+      "file": "k2-pixel32.safetensors",
+      "size": 74406744,
+      "sha256": "35a79daf8c9499554c5cd299dc3940f78c2d5f0b4ef30b3ad42ea232cdf14af0"
+    },
+    "lora64": {
+      "repo": "e-n-v-y/Krea-2-Pixel-Art",
+      "revision": "2fa8d14a24a62f5f3679326f782548c97039d9c2",
+      "file": "k2-pixel64.safetensors",
+      "size": 74406744,
+      "sha256": "53f1033700a866eaf6f56026cc352e26cd7d0563d4b32957dbbd3765b60d47bf"
+    },
+    "lora128": {
+      "repo": "e-n-v-y/Krea-2-Pixel-Art",
+      "revision": "2fa8d14a24a62f5f3679326f782548c97039d9c2",
+      "file": "k2-pixel128.safetensors",
+      "size": 74406744,
+      "sha256": "005cfe8e6ba05cbee90cf68ac9feb6f1f769d29a62a78c2eebcaa81955fb2a08"
+    }
+  },
+  "anima-psx": {
+    "diffusion": {
+      "repo": "circlestone-labs/Anima",
+      "revision": "f973fc41ec7545364ac9776c2440285f43ff2a30",
+      "file": "split_files/diffusion_models/anima-aesthetic-v1.1.safetensors",
+      "sha256": "3c1868387a3a1ff504bbb87c33678321965ead381fcf87afbd0264daa600c082",
+      "size": 4182230656,
+      "pointerSize": 135
+    },
+    "llm": {
+      "repo": "circlestone-labs/Anima",
+      "revision": "f973fc41ec7545364ac9776c2440285f43ff2a30",
+      "file": "split_files/text_encoders/qwen_3_06b_base.safetensors",
+      "sha256": "cd2a512003e2f9f3cd3c32a9c3573f820bb28c940f73c57b1ddaa983d9223eba",
+      "size": 1192135096,
+      "pointerSize": 135
+    },
+    "vae": {
+      "repo": "circlestone-labs/Anima",
+      "revision": "f973fc41ec7545364ac9776c2440285f43ff2a30",
+      "file": "split_files/vae/qwen_image_vae.safetensors",
+      "sha256": "a70580f0213e67967ee9c95f05bb400e8fb08307e017a924bf3441223e023d1f",
+      "size": 253806246,
+      "pointerSize": 134
+    },
+    "lora": {
+      "provider": "civitai",
+      "url": "https://civitai.com/api/download/models/2794693?fileId=2680658",
+      "file": "LowPolyPSX_AnimaPreview2_byKonan.safetensors",
+      "size": 51721808,
+      "sha256": "3f0fc4a628262a85728426e0f0d14c882c2a36e46d2798b555fb95ae5f00dd03",
+      "model_id": 2485743,
+      "version_id": 2794693
+    }
+  },
+  "anima-lowpoly": {
+    "diffusion": {
+      "repo": "circlestone-labs/Anima",
+      "revision": "f973fc41ec7545364ac9776c2440285f43ff2a30",
+      "file": "split_files/diffusion_models/anima-aesthetic-v1.1.safetensors",
+      "sha256": "3c1868387a3a1ff504bbb87c33678321965ead381fcf87afbd0264daa600c082",
+      "size": 4182230656,
+      "pointerSize": 135
+    },
+    "llm": {
+      "repo": "circlestone-labs/Anima",
+      "revision": "f973fc41ec7545364ac9776c2440285f43ff2a30",
+      "file": "split_files/text_encoders/qwen_3_06b_base.safetensors",
+      "sha256": "cd2a512003e2f9f3cd3c32a9c3573f820bb28c940f73c57b1ddaa983d9223eba",
+      "size": 1192135096,
+      "pointerSize": 135
+    },
+    "vae": {
+      "repo": "circlestone-labs/Anima",
+      "revision": "f973fc41ec7545364ac9776c2440285f43ff2a30",
+      "file": "split_files/vae/qwen_image_vae.safetensors",
+      "sha256": "a70580f0213e67967ee9c95f05bb400e8fb08307e017a924bf3441223e023d1f",
+      "size": 253806246,
+      "pointerSize": 134
+    },
+    "lora": {
+      "provider": "civitai",
+      "url": "https://civitai.com/api/download/models/2692813?fileId=2578635",
+      "file": "AnimaLowPoly.safetensors",
+      "size": 264419968,
+      "sha256": "ec50a198575a8ac3ffb51fb0ab91b6e3ac4d98b28f872ec6a88e15c9451263c7",
+      "model_id": 2204336,
+      "version_id": 2692813
+    }
+  }
+}

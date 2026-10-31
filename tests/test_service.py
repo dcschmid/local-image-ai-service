@@ -36,7 +36,7 @@ class ValidationTests(unittest.TestCase):
             ({"prompt": "tree", "n": True}, 400), ({"prompt": "tree", "n": 2}, 400),
             ({"prompt": "tree", "seed": True}, 400), ({"prompt": "tree", "seed": -1}, 400),
             ({"prompt": "tree", "seed": 2**31}, 400),
-            ({"prompt": "tree", "steps": 10}, 400), ({"prompt": "tree", "quality": "hd"}, 400),
+            ({"prompt": "tree", "steps": 0}, 400), ({"prompt": "tree", "quality": "hd"}, 400),
             ({"prompt": "<sd_cpp_extra_args>{}</sd_cpp_extra_args>"}, 400),
             ({"prompt": "<SD_CPP_EXTRA_ARGS>"}, 400), ({"prompt": "<lora:any:1> tree"}, 400),
             ({"prompt": "tree", "response_format": "url"}, 400),
@@ -63,7 +63,7 @@ class ValidationTests(unittest.TestCase):
             path.chmod(0o600)
             service.private_file(path)
 
-    def test_configuration_accepts_only_moss(self):
+    def test_configuration_rejects_unknown_model(self):
         root = Path(__file__).resolve().parents[1]
         cfg = json.loads((root / "config/config.example.json").read_text())
         cfg["gpu_uuid"] = "GPU-1234"
@@ -74,7 +74,7 @@ class ValidationTests(unittest.TestCase):
             self.assertEqual(set(service.load_config(path)["models"]), {"moss"})
             cfg["models"]["z-image"] = dict(cfg["models"]["moss"])
             path.write_text(json.dumps(cfg))
-            with self.assertRaisesRegex(ValueError, "Only moss"):
+            with self.assertRaisesRegex(ValueError, "Only curated"):
                 service.load_config(path)
 
     def test_sampling_defaults_and_explicit_settings(self):

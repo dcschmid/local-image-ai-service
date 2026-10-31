@@ -9,6 +9,7 @@ import hmac
 import http.client
 import json
 import logging
+import math
 import os
 from pathlib import Path
 import re
@@ -18,14 +19,21 @@ import socket
 import stat
 import struct
 import subprocess
+import sys
 import threading
 import time
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
+# Studio imports this module lazily. Keep one module/class identity when systemd
+# launches service.py directly, so APIError raised by Studio reaches this handler.
+if __name__ == "__main__":
+    sys.modules["service"] = sys.modules[__name__]
+
 HOME = Path.home()
 CONFIG = HOME / ".config/local-image-ai-service/config.json"
 WORK = HOME / ".cache/local-image-ai-service/work"
-DEFAULTS = {"moss": {"steps": 50, "cfg": 3.0}}
+from catalog import MODELS, SAMPLERS, defaults
+DEFAULTS = {name: {"steps": m["steps"], "cfg": m["cfg"]} for name, m in MODELS.items()}
 DEFAULT_SIZE = "1024x1024"
 MAX_BODY = 65536
 MAX_RESPONSE = 16 * 1024 * 1024
@@ -60,8 +68,8 @@ def load_config(path=CONFIG):
     cfg = json.loads(path.read_text())
     if cfg["host"] != "127.0.0.1":
         raise ValueError("This service supports loopback 127.0.0.1 only")
-    if cfg["active_model"] not in DEFAULTS or set(cfg["models"]) != set(DEFAULTS):
-        raise ValueError("Only moss may be configured")
+    if cfg["active_model"] not in cfg["models"] or not set(cfg["models"]) <= set(DEFAULTS):
+        raise ValueError("Only curated models may be configured")
     sampling_settings(cfg)
     for key in ("port", "backend_port"):
         if type(cfg[key]) is not int or not 1024 <= cfg[key] <= 65535:
@@ -78,8 +86,13 @@ def load_config(path=CONFIG):
         raise ValueError("gpu_uuid must be an NVIDIA GPU UUID")
     for name, files in cfg["models"].items():
         required = {"diffusion", "llm", "vae"} | ({"tokenizer"} if name == "moss" else set())
+        if name == 'krea-pixel':required |= {'lora32','lora64','lora128','pixel32','pixel64','pixel128'}
+        if MODELS[name].get('lora_strength') is not None:required.add('lora')
+        if name=='anima-lowpoly':required.add('lora_source')
         if set(files) != required or any(not Path(p).is_absolute() for p in files.values()):
             raise ValueError(f"Invalid model paths for {name}")
+        if name == 'krea-pixel' and len({str(Path(files['lora'+str(grid)]).parent) for grid in (32,64,128)})!=1:
+            raise ValueError('Pixel LoRAs must share one directory')
     if cfg.get("api_key_file"):
         key_path = Path(cfg["api_key_file"])
         if not key_path.is_absolute():
@@ -99,7 +112,7 @@ def runtime_env(cfg):
 
 
 def missing_files(cfg, model):
-    return [p for p in cfg["models"][model].values() if not Path(p).is_file() or not os.access(p, os.R_OK)]
+    return ["Model is not installed"] if model not in cfg["models"] else [p for p in cfg["models"][model].values() if not Path(p).is_file() or not os.access(p, os.R_OK)]
 
 
 def gpu_check(cfg):
@@ -128,16 +141,16 @@ def foreign_compute(cfg):
     return processes
 
 
-def validate_request(body, active):
+def validate_request(body, active, max_dimension=1024):
     if not isinstance(body, dict):
         raise APIError(400, "Expected a JSON object", "invalid_request_error")
-    allowed = {"model", "prompt", "seed", "size", "n", "response_format", "output_format", "user"}
+    allowed = {"model", "prompt", "seed", "size", "n", "response_format", "output_format", "user", "steps", "cfg_scale", "sampler", "negative_prompt"}
     unknown = sorted(set(body) - allowed)
     if unknown:
         raise APIError(400, f"Unsupported parameters: {', '.join(unknown)}", "unsupported_parameter", unknown[0])
     model = body.get("model", active)
     if not isinstance(model, str) or model not in DEFAULTS:
-        raise APIError(404, "Unknown model; only moss is supported", "model_not_found", "model")
+        raise APIError(404, "Unknown model", "model_not_found", "model")
     if model != active:
         raise APIError(409, f"Model is not loaded; run local-image-ai-service use {model}", "model_not_loaded", "model")
     prompt = body.get("prompt")
@@ -147,8 +160,10 @@ def validate_request(body, active):
         raise APIError(400, "Runtime control tags are unsupported in prompts", "invalid_prompt", "prompt")
     size = body.get("size", DEFAULT_SIZE)
     match = re.fullmatch(r"([0-9]{3,4})x([0-9]{3,4})", size) if isinstance(size, str) else None
-    if not match or any(v < 256 or v > 1024 or v % 64 for v in map(int, match.groups())):
+    if not match or any(v < 256 or v > max_dimension or v % 64 for v in map(int, match.groups())):
         raise APIError(400, "size: dimensions must be multiples of 64 between 256 and 1024", "invalid_size", "size")
+    if match and int(match[1]) * int(match[2]) > 1100000:
+        raise APIError(400, "Maximum area is 1.1 megapixels", "invalid_size", "size")
     if type(body.get("n", 1)) is not int or body.get("n", 1) != 1:
         raise APIError(400, "Only n=1 is supported; submit images sequentially", "unsupported_n", "n")
     if body.get("response_format", "b64_json") != "b64_json":
@@ -160,7 +175,30 @@ def validate_request(body, active):
     seed = body.get("seed", secrets.randbelow(2**31))
     if type(seed) is not int or not 0 <= seed < 2**31:
         raise APIError(400, "seed must be an integer in 0..2147483647", "invalid_seed", "seed")
-    return {"prompt": prompt, "size": size, "n": 1, "output_format": "png"}, seed
+    native = {"prompt": prompt, "size": size, "n": 1, "output_format": "png"}
+    if "steps" in body:
+        if type(body["steps"]) is not int or not 1 <= body["steps"] <= 100:
+            raise APIError(400, "steps must be 1..100", "invalid_steps")
+        native["steps"] = body["steps"]
+    if "cfg_scale" in body:
+        value = body["cfg_scale"]
+        if type(value) not in (int, float) or not 1 <= value <= 12 or not math.isfinite(value):
+            raise APIError(400, "cfg_scale must be finite, 1..12", "invalid_cfg")
+        if not MODELS[model]["negative"] and value != 1:
+            raise APIError(400, "Distilled model requires CFG 1", "unsupported_parameter")
+        native["cfg_scale"] = value
+    if "sampler" in body:
+        if body["sampler"] not in SAMPLERS:
+            raise APIError(400, "Unsupported sampler", "unsupported_parameter")
+        native["sampler"] = body["sampler"]
+    if "negative_prompt" in body:
+        value = body["negative_prompt"]
+        if not isinstance(value, str) or len(value) > 16000 or re.search(r"sd_cpp_extra_args|<lora:", value, re.I):
+            raise APIError(400, "Invalid negative prompt", "invalid_prompt")
+        if value and not MODELS[model]["negative"]:
+            raise APIError(400, "Model does not support negative prompting", "unsupported_parameter")
+        native["negative_prompt"] = value
+    return native, seed
 
 
 def validate_response(payload, size):
@@ -182,6 +220,7 @@ class Backend:
         self.stopping = threading.Event()
         self.failure = None
         self.model = cfg["active_model"]
+        self.pixel_grid = 64
 
     def stop(self):
         self.ready.clear()
@@ -212,21 +251,34 @@ class Backend:
                     raise ValueError("Backend port is already in use")
             except ConnectionRefusedError:
                 pass
-            sampling = sampling_settings(cfg)
+            sampling = sampling_settings(cfg) if self.model == "moss" else DEFAULTS[self.model]
             width, height = DEFAULT_SIZE.split("x")
             args = [cfg["runtime"], "--listen-ip", "127.0.0.1", "--listen-port", str(cfg["backend_port"]),
                     "--model-dir", str(WORK / "empty-model-catalog"), "--offload-to-cpu", "--flash-attn", "on",
                     "--backend", "cuda0", "--threads", "8", "--conditioning-cache-size", "1",
                     "-W", width, "-H", height, "--steps", str(sampling["steps"]),
                     "--cfg-scale", str(sampling["cfg"]), "--sampling-method", "euler",
-                    "--scheduler", "discrete", "--flow-shift", "5", "--vae-tiling"]
-            flags = {"diffusion": "--diffusion-model", "llm": "--llm", "vae": "--vae", "tokenizer": "--tokenizer"}
+                    "--scheduler", MODELS[self.model]["scheduler"], "--vae-tiling"]
+            if MODELS[self.model]["shift"] is not None:
+                args.extend(["--flow-shift", format(MODELS[self.model]["shift"], "g")])
+            if MODELS[self.model].get('extra_sample_args'):
+                args.extend(['--extra-sample-args',MODELS[self.model]['extra_sample_args']])
+            args[args.index("--sampling-method") + 1] = MODELS[self.model]["sampler"]
+            flags = {"diffusion": "--diffusion-model", "llm": "--llm", "vae": "--vae", "tokenizer": "--tokenizer", "checkpoint": "--model"}
             for role, path in cfg["models"][self.model].items():
+                # Adapter sources and prepared variants are provenance entries,
+                # not additional native command-line model roles.
+                if role.startswith(('lora','pixel')):continue
+                if self.model=='krea-pixel' and role=='diffusion':
+                    # DoRA is already baked into this variant; do not apply it twice.
+                    path=cfg['models'][self.model]['pixel'+str(self.pixel_grid)]
                 args.extend([flags[role], path])
+            if MODELS[self.model].get('lora_strength') is not None:
+                args.extend(['--lora-model-dir',str(Path(cfg['models'][self.model]['lora']).parent)])
             if self.stopping.is_set():
                 return
-            LOG.info("Loading model=%s steps=%s cfg=%s sampler=euler scheduler=discrete flow-shift=5; offload=cpu flash-attn=on backend=cuda0",
-                     self.model, sampling["steps"], sampling["cfg"])
+            LOG.info("Loading model=%s steps=%s cfg=%s sampler=%s scheduler=%s flow-shift=%s; offload=cpu flash-attn=on backend=cuda0",
+                     self.model, sampling["steps"], sampling["cfg"], MODELS[self.model]["sampler"], MODELS[self.model]["scheduler"], MODELS[self.model]["shift"])
             self.proc = subprocess.Popen(args, env=runtime_env(cfg), cwd=WORK)
             deadline = time.monotonic() + cfg["load_timeout"]
             while time.monotonic() < deadline and not self.stopping.is_set():
@@ -261,7 +313,19 @@ class Backend:
             raise APIError(503, "Backend not ready; inspect /health and service logs", "backend_not_ready")
         # The official OpenAI route accepts seed only through this documented native extension.
         native = dict(body)
-        native["prompt"] += "<sd_cpp_extra_args>" + json.dumps({"seed": seed}) + "</sd_cpp_extra_args>"
+        extra = {"seed": seed}
+        sample = {}
+        if "steps" in native: sample["sample_steps"] = native.pop("steps")
+        if "cfg_scale" in native: sample["guidance"] = {"txt_cfg": native.pop("cfg_scale")}
+        if "sampler" in native: sample["sample_method"] = native.pop("sampler")
+        if self.model=='krea-pixel':
+            sample.update(scheduler='flux',extra_sample_args=MODELS[self.model]['extra_sample_args'])
+        if sample: extra["sample_params"] = sample
+        if "negative_prompt" in native: extra["negative_prompt"] = native.pop("negative_prompt")
+        from catalog import model_loras
+        loras=model_loras(self.model,self.cfg.get('models',{}).get(self.model,{}))
+        if loras:extra['lora']=loras
+        native["prompt"] += "<sd_cpp_extra_args>" + json.dumps(extra) + "</sd_cpp_extra_args>"
         conn = http.client.HTTPConnection("127.0.0.1", self.cfg["backend_port"], timeout=self.cfg["generation_timeout"])
         expired = threading.Event()
         def expire():
@@ -282,6 +346,11 @@ class Backend:
             if response.status != 200 or len(payload) > MAX_RESPONSE:
                 raise ValueError(f"Backend HTTP {response.status} or oversized response")
             result = validate_response(payload, body["size"])
+            if self.model == 'krea-pixel':
+                import pixel_art
+                for item in result['data']:
+                    raw, _, _ = pixel_art.refine(base64.b64decode(item['b64_json']), self.pixel_grid, 24)
+                    item['b64_json'] = base64.b64encode(raw).decode()
             result["model"] = self.model
             result["seed"] = seed
             return result
@@ -341,6 +410,8 @@ class BoundedServer(HTTPServer):
 
 
 def make_handler(backend, api_key):
+    from studio_service import Studio
+    studio = Studio(backend) if isinstance(backend, Backend) else None
     class Handler(BaseHTTPRequestHandler):
         server_version = "local-image-ai-service/0.1"
         sys_version = ""
@@ -378,9 +449,17 @@ def make_handler(backend, api_key):
 
         def dispatch(self):
             try:
+                # Host validation also prevents DNS rebinding against this loopback service.
+                expected = f"127.0.0.1:{self.server.server_port}"
+                host = self.headers.get("Host", "")
+                origin = self.headers.get("Origin")
+                if host != expected:
+                    raise APIError(403, "Use the loopback address 127.0.0.1", "host_not_allowed")
+                if origin and (not self.path.startswith("/studio/") or origin != "http://" + expected):
+                    raise APIError(403, "Browser origin is not allowed", "origin_not_allowed")
+                if studio and self.path.startswith("/studio"):
+                    return studio.dispatch(self, api_key)
                 self.authorize()
-                if self.headers.get("Origin"):
-                    raise APIError(403, "Browser origins are not accepted", "origin_not_allowed")
                 if self.command == "GET":
                     if self.path == "/health":
                         return self.send_json(200, {"status": "ready" if backend.available() else "unavailable",
@@ -393,7 +472,7 @@ def make_handler(backend, api_key):
                             {"id": name, "object": "model", "owned_by": "local", "created": 0,
                              "installed": not missing_files(backend.cfg, name),
                              "loaded": backend.available() and name == backend.model,
-                             "capabilities": ["images.generations"]} for name in DEFAULTS]})
+                             "capabilities": ["images.generations"]} for name in backend.cfg["models"]]})
                 if self.command != "POST" or self.path != "/v1/images/generations":
                     raise APIError(404, "Unknown endpoint", "not_found")
                 if self.headers.get("Transfer-Encoding") or len(self.headers.get_all("Content-Length", [])) != 1:

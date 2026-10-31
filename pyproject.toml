@@ -3,7 +3,7 @@ name = "local-image-ai-service"
 version = "0.1.0"
 description = "Independent loopback image inference service for stable-diffusion.cpp"
 requires-python = ">=3.11"
-dependencies = []
+dependencies = ["Pillow>=12.3.0,<13"]
 
 [tool.ruff]
 line-length = 120

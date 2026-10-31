@@ -1,0 +1,75 @@
+import { test, expect } from '@playwright/test';
+test('guided recipes, photography, low poly, free prompt, guide and mobile layout', async ({ page }) => {
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto('/studio/');
+ await expect(page.locator('html')).toHaveAttribute('lang','en');
+ await expect(page.getByRole('heading',{name:'From idea to image.'})).toBeVisible();
+ await expect(page.getByRole('button',{name:'Generate image'})).toBeVisible();
+ await expect(page.locator('#model option')).toHaveCount(6);
+ await expect(page.locator('#model')).toHaveValue('anima');
+ await expect(page.locator('#workflow')).toHaveValue('guided');
+ await expect(page.locator('#recipe option')).toHaveCount(44);
+ await expect(page.locator('#aspect-ratio option')).toHaveCount(8);
+ await expect(page.locator('#recipe optgroup[label="MOSS · realistic photography"] option')).toHaveCount(9);
+ await expect(page.locator('#recipe option:checked')).toHaveText('Cinematic character portrait');
+ await expect(page.locator('#model-note')).toContainText('For anime and illustration');
+ await page.locator('#example').click();await page.locator('#recipe-quality').selectOption('standard');
+ await expect(page.locator('#subject')).toHaveValue(/bounty hunter/);
+ await expect(page.locator('#recipe-preview')).toContainText('cinematic anime illustration');
+ await expect(page.locator('#recipe-preview')).toContainText('35 steps');
+ await page.locator('#recipe').selectOption('lowpoly-diorama');
+ await expect(page.locator('#model')).toHaveValue('moss');await page.locator('#example').click();
+ await page.locator('#recipe-quality').selectOption('standard');
+ await expect(page.locator('#recipe-preview')).toContainText('flat shading');
+ await expect(page.locator('#recipe-preview')).toContainText('50 steps');
+ await expect(page.locator('#recipe-tip')).toBeHidden();
+ await page.locator('#recipe').selectOption('photo-portrait');await page.locator('#example').click();
+ await expect(page.locator('#model')).toHaveValue('moss');
+ await expect(page.locator('#subject')).toHaveValue(/freckles/);
+ await expect(page.locator('#recipe-tip')).toContainText('natural skin texture');
+ await expect(page.locator('#recipe-preview')).toContainText('Natural portrait photography');
+ await expect(page.locator('#recipe-preview')).toContainText('832x1216 · 50 steps · CFG 3');
+ await expect(page.locator('#recipe-preview')).not.toContainText('photorealistic textures');
+ await page.locator('#recipe-quality').selectOption('preview');
+ await expect(page.locator('#recipe-preview')).toContainText('576x832 · 30 steps');
+ await page.locator('#recipe-quality').selectOption('standard');
+ await page.locator('#recipe').selectOption('photo-product');await page.locator('#example').click();
+ await expect(page.locator('#recipe-preview')).toContainText('Realistic studio product photography');
+ await page.locator('#recipe').selectOption('photo-interior');await page.locator('#example').click();
+ await expect(page.locator('#recipe-preview')).toContainText('straight vertical lines');
+ await page.locator('#model').selectOption('anima');await page.locator('#model').selectOption('moss');
+ await expect(page.locator('#recipe')).toHaveValue('photo-portrait');
+ await page.locator('#workflow').selectOption('free');await page.locator('#preset').selectOption('comic');
+ await expect(page.locator('#suffix')).toHaveValue(/comic book/);await expect(page.locator('#prompt')).toBeVisible();
+ await page.setViewportSize({width:390,height:844});
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBeTruthy();
+ await page.screenshot({path:'test-results/guided-mobile.png',fullPage:true});
+ await page.setViewportSize({width:1440,height:1080});await page.locator('#model').selectOption('anima');await page.locator('#workflow').selectOption('guided');
+ await page.screenshot({path:'test-results/guided-desktop.png',fullPage:true});
+ await page.goto('/studio/anima-guide/');await expect(page.getByRole('heading',{name:'Fewer controls. More images.'})).toBeVisible();
+ await expect(page.locator('html')).toHaveAttribute('lang','en');
+ await expect(page.getByRole('heading',{name:'Realistic photography with MOSS'})).toBeVisible();
+ expect(errors).toEqual([]);
+});
+test('service compiles and saves a subject-only recipe, with reproducible reuse', async ({ page }) => {
+ test.setTimeout(180000);await page.goto('/studio/');
+ await page.locator('#subject').fill('an adult swordswoman with red hair and a dark blue coat');
+ await page.locator('#recipe-quality').selectOption('preview');
+ const reply=page.waitForResponse(r=>r.url().endsWith('/studio/api/jobs')&&r.request().method()==='POST');
+ await page.locator('#submit').click();const response=await reply;expect(response.status()).toBe(202);const job=await response.json();
+ expect(job.request.recipe_inputs.subject).toContain('swordswoman');expect(job.request.prompt).toContain('cinematic anime illustration');expect(job.request.steps).toBe(30);
+ await expect.poll(async()=>{const jobs=await(await page.request.get('/studio/api/jobs')).json();return jobs.find(j=>j.id===job.id)?.status;},{timeout:120000}).toBe('completed');
+ await expect(page.locator('#result')).toBeVisible();
+ await expect(page.locator('.card').first().locator('img')).toHaveAttribute('alt',/swordswoman/);
+ await page.locator('.card').first().locator('button').first().click();await page.locator('#reuse').click();
+ await expect(page.locator('#subject')).toHaveValue('an adult swordswoman with red hair and a dark blue coat');
+ await expect(page.locator('#seed')).toHaveValue(String(job.request.seed));
+});
+test('removed models rejected and historical images remain viewable', async ({ page }) => {
+ await page.goto('/studio/');
+ for(const model of ['z-turbo','anima-turbo','klein','animagine','qwen-2512']){
+  const response=await page.request.post('/studio/api/jobs',{data:{model,prompt:'tree'}});expect(response.status()).toBe(404);
+  expect((await response.json()).error.message).toBe('Unknown model.');
+ }
+ const images=await(await page.request.get('/studio/api/gallery')).json();const historical=images.find(i=>!['moss','anima'].includes(i.request.model));
+ if(historical){const response=await page.request.get('/studio/api/files/'+historical.id);expect(response.status()).toBe(200);}
+});

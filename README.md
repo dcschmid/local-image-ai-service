@@ -1,16 +1,24 @@
 # Local Image AI Service
 
-A standalone local image inference service for **MOSS-Image SFT**.
-`moss` is the only supported model. The service does not import or invoke `imgai` and contains no game,
-Blender, character, vehicle, or track workflow code.
+A local image studio with **Anima Aesthetic 1.1**, **MOSS SFT**, **Qwen Image 2.1** and **Krea Pixel Art**, using the existing
+stable-diffusion.cpp CUDA runtime on the RTX 5070 Laptop 8 GB.
 
-Installed on Fedora 44 / RTX 5070 Laptop 8 GB. As of October 29, 2026, this is a MOSS-only
-service with direct image delivery and no anatomy checker.
-Login autostart is not enabled. No remote repository was created.
+Open **http://127.0.0.1:7861/studio/**. The default guided workflow only needs a subject:
+choose one of 44 Anima, MOSS, Qwen and pixel-art recipes, optionally add
+scene/details, then generate. The service supplies composition, lighting, format and sampling.
+A full prompt preview and free-prompt mode remain available.
+
+[Guide and examples](docs/studio.md) · [Browser guide](http://127.0.0.1:7861/studio/anima-guide/)
+
+[Trained Anima Low Poly styles](docs/anima-lowpoly.md) · [Krea Pixel Art, native PNGs and setup](docs/krea-pixel-art.md) · [Explore Qwen and the example library](docs/qwen21-and-examples.md) · [MOSS photography research](docs/moss-photography.md). Browse real examples in the studio and reuse their inputs and seeds.
+
+Previously removed models remain outside the catalog. The archive keeps current images; individual or selected images can be deleted through the studio.
+Login autostart remains disabled; inference stays local without an additional content filter.
 
 ```bash
 local-image-ai-service doctor
 local-image-ai-service start
+local-image-ai-service studio
 local-image-ai-service status
 local-image-ai-service models
 local-image-ai-service use moss
@@ -18,7 +26,7 @@ local-image-ai-service logs
 local-image-ai-service stop
 ```
 
-`start`, `restart`, and `use moss` wait for MOSS to become ready. Direct systemd commands
+`start`, `restart`, and `use moss` wait for the selected model to become ready. Direct systemd commands
 are also supported; `systemctl start` returns before loading finishes, so check `/ready`:
 
 ```bash
@@ -57,8 +65,8 @@ Without `--save` or `--save-dir`, the CLI prints the complete API JSON, includin
 The selected model must already be loaded; `generate` does not start or switch the service.
 This CLI is independent of the existing `imgai` CLI.
 
-Quality defaults are **1024×1024, 50 Euler steps, CFG 3.0, flow shift 5**. The private
-`sampling` configuration can lower the step count for previews. Open WebUI sends an explicit
+MOSS quality defaults are **1024×1024, 50 Euler steps, CFG 3.0, flow shift 5**. The private
+`sampling` configuration or per-request `--steps` can lower the step count for previews. Open WebUI sends an explicit
 image size, so choose 1024×1024 there manually; this service does not change its settings.
 See [quality settings and measured comparisons](docs/quality.md).
 
@@ -73,17 +81,17 @@ curl --fail-with-body http://127.0.0.1:7861/v1/images/generations \
   -d '{"model":"moss","prompt":"A red teapot on a white table","seed":42,"size":"512x512","n":1,"response_format":"b64_json"}'
 ```
 
-Responses contain PNG bytes as Base64. The HTTP service never saves images automatically;
+Responses contain PNG bytes as Base64. The compatibility API never saves images automatically;
 CLI saving happens in the client after a successful response. One generation runs at a time;
-additional requests receive `429`. Requests for any model other than `moss` return `404`.
-Images are delivered directly from MOSS without an anatomy reviewer, content scoring, or a quality gate.
+additional requests receive `429`. Requests for an unknown model return `404`; a configured model that is not loaded returns `409`.
+Images are delivered directly from the selected model without an anatomy reviewer, content scoring, or a quality gate.
 
 The runtime is a separate installation of official `sd-server master-987-a77d362`, including
 its own CUDA 13.4 runtime libraries. Existing weights are read through absolute paths.
-A small Python standard-library adapter adds required validation, model IDs, authentication,
+A small Python adapter adds required validation, model IDs, authentication,
 and resource limits. See the [measured findings and architecture decision](docs/inspection.md).
 
-This repository contains no models, images, or other binary assets. Existing image and game
+Model weights stay outside this repository. The studio bundles generated example thumbnails and native pixel PNGs. Existing image and game
 folders are not output or cleanup targets. Before using the existing `imgai` workflows, stop
 this service to avoid GPU resource conflicts.
 
@@ -94,10 +102,14 @@ this service to avoid GPU resource conflicts.
 - [Quality settings, prompts, and comparisons](docs/quality.md)
 - [systemd and resource management](docs/systemd.md)
 - [HTTP API, CLI generation, and errors](docs/api.md)
-- [Future Open WebUI integration](docs/open-webui.md)
+- [Atelier studio, models and presets](docs/studio.md)
+- [Open WebUI integration](docs/open-webui.md)
 - [Troubleshooting](docs/troubleshooting.md)
 - [Inventory and runtime decision](docs/inspection.md)
-- [Test report](docs/test-report.md)
+- [Architecture and maintenance notes](docs/architecture.md)
+- [Guided recipe checks](docs/recipes-test-report.md)
+- [Historical studio GPU measurements](docs/studio-test-report.md)
+- [Historical MOSS test report](docs/test-report.md)
 
 ## Tests
 
@@ -110,6 +122,6 @@ python3 tests/integration.py
 python3 tests/cli_integration.py
 ```
 
-Requires Python >=3.11, with no additional Python packages. Runtime revision and reference
+Requires Python >=3.11 and Pillow >=12.3.0. Astro/Node is used only to build the studio. Runtime revision and reference
 checksums are in [runtime.lock.json](runtime.lock.json). Installed file checksums are also
 recorded in `~/.local/share/local-image-ai-service/runtime/receipt.json`.

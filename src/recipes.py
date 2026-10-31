@@ -1,0 +1,437 @@
+"""Deterministic Anima and MOSS recipes; no prompt translation or content filter."""
+from catalog import defaults, MODELS
+# Change this when existing recipe semantics change; additive recipes keep old inputs valid.
+VERSION = 3
+SOURCE = 'https://huggingface.co/circlestone-labs/Anima'
+MOSS_SOURCE = 'https://github.com/OpenMOSS/MOSS-Image/blob/main/USERGUIDE.md'
+NEGATIVE = 'worst quality, low quality, blurry, jpeg artifacts, chromatic aberration, watermark, signature, comic panels, panel layout, split screen, collage, multiple views, reference sheet, white borders'
+PHOTO_NEGATIVE = 'worst quality, low quality, watermark, jpeg artifact, anime, manga, cartoon, illustration, painting, CGI, 3d render, low poly, waxy skin, airbrushed skin, oversharpening, oversaturated colors, collage, contact sheet'
+FORMATS = {
+    '1:1': ('Square','1024x1024','768x768'),
+    '16:9': ('Landscape','1024x576','1024x576'),
+    '9:16': ('Portrait','576x1024','576x1024'),
+    '4:3': ('Landscape','1024x768','768x576'),
+    '3:4': ('Portrait','768x1024','576x768'),
+    '3:2': ('Landscape','1152x768','768x512'),
+    '2:3': ('Portrait','768x1152','512x768'),
+}
+
+def formats():
+    return [dict(id=ratio,name=ratio+' · '+label,size=size,preview_size=preview) for ratio,(label,size,preview) in FORMATS.items()]
+
+def preview_size(size):
+    width,height=map(int,size.split('x'))
+    return '576x832' if height>width else '832x576' if width>height else '768x768'
+RECIPES = [
+    dict(id='anima-portrait', name='Cinematic character portrait', size='832x1216',
+         description='One character, an expressive gaze, soft lighting and a quiet background.',
+         example=dict(subject='an adult bounty hunter with short silver hair and a red coat', scene='on a rooftop above a futuristic city at sunset', details='confident expression, wind moving the coat'),
+         scene='at a quiet city overlook at sunset',
+         style='cinematic anime illustration, elegant fine linework, refined cel shading, harmonious colors',
+         composition='One waist-up character portrait fills the image, with a readable silhouette and a clear focal point on the face. Soft golden rim lighting and subtle reflected fill light illuminate the character. A softly detailed background has atmospheric depth.'),
+    dict(id='anima-film', name='Anime film · wide scene', size='1216x832',
+         description='A wide film frame with clear action, depth and atmospheric lighting.',
+         example=dict(subject='an adult traveler with a blue cloak and a small leather backpack', scene='walking across a wooden bridge toward a mountain town at dawn', details='low mist in the valley, warm lights in the windows'),
+         scene='crossing a bridge toward a distant mountain town at dawn',
+         style='cinematic anime film still, detailed hand-painted scenery, delicate linework, nuanced colors',
+         composition='A wide establishing shot has a clear foreground, middle ground and distant background. Keep the main subject readable and separate from the surroundings. Use soft dawn light, atmospheric perspective and a balanced composition.'),
+    dict(id='anima-fantasy', name='Fantasy · heroic character', size='832x1216',
+         description='A dramatic character illustration with magic, contrasting light and a readable pose.',
+         example=dict(subject='an adult female mage with braided black hair, a green cloak and a wooden staff', scene='at the entrance of an ancient ruined temple', details='small golden magical particles, moss-covered stone, determined expression'),
+         scene='standing at the entrance of an ancient ruined temple',
+         style='high fantasy anime key visual, intricate costume details, fine clean linework, rich restrained colors',
+         composition='Show a three-quarter character view with a grounded, readable pose and a distinct silhouette. Use dramatic side lighting, subtle magical glow and atmospheric depth. Keep the face and main costume details sharp while the background supports the character.'),
+    dict(id='anima-neon', name='Cyberpunk · neon night', size='1216x832',
+         description='Cool city colors, warm highlights and reflective streets.',
+         example=dict(subject='an adult motorcycle courier with a black jacket and an orange helmet under one arm', scene='waiting beside a motorcycle on a rainy city street at night', details='cyan shop windows, orange streetlights, reflected neon'),
+         scene='on a rain-soaked city street at night',
+         style='cyberpunk anime illustration, crisp fine linework, cinematic color grading, detailed urban scenery',
+         composition='A medium-wide shot has a readable subject and layered city depth. Balance cool cyan ambient light with warm orange highlights. Include subtle reflections and rain haze without hiding the main subject.'),
+    dict(id='anima-landscape', name='Anime background · landscape', size='1216x832',
+         description='Painterly scenery with clear layers of depth; no character required.',
+         example=dict(subject='a small coastal village with red roofs and a lighthouse above the harbor', scene='on a clear summer morning', details='wildflowers in the foreground, turquoise sea, distant islands'),
+         scene='in soft early morning light',
+         style='anime background art, beautiful hand-painted scenery, subtle brush textures, nuanced natural colors',
+         composition='A wide landscape composition has foreground framing, a detailed middle ground and a distant horizon. Build depth with atmospheric perspective and soft light. Give the scenery a clear visual focus and keep architectural shapes coherent.'),
+    dict(id='anima-cozy', name='Cozy · slice of life', size='1024x1024',
+         description='Warm lighting, a calm composition and small storytelling details.',
+         example=dict(subject='an adult bookseller with round glasses and a knitted cardigan', scene='arranging books in a small bookshop on a rainy afternoon', details='a sleeping orange cat, a cup of tea, warm wooden shelves'),
+         scene='in a small warm bookshop on a rainy afternoon',
+         style='slice of life anime illustration, gentle fine linework, soft painterly shading, warm muted colors',
+         composition='An intimate medium shot shows a relaxed, readable pose. Soft window light and warm interior lamps illuminate the scene. A few carefully placed environmental details support a calm, balanced composition.'),
+    dict(id='anima-manga', name='Manga · ink and screentones', size='832x1216',
+         description='Black and white, precise lines, screentones and clear light and dark shapes.',
+         example=dict(subject='an adult detective in a long coat holding a closed umbrella', scene='at the entrance to a narrow alley in the rain', details='serious expression, wet cobblestones, strong silhouette'),
+         scene='at the entrance to a narrow alley in the rain',
+         style='black and white manga illustration, elegant ink linework, screentone shading, strong black and white shapes',
+         composition='A dramatic three-quarter character composition has a clear silhouette and readable expression. Balance solid blacks with detailed hatching and quiet white space. Keep the image monochrome and avoid lettering or speech bubbles.'),
+]
+
+RECIPES += [
+    dict(id='anima-watercolor', name='Watercolor · dreamy illustration', size='832x1216',
+         description='Delicate colors, visible paper texture and soft color washes.',
+         example=dict(subject='an adult botanist with a straw hat holding a bouquet of wildflowers',scene='in a sunny overgrown greenhouse',details='sage green and warm peach colors, translucent leaves'),
+         scene='in a sunlit garden',style='watercolor anime illustration, delicate pencil accents, translucent color washes, textured watercolor paper',
+         composition='A balanced three-quarter composition has soft edges and carefully placed fine details. Keep the subject readable against a loosely painted background. Use a harmonious pastel palette, gentle daylight and generous breathing room.'),
+    dict(id='anima-chibi', name='Chibi · tiny adventurer', size='1024x1024',
+         description='A tiny full-body character with exaggerated proportions, a clear silhouette and a simple background.',
+         example=dict(subject='a cheerful tiny robot explorer with a round head and an orange backpack',scene='standing beside a small treasure chest on a mossy stone',details='waving one hand, mint green and orange palette'),
+         scene='on a small patch of mossy stone',style='chibi anime character illustration, oversized head, small body, cute simplified proportions, clean linework, soft cel shading',
+         composition='Show the entire character with a clear silhouette and an expressive face. Use a simple uncluttered backdrop, a grounded contact shadow and cheerful harmonious colors. Keep small accessories easy to read.'),
+    dict(id='lowpoly-diorama',model='moss',name='Low Poly · floating diorama',size='1024x1024',
+         description='A miniature scene on a floating base, with angular faces and soft studio lighting.',
+         example=dict(subject='a small wooden cabin with a red roof beside a pine tree and a blue pond',scene='on a floating chunk of grassy earth',details='a tiny wooden bridge, a few angular rocks, warm light in the cabin windows'),
+         scene='on a floating chunk of grassy earth',style='stylized low-poly 3D diorama render, visibly faceted polygon geometry, flat shading, simple matte materials, limited harmonious color palette',
+         composition='An isometric three-quarter view shows the complete miniature scene and its solid base. Keep the geometry chunky, silhouettes clean and polygon faces clearly visible. Use a plain pastel background, soft studio lighting and gentle ambient occlusion. Avoid smooth subdivided surfaces and photographic textures.'),
+    dict(id='lowpoly-retro',model='moss',name='Low Poly · 1990s game scene',size='1216x832',
+         description='Angular 3D game art with distinct silhouettes and bold lighting.',
+         example=dict(subject='a red rally car drifting around a mountain hairpin bend',scene='on a winding alpine road at sunset',details='angular pine trees, chunky wheels, dust behind the car, warm orange and cool blue lighting'),
+         scene='on a winding mountain road at sunset',style='late-1990s low-poly 3D video game artwork, chunky polygon meshes, flat-shaded faces, simple low-detail materials, bold colors',
+         composition='A dynamic wide game-camera view has one clear main action. Separate the main subject from the background with strong silhouettes and contrasting light. Keep all objects consistently low polygon, with angular edges and simplified forms. Avoid photorealistic surfaces and smooth modern CGI.'),
+    dict(id='lowpoly-world',model='moss',name='Low Poly · landscape and game world',size='1216x832',
+         description='A wide game world with angular mountains, rivers and clear blocks of color.',
+         example=dict(subject='a valley with a turquoise river winding between angular mountains and pine forests',scene='under a clear early morning sky',details='a small stone bridge, warm yellow sunlight, cool purple mountain shadows'),
+         scene='in clear early morning light',style='stylized low-poly landscape render, large visible polygon faces, flat shading, geometric terrain, simple matte colors',
+         composition='A wide elevated camera view has strong foreground, middle ground and background shapes. Guide the eye toward the main subject using the terrain and a clear horizon. Use a restrained color palette and soft atmospheric depth while keeping the polygon facets visibly angular.'),
+]
+
+PHOTO_RECIPES = [
+    dict(id='photo-portrait', name='Photo · natural portrait', size='832x1216',
+         description='A believable portrait with natural skin texture, soft daylight and a quiet background.',
+         example=dict(subject='an adult woman with freckles, short curly brown hair and a dark green linen shirt',
+                      scene='sitting beside a large window in a quiet apartment',
+                      details='a relaxed expression, visible fine lines, a few loose strands of hair'),
+         scene='beside a large window in a quiet room',
+         style='Natural portrait photography, realistic skin texture, restrained colors',
+         composition='A single head-and-shoulders portrait at eye level, with the perspective of an 85mm lens. Soft available daylight reveals fine skin texture and natural facial asymmetry. The eyes are in focus, the background gently falls out of focus, and highlights retain detail.',
+         tip='Describe age, hair, expression and clothing. Fine lines and natural skin texture usually give a more believable starting point than beauty or perfection tags.'),
+    dict(id='photo-candid', name='Photo · candid everyday', size='1024x1024',
+         description='A casual everyday moment with available light and a less polished snapshot feel.',
+         example=dict(subject='an adult man with wavy dark hair and a worn denim jacket',
+                      scene='laughing at a kitchen table while holding a ceramic coffee mug',
+                      details='slightly untidy hair, a half-eaten piece of toast, an unposed expression'),
+         scene='taking a break at a small kitchen table in daylight',
+         style='Candid everyday photography, unposed snapshot, natural colors and ordinary available light',
+         composition='A single informal medium shot at eye level with a natural 35mm field of view. The subject is caught mid-moment rather than posed for a studio portrait. Keep believable skin and fabric texture, modest contrast and a lived-in background, with the main subject clearly in focus.',
+         tip='Give the person one small action. Ordinary clothes, a lived-in place and an unposed expression fit this recipe better than studio or fashion language.'),
+    dict(id='photo-street', name='Photo · street documentary', size='1216x832',
+         description='An observed street moment with environmental detail, layered depth and believable light.',
+         example=dict(subject='an adult bicycle mechanic wearing a navy work jacket',
+                      scene='repairing a silver city bicycle outside a small neighborhood workshop on an overcast morning',
+                      details='grease marks on the hands, worn pavement, a few parked bicycles in the background'),
+         scene='on a neighborhood street on an overcast morning',
+         style='Documentary street photography, observational realism, restrained color',
+         composition='A single environmental frame with a natural 35mm perspective and one clear main action. Show a readable foreground, subject and background with realistic scale. Available street light, believable material wear and moderate depth of field keep the setting recognizable.',
+         tip='Name one action, the weather and a specific place. Ask for readable signs explicitly only when you need visible lettering.'),
+    dict(id='photo-cinema', name='Photo · cinematic still', size='1216x832',
+         description='A realistic film-like frame with motivated lighting, clear action and subtle color grading.',
+         example=dict(subject='an adult traveler in a dark wool coat carrying a small canvas bag',
+                      scene='waiting alone on a quiet railway platform at blue hour',
+                      details='warm platform lamps, faint rain on the pavement, a tired thoughtful expression'),
+         scene='on a quiet railway platform at blue hour under warm practical lamps',
+         style='Live-action cinematic still, realistic photography, subtle film grain, restrained color grading',
+         composition='One wide frame at eye level with a 50mm lens perspective and a clear focal subject. The visible practical lights motivate the illumination and shadows. Preserve realistic skin, cloth and environmental texture, balanced highlights and layered depth. Fill the entire image with the scene.',
+         tip='Choose one main action and name the light source. Keep the color palette simple; combining several dramatic lighting styles can make the scene less convincing.'),
+    dict(id='photo-product', name='Photo · product studio', size='1024x1024',
+         description='A clean product image with coherent materials, controlled reflections and grounded shadows.',
+         example=dict(subject='a matte forest-green ceramic coffee mug with a curved handle',
+                      scene='on a pale stone tabletop against a warm off-white background',
+                      details='subtle glaze texture, a small rounded foot, soft shadow to the right'),
+         scene='on a pale tabletop against a simple off-white studio background',
+         style='Realistic studio product photography, accurate material texture, neutral color',
+         composition='A single product is fully visible in a three-quarter view with the perspective of a 70mm lens. A large softbox creates broad controlled highlights and a grounded contact shadow. The product is sharply defined, its geometry is coherent, and the simple background does not distract from the material.',
+         tip='Specify material, finish, color and surface. For glass or metal, describe the reflections you want. Use exact quoted wording when a label matters.'),
+    dict(id='photo-landscape', name='Photo · landscape and travel', size='1216x832',
+         description='A natural outdoor scene with convincing terrain, atmospheric depth and restrained color.',
+         example=dict(subject='a small white lighthouse above a rugged Atlantic coastline',
+                      scene='at sunrise after a rain shower, with soft light breaking through the clouds',
+                      details='wet dark rocks, pale sea spray, a narrow footpath through coastal grass'),
+         scene='in soft morning light after a rain shower',
+         style='Realistic landscape photography, natural travel photography, restrained colors',
+         composition='A single wide view with a natural 28mm perspective. Distinct foreground, middle ground and a distant horizon establish depth. Realistic terrain scale, fine material texture and atmospheric perspective support the main subject. Retain detail in the sky and shadows without exaggerated HDR or excessive saturation.',
+         tip='Name a place type, weather, time of day and one focal feature. Draft is for composition; use Recommended before judging fine landscape detail.'),
+    dict(id='photo-interior', name='Photo · architecture and interior', size='1216x832',
+         description='A believable interior with straight verticals, natural materials and balanced window light.',
+         example=dict(subject='a small reading room with oak bookshelves, a cream armchair and a round side table',
+                      scene='in a renovated brick apartment with tall windows on the left',
+                      details='linen curtains, visible wood grain, a folded blanket and a few books'),
+         scene='in a quiet apartment illuminated by a large side window',
+         style='Realistic architectural interior photography, natural materials, balanced daylight',
+         composition='A single wide room view from standing eye level with a corrected 24mm lens perspective and straight vertical lines. Furniture has believable scale and spacing. Soft window light, realistic indirect illumination and gentle contact shadows reveal wood, fabric and wall textures. Balance the interior exposure with the visible windows.',
+         tip='Describe room size, materials, furniture and window direction. Very wide lenses, tiny rooms and too many objects can produce distorted geometry.'),
+    dict(id='photo-food', name='Photo · food and still life', size='1024x1024',
+         description='An appetizing close view with natural texture, soft side lighting and simple styling.',
+         example=dict(subject='a rustic slice of sourdough toast topped with creamy burrata and roasted tomatoes',
+                      scene='on a handmade ceramic plate on a dark wooden table beside a window',
+                      details='fresh basil leaves, a few crumbs, a small amount of olive oil catching the light'),
+         scene='on a ceramic plate on a wooden table beside a window',
+         style='Realistic editorial food photography, natural food texture, restrained warm colors',
+         composition='A single close view from a three-quarter angle with a natural 50mm perspective. Soft side light reveals texture and a few gentle highlights. Keep the main ingredients sharp with a softly receding background, believable portions and simple table styling.',
+         tip='Name the dish, visible ingredients, plate and surface. Describe a small highlight or a few crumbs rather than adding many unrelated props.'),
+]
+RECIPES += [dict(r, model='moss', category='photo', checked='2026-10-31') for r in PHOTO_RECIPES]
+
+RECIPES += [
+    dict(id='anima-retro', name='Retro anime · 1990s cel look', size='1216x832', featured=True,
+         description='Hand-painted cel colors, delicate grain and the mood of a 1990s anime frame.',
+         example=dict(subject='an adult space pilot with short auburn hair and a cream flight jacket',scene='beside a large observation window overlooking a blue planet',details='amber instrument lights, a thoughtful expression, reflections on the glass'),
+         scene='at a space station observation window above a blue planet',
+         style='1990s anime cel illustration, hand-painted background, thin ink linework, restrained cel colors, subtle analog film grain',
+         framing='single wide frame, medium character view, clear silhouette, soft amber practical light, atmospheric painted background',
+         composition='A single wide anime frame with a readable main character and a painted background.',
+         tip='Keep the palette and lighting simple. Describe one character and a specific environment rather than mixing retro cel art with glossy modern CGI.'),
+    dict(id='anima-mecha', name='Mecha · hangar key visual', size='832x1216', featured=True,
+         description='A striking giant robot with readable mechanical shapes, scale and dramatic hangar light.',
+         example=dict(subject='a white and teal exploration mecha with broad shoulder armor and a small orange cockpit',scene='standing inside a vast maintenance hangar',details='a tiny adult engineer near one foot, yellow work lights, subtle wear on the armor'),
+         scene='standing inside a maintenance hangar with tall overhead lights',
+         style='anime mecha key visual, crisp mechanical linework, layered armor panels, refined cel shading',
+         framing='single full-body robot, low camera angle, readable mechanical silhouette, hangar depth, dramatic overhead lighting',
+         composition='One complete robot with clearly separated limbs and a coherent silhouette.',
+         tip='Specify the robot silhouette, two main colors and one mechanical feature. Small human figures help suggest scale; complex machinery may still need another seed.'),
+    dict(id='anima-storybook', name='Storybook · gouache illustration', size='1024x1024',
+         description='Soft gouache shapes, textured paper and a quiet illustrated story moment.',
+         example=dict(subject='a small red fox wearing a blue scarf and carrying a lantern',scene='walking along a winding path through a moonlit garden',details='oversized wildflowers, warm lantern glow, a tiny moth'),
+         scene='on a winding path through a moonlit garden',
+         style='storybook gouache illustration, visible paper texture, soft painted shapes, delicate pencil details, muted harmonious colors',
+         framing='single illustrated scene, clear central subject, layered plants, warm lantern glow, gentle blue night colors',
+         composition='A balanced picture-book illustration with clear shapes and generous breathing room.',
+         tip='Use a simple action and a few storytelling props. Paper and gouache cues work best when the palette stays limited.'),
+    dict(id='anima-action', name='Action · dynamic anime key visual', size='832x1216',negative_extra='heavy silhouette, extreme backlighting, underexposed face, obscured face, cropped limbs',
+         description='A strong ready pose, flowing fabric and a clear open silhouette.',
+         example=dict(subject='an adult swordswoman with a short dark bob, a red scarf and a navy coat',scene='standing in a wide ready stance on an open rooftop at sunset',details='one sword held diagonally in front, scarf streaming to the side, warm reflected light on the face'),
+         scene='standing in a wide ready stance on an open rooftop at sunset',
+         style='dynamic anime action key visual, crisp expressive linework, refined cel shading, vivid controlled colors',
+         framing='solo, full body, three-quarter view, grounded wide stance, readable face, open uncluttered background, warm sunset fill light',
+         composition='One readable action pose with a clear silhouette and a simple supporting environment.',
+         tip='Choose one movement and describe where each important prop is. If limbs become confusing, simplify the pose before adding more detail.'),
+    dict(id='moss-clay', model='moss', category='craft', name='Clay · handmade miniature', size='1024x1024', featured=True,
+         description='Tactile modeling clay, tiny handmade details and soft miniature-set lighting.',
+         example=dict(subject='a tiny green dragon reading a book beside a mushroom-shaped cottage',scene='on a small handmade forest set',details='visible thumbprints in the clay, a terracotta teacup, warm light in the cottage window'),
+         scene='on a small handmade forest set',style='handmade clay miniature, stop-motion set aesthetic, tactile modeling clay, subtle fingerprints, soft studio lighting',
+         composition='A single three-quarter view of the complete miniature scene. Rounded handmade forms, small surface imperfections and a grounded contact shadow establish scale. A softly blurred simple backdrop keeps the clay subject readable.',
+         tip='Ask for tactile clay, small imperfections and one clear scene. This recipe favors rounded handmade forms rather than low-poly facets.'),
+    dict(id='moss-paper', model='moss', category='craft', name='Paper cut · layered illustration', size='1216x832', featured=True,
+         description='Layered colored paper, crisp cut edges and gentle shadows between the layers.',
+         example=dict(subject='a red fox looking up at a crescent moon above rolling forest hills',scene='inside a layered paper-cut forest composition',details='deep blue and warm cream paper, tiny star cutouts, soft shadows between layers'),
+         scene='inside a layered paper-cut forest composition',style='layered paper-cut illustration, tangible colored cardstock, clean cut edges, shallow layered depth, restrained color palette',
+         composition='A single front-facing paper composition fills the frame. Distinct overlapping silhouettes and soft cast shadows reveal separate paper layers. Keep the main subject readable with large simple shapes and a balanced arrangement.',
+         tip='Use a few large silhouettes and three or four colors. Layer shadows and cut edges distinguish the look from an ordinary flat drawing.'),
+    dict(id='moss-comic', model='moss', category='craft', name='Comic · bold ink illustration', size='832x1216',negative_extra='text, lettering, title, masthead, speech bubbles',
+         description='Bold ink, halftone shading and one strong full-frame comic scene.',
+         example=dict(subject='an adult masked courier in a yellow jacket holding a red parcel',scene='on a city rooftop in strong afternoon light',details='wind in the jacket, deep navy shadows, a dramatic low angle'),
+         scene='on a city rooftop in strong afternoon light',style='western comic book illustration, bold ink outlines, expressive shapes, halftone shading, limited graphic color palette',
+         composition='A single full-frame comic scene has one strong central silhouette and a dramatic low camera angle. Balance large light and dark areas with restrained halftone texture. The entire image contains artwork, without panels, captions or lettering.',
+         tip='Start with one readable silhouette and a limited palette. Use Qwen’s poster or cover recipe when exact visible lettering is important.'),
+    dict(id='photo-macro', model='moss', category='photo', name='Photo · macro nature', size='1024x1024',
+         description='A close natural detail with convincing texture, soft light and a shallow focal plane.',
+         example=dict(subject='a bumblebee resting on a purple coneflower',scene='in a quiet garden on a soft overcast morning',details='tiny pollen grains, delicate wing veins, dewdrops on the petals'),
+         scene='in a quiet garden on a soft overcast morning',style='realistic macro nature photography, natural color, fine organic texture',
+         composition='A single close view with a 100mm macro perspective. The main subject and its immediate surface are sharply defined while the distant garden dissolves into soft bokeh. Diffuse daylight reveals delicate textures without harsh specular glare.',
+         tip='Specify one small subject, its surface and two visible details. Keep the background simple; fine insect anatomy can vary across seeds.'),
+]
+
+QWEN_SOURCE='https://huggingface.co/Qwen/Qwen-Image-2.1'
+QWEN_RECIPES = [
+    dict(id='qwen-poster',name='Qwen · graphic travel poster',size='832x1216',featured=True,example_quality='standard',negative_extra='unrequested text, fine print, gibberish, extra captions, extra logos',
+         description='A bold illustrated poster with a clear subject and optional exact headline.',
+         example=dict(subject='a tiny silver spacecraft rising above a rust-red desert canyon',scene='beneath a deep blue starry sky',details='cream geometric shapes, a small orange sun, a restrained screen-print texture',text='EXPLORE'),
+         scene='beneath a deep blue starry sky',style='graphic travel poster, bold geometric illustration, limited cream orange and midnight blue palette, subtle print texture',
+         composition='A single minimalist poster uses one clear focal illustration and generous negative space. Render only the requested headline, large and readable at the top. There are no subtitles, fine print, extra captions, logos or invented lettering. Keep the illustration and the single headline balanced in one cohesive design.',
+         tip='Use Visible text for the exact headline. Short wording is easier to check; compare the letters before exporting.'),
+    dict(id='qwen-sticker',name='Qwen · transparent sticker',size='1024x1024',featured=True,transparent=True,example_quality='standard',
+         description='An isolated sticker illustration with a transparent PNG background.',
+         example=dict(subject='a cheerful orange robot holding a tiny potted cactus',scene='as one isolated sticker design',details='rounded enamel-like shapes, dark teal outlines, a neat white sticker border'),
+         scene='as one isolated sticker design',style='polished character sticker illustration, clean expressive shapes, crisp outline, harmonious colors',
+         composition='Show the complete subject as one centered sticker with a clean silhouette and clear space around every edge. Keep the outer background empty and preserve transparent space outside the sticker.',
+         tip='Describe a compact silhouette and keep accessories simple. The checkerboard shows actual transparency in the example; the downloaded output stays a PNG.'),
+    dict(id='qwen-portrait',name='Qwen · editorial portrait',size='832x1216',photographic=True,
+         description='A detailed photographic portrait with natural texture and editorial framing.',
+         example=dict(subject='an adult ceramic artist with short silver hair wearing a rust-colored work apron',scene='standing beside a window in a pottery studio',details='clay dust on the apron, a relaxed smile, shelves of handmade bowls'),
+         scene='beside a window in a pottery studio',style='realistic editorial portrait photography, natural skin texture, restrained colors',
+         composition='A single waist-up portrait at eye level uses soft available window light. Keep the face in clear focus, realistic fabric and skin texture, and a gently receding environment that supports the person.',
+         tip='Give the person an occupation, expression and specific setting. Start with one person before attempting group portraits.'),
+    dict(id='qwen-product',name='Qwen · product campaign',size='1024x1024',photographic=True,
+         description='A polished product scene with deliberate materials, reflections and optional label text.',
+         example=dict(subject='an amber glass perfume bottle with a brushed brass cap',scene='on a warm limestone plinth beside a softly lit cream wall',details='one curved reflection on the glass, a subtle botanical shadow, a small cream label',text='SOL'),
+         scene='on a warm limestone plinth beside a softly lit cream wall',style='realistic commercial product photography, refined material texture, controlled studio highlights',
+         composition='The complete product is clearly visible in a three-quarter view. Softbox highlights describe the material without hiding its outline. A grounded contact shadow, realistic scale and a simple supporting environment create one coherent campaign image. Place any requested wording on the product label.',
+         tip='Specify glass, metal or fabric and the desired finish. Visible text is treated literally; a short label is a useful first test.'),
+    dict(id='qwen-cover',name='Qwen · illustrated book cover',size='832x1216',negative_extra='unrequested text, subtitles, fine print, gibberish, extra captions, author names',
+         description='A dramatic illustrated cover with a clear focal scene and optional title.',
+         example=dict(subject='a lone deep-sea diver facing a luminous ancient gateway beneath the ocean',scene='among dark submerged ruins',details='teal bioluminescence, a warm diving lamp, a few drifting particles',text='WORLDS BELOW'),
+         scene='among dark submerged ruins',style='illustrated speculative-fiction book cover, painterly dramatic lighting, rich restrained colors',
+         composition='One vertical cover composition has a readable central subject and strong depth. The only typography is the single requested title at the top, clearly separated from the focal illustration. All other areas contain artwork or empty space, without subtitles, author names or invented lettering.',
+         tip='Use one title and one focal scene. Keep exact wording in Visible text and describe the visual mood in Extra details.'),
+    dict(id='qwen-world',name='Qwen · isometric world',size='1216x832',example_quality='standard',
+         description='A detailed miniature world with coherent architecture, scale and lighting.',
+         example=dict(subject='a tiny coastal research station with white domes, orange walkways and a turquoise harbor',scene='on a rocky island surrounded by calm water',details='small solar panels, a moored research boat, warm evening lights'),
+         scene='on a rocky island surrounded by calm water',style='detailed stylized isometric world illustration, precise architectural shapes, rich miniature environmental detail',
+         composition='A single elevated isometric view reveals the whole location with clear relationships between buildings and paths. Use consistent scale, readable silhouettes and soft directional light. The scene fills one cohesive frame.',
+         tip='Describe a small location and a few important structures. Consistent materials and a limited palette help the scene read as one world.'),
+]
+RECIPES += [dict(r,model='qwen21',category='qwen',checked='2026-10-31') for r in QWEN_RECIPES]
+
+PIXEL_RECIPES = [
+    dict(id='pixel-loot',name='Pixel · tiny loot icon',pixel_grid=32,pixel_colors=24,
+         description='A bold 32-pixel inventory icon with a simple silhouette and a small palette.',
+         example=dict(subject='a red mushroom with white spots',scene='centered on a plain white background',details='a cream stem and a bold black outline',pixel_grid=32,pixel_colors=24),
+         scene='centered on a plain white background',
+         style='8-bit pixel art inventory icon',
+         composition='One large isolated item fills most of the frame. Use a bold readable silhouette, chunky deliberate pixel clusters and simple shading. Leave a clear margin around the item. No lettering or interface.',
+         tip='Use one object with a recognizable silhouette. The 32-pixel variant is strongly abstract; choose 64 for more detail. This model does not produce transparent sprites.'),
+    dict(id='pixel-character',name='Pixel · adventure character',pixel_grid=64,pixel_colors=24,
+         description='A complete 64-pixel game character with readable clothing and pose.',
+         example=dict(subject='a small red-haired forest ranger in a green cloak holding a wooden staff',scene='standing in a relaxed three-quarter view against a plain cream background',details='brown boots, a small leather satchel, warm amber highlights',pixel_grid=64,pixel_colors=24),
+         scene='standing in a relaxed three-quarter view against a plain cream background',
+         style='retro 16-bit RPG character sprite, crisp square clusters, limited color palette',
+         composition='Show one complete character from head to feet, centered, with a clear silhouette and space around the edges. Use a consistent light direction and simple grouped shading. No text or interface.',
+         tip='Keep the pose and equipment simple. The author recommends omitting the words “pixel art” for the 64-pixel LoRA; this template already does that.'),
+    dict(id='pixel-isometric',name='Pixel · isometric hideaway',pixel_grid=64,pixel_colors=32,
+         description='A miniature 64-pixel isometric building with tidy forms and cozy details.',
+         example=dict(subject='a tiny timber cabin with a red roof and a glowing round window',scene='on one small grassy isometric tile against a dark blue background',details='a stone path, one pine tree, a chimney with a small puff of smoke',pixel_grid=64,pixel_colors=32),
+         scene='on one small grassy isometric tile against a dark blue background',
+         style='retro isometric game asset, crisp square clusters, limited color palette',
+         composition='Show the complete miniature structure from an elevated three-quarter view on one isolated square ground tile. Consistent isometric perspective, clear roof and walls, simple grouped shadows. No lettering or interface.',
+         tip='One building, one ground tile and two or three props work best. More details need a larger grid, rather than more sampling steps.'),
+    dict(id='pixel-landscape',name='Pixel · scenic world',pixel_grid=128,pixel_colors=32,
+         description='A detailed 128-pixel scene with layered scenery and a restrained palette.',
+         example=dict(subject='a quiet mountain lake with a small wooden cabin and tall pine trees',scene='at sunset beneath lavender mountains and a peach-colored sky',details='a warm window reflected in the water, reeds in the foreground, a thin crescent moon',pixel_grid=128,pixel_colors=32),
+         scene='at sunset beneath lavender mountains and a peach-colored sky',
+         style='detailed pixel art landscape, classic adventure game background',
+         composition='One cohesive landscape with distinct foreground, middle distance and background. Group colors into deliberate square clusters and use a consistent light direction. No text, border or interface.',
+         tip='Describe a foreground, a focal point and distant scenery. Try 32 colors first, then 64 for smoother skies. Wide aspect ratios also work with a matching rectangular pixel grid.'),
+]
+RECIPES += [dict(r,model='krea-pixel',category='pixel',size='1024x1024',featured=True,
+                 example_quality='standard',checked='2026-10-31') for r in PIXEL_RECIPES]
+
+ANIMA_3D_RECIPES = [
+    dict(id='psx-character',model='anima-psx',name='PSX · retro adventurer',size='832x1216',
+         description='A complete game character with angular geometry and a late-1990s console look.',
+         example=dict(subject='an adult elven ranger with short dark hair, a green tunic and brown leather boots',scene='standing on a small stone platform against a plain warm gray background',details='a small wooden bow, a confident relaxed pose, a simple green cape'),
+         scene='standing on a small stone platform against a plain warm gray background',
+         style='solo, full body, single character, lowpoly, ps1, psx, low poly, 3d, retro console game character render, angular geometry, simple low-resolution textures',
+         composition='One complete character is visible from head to feet, centered in a readable three-quarter pose. Keep the silhouette clear, the equipment simple, and leave space around the entire figure.',
+         tip='Start with one character and two or three defining features. Simple clothing and a clear pose suit the PSX look.'),
+    dict(id='psx-world',model='anima-psx',name='PSX · game world',size='1216x832',
+         description='A nostalgic 3D game scene with chunky architecture and a clear camera angle.',
+         example=dict(subject='a small seaside village with a red lighthouse, three timber houses and a stone bridge',scene='seen from an elevated game camera at golden hour',details='a winding path, blocky pine trees, simple blue water, a quiet orange sky'),
+         scene='seen from an elevated game camera at golden hour',
+         style='lowpoly, ps1, psx, low poly, 3d, late-1990s console game screenshot, chunky polygon geometry, simple low-resolution textures',
+         composition='One coherent game environment has a clear foreground path, a focal building and distant scenery. Use consistent perspective, broad shapes and simple material colors. No interface or lettering.',
+         tip='Give the scene one focal building and a clear route through it. Describe the camera as carefully as the scenery.'),
+    dict(id='psx-prop',model='anima-psx',name='PSX · inventory prop',size='1024x1024',
+         description='One readable retro game object with a simple silhouette and chunky details.',
+         example=dict(subject='a small wooden treasure chest reinforced with dark iron bands and a brass lock',scene='on a square stone plinth against a plain dark teal background',details='a slightly open lid, a few gold coins, warm light from the upper left'),
+         scene='on a square stone plinth against a plain dark teal background',
+         style='lowpoly, ps1, psx, low poly, 3d, retro game inventory prop render, chunky polygon geometry, low-resolution painted textures',
+         composition='Show one complete object in an elevated three-quarter view. A bold silhouette and simple large details make it readable at small sizes. Keep a clear margin and an uncluttered background.',
+         tip='Choose one object and a recognizable shape. This is an image concept; a game-ready mesh still needs modeling.'),
+    dict(id='anima3d-character',model='anima-lowpoly',name='Low Poly · character portrait',size='832x1216',
+         description='A close character portrait with angular clothing, grouped colors and clear lighting.',
+         example=dict(subject='an adult sky courier with short copper hair wearing a blue jacket',scene='in a waist-up three-quarter view against a plain light blue background',details='a small shoulder satchel, a yellow scarf, a relaxed smile, bright daylight'),
+         scene='in a waist-up three-quarter view against a plain light blue background',
+         style='solo, upper body, portrait, l0wp0ly, 3d, low poly game character, flat-shaded polygon geometry, angular clothing, simple matte materials',
+         composition='One waist-up character fills most of the frame at eye level. Keep the face and clothing clearly readable, the silhouette distinct, and the lighting bright and consistent.',
+         tip='Name a role, two main clothing colors and one accessory. Let the trained style supply the geometry.'),
+    dict(id='anima3d-diorama',model='anima-lowpoly',name='Low Poly · miniature diorama',size='1024x1024',
+         description='A compact miniature scene with visible polygon faces and a tidy isometric composition.',
+         example=dict(subject='a tiny mountain observatory with a blue dome and a small wooden cabin',scene='on one isolated grassy rock island against a pale cream background',details='a short stone stairway, two angular pine trees, warm evening light'),
+         scene='on one isolated grassy rock island against a pale cream background',
+         style='l0wp0ly, 3d, low poly miniature diorama, flat shading, angular polygon faces, simple matte materials, isometric view',
+         composition='The complete island fits in the frame with space around all edges. Use one focal structure, two small supporting props, consistent isometric perspective and clearly separated color planes.',
+         tip='One main building and a few props make a stronger diorama than a long list of tiny objects.'),
+    dict(id='anima3d-landscape',model='anima-lowpoly',name='Low Poly · angular landscape',size='1216x832',
+         description='An expansive game landscape built from distinct faceted shapes and a restrained palette.',
+         example=dict(subject='a turquoise river winding through a valley of angular mountains and pine forests',scene='seen from an elevated viewpoint in warm early morning light',details='a small stone bridge, pale purple mountain shadows, a few golden clouds'),
+         scene='seen from an elevated viewpoint in warm early morning light',
+         style='l0wp0ly, 3d, low poly game environment, faceted terrain, flat shading, broad color planes, matte polygon surfaces',
+         composition='A coherent landscape has a strong foreground, a winding route through the middle distance and a clear distant horizon. Keep the polygon faces visible and the lighting simple and consistent.',
+         tip='Use a river, road or ridge to guide the eye. Describe three main colors and a clear time of day.'),
+]
+RECIPES += [dict(r,category='anima3d',featured=True,example_quality='standard',checked='2026-10-31') for r in ANIMA_3D_RECIPES]
+
+def recipes():
+    return [dict(r, model=r.get('model','anima'), version=VERSION,preview_size=r['size'] if r.get('model')=='krea-pixel' else preview_size(r['size']),
+                 category=r.get('category','anime' if r.get('model','anima')=='anima' else 'lowpoly'),
+                 source={'anima':SOURCE,'moss':MOSS_SOURCE,'qwen21':QWEN_SOURCE,'krea-pixel':'https://huggingface.co/e-n-v-y/Krea-2-Pixel-Art'}.get(r.get('model','anima'),MODELS[r.get('model','anima')]['source']),
+                 checked=r.get('checked','2026-10-31'), steps=defaults(r.get('model','anima'))['steps'],
+                 cfg_scale=defaults(r.get('model','anima'))['cfg'],sampler='euler') for r in RECIPES]
+
+def compose(body):
+    allowed={'model','recipe','subject','scene','details','text','aspect_ratio','quality','seed','pixel_grid','pixel_colors'}
+    if set(body)-allowed:
+        raise ValueError('In guided mode, send only the subject, setting, details, visible text, aspect ratio, quality and seed. Use free prompt mode for custom parameters.')
+    recipe=next((r for r in RECIPES if r['id']==body.get('recipe')),None)
+    if recipe is None: raise ValueError('Unknown recipe.')
+    model=recipe.get('model','anima')
+    if body.get('model',model)!=model:raise ValueError('This recipe belongs to model '+model+'.')
+    fields={}
+    for key,maximum in [('subject',2000),('scene',2000),('details',2000),('text',600)]:
+        value=body.get(key,'')
+        if not isinstance(value,str) or len(value)>maximum:
+            raise ValueError(f'{key}: use at most {maximum} characters.')
+        fields[key]=value.strip()
+    if not fields['subject']: raise ValueError('Enter what you would like to see in the image.')
+    if fields['text'] and model!='qwen21':raise ValueError('Visible text is available in Qwen recipes. Use the details field with other models.')
+    ratio=body.get('aspect_ratio','auto')
+    if not isinstance(ratio,str) or (ratio!='auto' and ratio not in FORMATS):raise ValueError('Choose a supported aspect ratio or Recommended.')
+    quality=body.get('quality','standard')
+    if quality not in ('preview','standard','detail'):raise ValueError('Unknown quality profile.')
+    scene=fields['scene'] or recipe['scene']
+    prompt=f"single image, single scene, {recipe['style']}. Main subject: {fields['subject']}. Setting and action: {scene}. {recipe['composition']}"
+    if fields['details']:prompt+=' Additional requested details: '+fields['details']+'.'
+    if model=='anima':
+        framing={
+            'anima-portrait':'solo, portrait, upper body, looking at viewer, golden rim light, softly blurred background',
+            'anima-film':'wide shot, clear foreground and background, atmospheric perspective, soft dawn light',
+            'anima-fantasy':'solo, three-quarter view, readable pose, dramatic side light, subtle magical glow',
+            'anima-neon':'medium-wide shot, cyan ambient light, orange highlights, wet reflections, atmospheric depth',
+            'anima-landscape':'wide landscape, layered scenery, distant horizon, soft morning light',
+            'anima-cozy':'medium shot, relaxed pose, soft window light, warm interior lamps, calm composition',
+            'anima-manga':'three-quarter view, strong silhouette, expressive face, hatching, balanced black and white',
+            'anima-watercolor':'three-quarter view, pastel palette, gentle daylight, soft edges, loosely painted background',
+            'anima-chibi':'full body, simple background, clear silhouette, cheerful colors, soft contact shadow',
+        }
+        prompt=f"{recipe['style']}, {recipe.get('framing',framing.get(recipe['id']))}. {fields['subject']}, {scene}."
+        if fields['details']:prompt+=' '+fields['details']+'.'
+    photo=recipe.get('category')=='photo'
+    if photo:
+        prompt=f"{recipe['style']}. The image shows {fields['subject']}, {scene}. {recipe['composition']}"
+        if fields['details']:prompt+=' Additional details: '+fields['details']+'.'
+        negative=PHOTO_NEGATIVE
+    else:
+        negative=NEGATIVE+(', color, colored illustration' if recipe['id']=='anima-manga' else ', manga, comic, storyboard, letterboxing')
+        if recipe['id'].startswith('lowpoly-'):negative+=' , smooth subdivided geometry, photorealistic textures, glossy plastic'
+    if recipe.get('category')=='craft' or model=='qwen21':
+        prompt=f"{recipe['style']}. {fields['subject']}, {scene}. {recipe['composition']}"
+        if fields['details']:prompt+=' Additional details: '+fields['details']+'.'
+        if fields['text']:prompt+=' Visible wording must read exactly: '+repr(fields['text'])+'. Preserve the spelling, capitalization and line breaks.'
+        if recipe.get('transparent'):prompt='This is an RGBA image with transparency. '+prompt+' The image has alpha channel and the background is transparent.'
+        negative=PHOTO_NEGATIVE if recipe.get('photographic') else 'worst quality, low quality, watermark, jpeg artifacts, collage, split screen, cropped main subject'
+    if recipe.get('negative_extra'):negative+=', '+recipe['negative_extra']
+    if MODELS[model].get('base_model')=='anima':
+        prompt=f"{recipe['style']}. {fields['subject']}, {scene}. {recipe['composition']}"
+        if fields['details']:prompt+=' Additional details: '+fields['details']+'.'
+        negative=NEGATIVE+', photorealistic, photograph, skin pores, smooth subdivided geometry, hand-drawn illustration, manga, ink outlines'
+        if recipe['id'] in ('psx-character','anima3d-character'):
+            negative+=', duplicate, cloned character, two characters, multiple people, character turnaround, side-by-side figures'
+    if model=='krea-pixel':
+        from pixel_art import settings
+        grid,colors=settings(body.get('pixel_grid',recipe['pixel_grid']),body.get('pixel_colors',recipe['pixel_colors']))
+        # The 64-pixel LoRA works best without the author's pixel-art trigger.
+        style=recipe['style'].replace('pixel art','retro game') if grid==64 else 'pixel art, '+recipe['style']
+        prompt=f"{style}. {fields['subject']}, {scene}. {recipe['composition']}"
+        if recipe['id']=='pixel-loot':prompt=f"{style}, {scene}\n\n{fields['subject']}"
+        if fields['details']:prompt+=' Additional details: '+fields['details']+'.'
+        negative=''
+    elif 'pixel_grid' in body or 'pixel_colors' in body:
+        raise ValueError('Pixel settings are available with Krea Pixel Art.')
+    size=recipe['size'] if ratio=='auto' else FORMATS[ratio][1]
+    draft_size=preview_size(size) if ratio=='auto' else FORMATS[ratio][2]
+    sampling_model=MODELS[model].get('base_model',model)
+    steps={'anima':{'preview':30,'standard':35,'detail':45},'moss':{'preview':30 if photo else 20,'standard':50,'detail':60},'qwen21':{'preview':20,'standard':40,'detail':50},'krea-pixel':dict.fromkeys(('preview','standard','detail'),8)}[sampling_model]
+    result=dict(model=model,prompt=prompt,size=draft_size if quality=='preview' and model!='krea-pixel' else size,
+                steps=steps[quality],cfg_scale=defaults(model)['cfg'],sampler='euler',negative_prompt=negative,preset='none')
+    if model=='krea-pixel': result.update(pixel_grid=grid,pixel_colors=colors)
+    if 'seed' in body:result['seed']=body['seed']
+    return result
