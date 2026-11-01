@@ -236,7 +236,7 @@ class Studio:
         from service import missing_files
         return [dict(id=name, **model, installed=not missing_files(self.backend.cfg,name),
                      loaded=self.backend.available() and self.backend.model == name,
-                     verified_modes=self.verified_modes(name), sizes=self.verified_sizes(name), defaults=defaults(name), quality=quality_profiles(name)) for name,model in MODELS.items()]
+                     verified_modes=self.verified_modes(name), sizes=self.verified_sizes(name), formats=formats(name), defaults=defaults(name), quality=quality_profiles(name)) for name,model in MODELS.items()]
 
     def examples(self):
         try:

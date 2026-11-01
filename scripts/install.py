@@ -46,7 +46,7 @@ def main():
         cfg = json.loads(config.read_text())
         updated = dict(cfg)
         updated["models"] = dict(cfg["models"])
-        updated["models"] = {k:v for k,v in updated["models"].items() if k in ("moss", "anima", "qwen21", "krea-pixel")}
+        updated["models"] = {k:v for k,v in updated["models"].items() if k in ("moss", "anima", "qwen21", "krea-pixel", "z-image", "z-image-turbo")}
         if updated["active_model"] not in updated["models"]:
             updated["active_model"] = "moss" if "moss" in updated["models"] else "anima"
         updated.pop("anatomy", None)

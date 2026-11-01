@@ -40,7 +40,7 @@ class RecipeTests(unittest.TestCase):
                 result=compose(body)
                 self.assertIn(r['example']['subject'],result['prompt'])
                 self.assertEqual(result['size'],r['size'])
-                self.assertEqual(result['cfg_scale'],{'anima':4.5,'moss':3,'qwen21':6,'krea-pixel':1}[r['model']])
+                self.assertEqual(result['cfg_scale'],{'anima':4.5,'moss':3,'qwen21':6,'krea-pixel':1,'z-image':4,'z-image-turbo':1}[r['model']])
                 self.assertNotIn('score_',result['prompt']+result['negative_prompt'])
                 self.assertNotIn('safe,',result['prompt'])
     def test_only_subject_required_and_preview_keeps_orientation(self):
@@ -129,10 +129,17 @@ class PruneTests(unittest.TestCase):
             for path in (unused,shared,external,psx,lowpoly):path.write_bytes(b'keep-or-remove')
             config=home/'.config/local-image-ai-service/config.json';config.parent.mkdir(parents=True)
             config.write_text(json.dumps({'active_model':'removed','models':{'moss':{'vae':str(shared)},'anima':{'vae':str(shared)},'qwen21':{'vae':str(shared)},'krea-pixel':{'pixel64':str(shared)},'anima-psx':{'lora':str(psx)},'anima-lowpoly':{'lora':str(lowpoly)},'removed':{'diffusion':str(unused),'vae':str(shared),'llm':str(external)}}}))
+            cfg=json.loads(config.read_text())
+            z_weights=[]
+            for name in ('z-image','z-image-turbo'):
+                weight=owned/(name+'.gguf');weight.write_bytes(b'keep supported weights');z_weights.append(weight)
+                cfg['models'][name]={'diffusion':str(weight),'vae':str(shared)}
+            config.write_text(json.dumps(cfg))
             old_mask=os.umask(0o077)
             try:
                 with patch.object(Path,'home',return_value=home),patch('subprocess.run',return_value=subprocess.CompletedProcess([],3)),contextlib.redirect_stdout(io.StringIO()):
                     runpy.run_path(str(script),run_name='__main__')
             finally:os.umask(old_mask)
             self.assertFalse(unused.exists());self.assertTrue(shared.exists());self.assertTrue(external.exists());self.assertFalse(psx.exists());self.assertFalse(lowpoly.exists())
-            cfg=json.loads(config.read_text());self.assertEqual(set(cfg['models']),{'anima','moss','qwen21','krea-pixel'});self.assertEqual(cfg['active_model'],'moss')
+            self.assertTrue(all(weight.is_file() for weight in z_weights))
+            cfg=json.loads(config.read_text());self.assertEqual(set(cfg['models']),{'anima','moss','qwen21','krea-pixel','z-image','z-image-turbo'});self.assertEqual(cfg['active_model'],'moss')

@@ -2,8 +2,8 @@ import { test, expect } from '@playwright/test';
 test('MOSS supplies all low-poly presets while retired Anima styles disappear',async({page})=>{
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  const catalog=await(await page.request.get('/studio/api/catalog')).json();
- expect(catalog.models.map(m=>m.id)).toEqual(['moss','anima','qwen21','krea-pixel']);
- expect(catalog.recipes).toHaveLength(44);
+ expect(catalog.models.map(m=>m.id)).toEqual(['moss','anima','qwen21','krea-pixel','z-image','z-image-turbo']);
+ expect(catalog.recipes).toHaveLength(70);
  const recipes=catalog.recipes.filter(r=>r.category==='lowpoly');expect(recipes).toHaveLength(9);
  for(const recipe of recipes){
   expect(recipe.model).toBe('moss');const sample=catalog.examples[recipe.id];expect(sample.model).toBe('moss');

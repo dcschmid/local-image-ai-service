@@ -61,13 +61,20 @@ still detects corrupt responses and dimensions that differ from the request.
 
 Optional local extensions: `steps` (1–100), `cfg_scale` (finite, 1–12), `sampler`
 (`euler`, `euler_a`, `heun`, `dpm++2m`) and `negative_prompt` (up to 16,000 characters).
-The retained model families are MOSS, Anima Aesthetic, Qwen Image 2.1 and Krea Pixel Art. Low-poly recipes use MOSS without a separate adapter; see [the MOSS guide](moss-lowpoly.md).
+The curated profiles are `moss`, `anima`, `qwen21`, `krea-pixel`, `z-image` and `z-image-turbo`. Low-poly recipes use MOSS without a separate adapter; see [the MOSS guide](moss-lowpoly.md).
+Krea Pixel Art and Z-Image Turbo require CFG 1 and an empty negative prompt. Z-Image supports ordinary CFG and negative prompting; [its guide](z-image-and-presets.md) lists the defaults for both variants.
 All other parameters receive 400, including `quality`, `style`, `background`, `output_compression`, and arbitrary model paths.
-Sampling is configured administratively for this service (default: 50 steps, CFG 3.0);
-request overrides take precedence without restarting. See [configuration](configuration.md).
+Administrative `sampling` controls the MOSS defaults (50 steps, CFG 3.0). Other
+profiles use their catalog defaults; request overrides take precedence without
+restarting, subject to the distilled-model restrictions. See [configuration](configuration.md).
 Prompts containing `sd_cpp_extra_args` or LoRA control tags are rejected. The adapter translates
-only the validated seed into the documented native extension. Maximum request body: 64 KiB;
+the validated seed and sampling overrides into the documented native extension. Maximum request body: 64 KiB;
 JSON object, `Content-Type: application/json`, exactly one `Content-Length`, no chunked requests.
+
+Guided clients should use each model’s `formats` from `GET /studio/api/catalog`
+for final and draft dimensions. Z-Image’s 3:2 and 2:3 sizes are 960×640 and
+640×960. Studio jobs can also use larger dimensions that have been verified for
+the exact local components; the compatibility route retains its 1024-pixel limit.
 
 ## Generate through the service CLI
 

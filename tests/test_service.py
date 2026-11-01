@@ -27,7 +27,7 @@ class ValidationTests(unittest.TestCase):
     def test_invalid_requests(self):
         cases = [
             ([], 400), ({"model": "unknown"}, 404), ({"model": []}, 404),
-            ({"model": "z-image", "prompt": "tree"}, 404), ({"prompt": " "}, 400),
+            ({"model": "z-image", "prompt": "tree"}, 409), ({"prompt": " "}, 400),
             ({"prompt": 42}, 400), ({"prompt": "x" * 16001}, 400),
             ({"prompt": "tree", "size": "513x512"}, 400),
             ({"prompt": "tree", "size": "2048x1024"}, 400),
@@ -72,7 +72,7 @@ class ValidationTests(unittest.TestCase):
             path.write_text(json.dumps(cfg))
             path.chmod(0o600)
             self.assertEqual(set(service.load_config(path)["models"]), {"moss"})
-            cfg["models"]["z-image"] = dict(cfg["models"]["moss"])
+            cfg["models"]["retired-model"] = dict(cfg["models"]["moss"])
             path.write_text(json.dumps(cfg))
             with self.assertRaisesRegex(ValueError, "Only curated"):
                 service.load_config(path)
@@ -319,8 +319,10 @@ class InstallationTests(unittest.TestCase):
             config = home / ".config/local-image-ai-service/config.json"
             config.parent.mkdir(parents=True)
             cfg = json.loads((root / "config/config.example.json").read_text())
-            cfg.update(active_model="z-image", port=17888, anatomy={"enabled": True})
-            cfg["models"]["z-image"] = dict(cfg["models"]["moss"])
+            cfg.update(active_model="retired-model", port=17888, anatomy={"enabled": True})
+            cfg["models"]["retired-model"] = dict(cfg["models"]["moss"])
+            for model in ("z-image", "z-image-turbo"):
+                cfg["models"][model] = {k:v for k,v in cfg["models"]["moss"].items() if k != "tokenizer"}
             config.write_text(json.dumps(cfg))
             config.chmod(0o600)
             retired = home / ".local/share/local-image-ai-service/app/anatomy.py"
@@ -341,7 +343,7 @@ class InstallationTests(unittest.TestCase):
                 os.umask(original_umask)
             migrated = json.loads(config.read_text())
             self.assertEqual(migrated["active_model"], "moss")
-            self.assertEqual(set(migrated["models"]), {"moss"})
+            self.assertEqual(set(migrated["models"]), {"moss", "z-image", "z-image-turbo"})
             self.assertNotIn("anatomy", migrated)
             self.assertEqual(migrated["port"], 17888)
             self.assertEqual(config.stat().st_mode & 0o777, 0o600)

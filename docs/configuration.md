@@ -6,7 +6,7 @@ Configuration and API keys must stay out of Git. Changes take effect after a res
 
 | Field | Default / meaning |
 | --- | --- |
-| `active_model` | `moss` initially; `moss`, `anima`, `qwen21` or `krea-pixel` |
+| `active_model` | `moss` initially; `moss`, `anima`, `qwen21`, `krea-pixel`, `z-image` or `z-image-turbo` |
 | `host` | Only `127.0.0.1` is accepted |
 | `port` | 7861, client-facing local API |
 | `backend_port` | 17861, internal loopback runtime |
@@ -106,10 +106,16 @@ PY
 
 Set `api_key_file` in JSON to its absolute path, then restart. The key must contain at least
 24 characters, be owned by the current user, and have mode `0600`. Once configured,
-**all four client-facing endpoints** require `Authorization: Bearer <KEY>`. The service CLI
+the compatibility, health/readiness and Studio API routes require `Authorization: Bearer <KEY>`. The service CLI
 reads and sends this key automatically, including for `generate`. Without a configured key,
 no header is required and a client-supplied dummy key is ignored. Key changes require a restart.
 
 The internal native runtime remains unauthenticated on loopback. The key protects the adapter
 but is not a security boundary against other local users. A future local tunnel must forward
 only the adapter port. The service itself does not accept a LAN bind address.
+
+## Z-Image profiles
+
+Both Z-Image profiles use three roles: `diffusion`, `llm` and `vae`. Their Qwen3 4B text encoder and FLUX VAE share the same local files; their diffusion weights differ. Install the pinned components with `python3 scripts/install-models.py z-image z-image-turbo` while the service is stopped. See [Z-Image setup and research](z-image-and-presets.md).
+
+Z-Image defaults to 40 steps, CFG 4, Euler, discrete scheduling and flow shift 6. Turbo uses eight steps, CFG 1 and flow shift 3, with no negative prompt. The `sampling` configuration still controls only MOSS.

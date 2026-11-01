@@ -37,7 +37,7 @@ retries. RAM limits do not reserve VRAM. `/health` can remain reachable while `/
 
 ## Missing files or load failure
 
-`doctor` checks the four required MOSS files. Correct absolute paths in private JSON configuration; do not download,
+`doctor` checks the configured model components. MOSS has four required files. Correct absolute paths in private JSON configuration; do not download,
 rename, or move existing weights. MOSS requires `tokenizer_qwen3.5.json` in addition to its DiT,
 encoder, and VAE. Failures appear in `/health.error` and the journal without retry loops.
 After fixing the cause:
@@ -52,12 +52,21 @@ The separate runtime needs the three CUDA libraries recorded in `runtime/receipt
 `cuda_lib` must point to its own absolute library directory. The previous installation is not
 used as a runtime fallback. `doctor` must report CUDA0; CPU fallback is not silent.
 
-## HTTP 404, 429, or 504
+## HTTP 404, 409, 429, or 504
 
-404 `model_not_found`: set the client model to `moss`; no other model is supported.
-429: wait for the current generation; there is no job queue.
+404 `model_not_found`: choose an installed curated model from `local-image-ai-service models`; the six supported IDs are `moss`, `anima`, `qwen21`, `krea-pixel`, `z-image` and `z-image-turbo`.
+409 `model_not_loaded`: the compatibility API requires the selected model to be loaded with `local-image-ai-service use MODEL`. Guided CLI `render` and Studio jobs switch models automatically.
+429: the synchronous compatibility API is busy; wait for its current generation. Studio and CLI `render` requests use the persistent job queue.
 504: the owned runtime was stopped. Inspect logs and restart manually. Client timeouts must
-allow the generation deadline plus process cleanup. Stopping or reloading MOSS cancels active requests.
+allow the generation deadline plus process cleanup. Stopping the image service or changing its loaded model interrupts active requests.
+
+## Z-Image completes with a blank white image
+
+The initial Unsloth base GGUF completed jobs but produced uniform white frames on the tested CUDA setup. The current lockfile pins the runtime author’s compatible `z_image-Q4_0.gguf`. Stop the image service and rerun `python3 scripts/install-models.py z-image` to update its mapping, then restart. See [the measured fix and checkpoint revision](z-image-and-presets.md#z-image-setup). The public example builder rejects uniform frames; a successful runtime job alone does not prove visual quality.
+
+## New models missing from MCP after an update
+
+A long-running bridge retains its original model/preset schema. Reconnect or restart the MCP client so it starts the updated bridge. Until then, an old process can reject the expanded private configuration with `Only curated models may be configured`. Check the installed catalog separately with `local-image-ai-service models`.
 
 ## CLI saving or generation fails
 

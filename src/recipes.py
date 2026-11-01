@@ -1,8 +1,8 @@
-"""Deterministic Anima and MOSS recipes; no prompt translation or content filter."""
+"""Deterministic guided recipes; no prompt translation or content filter."""
 from catalog import defaults, MODELS
 import modeling_reference
 # Change this when existing recipe semantics change; additive recipes keep old inputs valid.
-VERSION = 3
+VERSION = 4
 SOURCE = 'https://huggingface.co/circlestone-labs/Anima'
 MOSS_SOURCE = 'https://github.com/OpenMOSS/MOSS-Image/blob/main/USERGUIDE.md'
 NEGATIVE = 'worst quality, low quality, blurry, jpeg artifacts, chromatic aberration, watermark, signature, comic panels, panel layout, split screen, collage, multiple views, reference sheet, white borders'
@@ -17,8 +17,14 @@ FORMATS = {
     '2:3': ('Portrait','768x1152','512x768'),
 }
 
-def formats():
-    return [dict(id=ratio,name=ratio+' · '+label,size=size,preview_size=preview) for ratio,(label,size,preview) in FORMATS.items()]
+def model_formats(model=None):
+    selected = dict(FORMATS)
+    if model in ('z-image', 'z-image-turbo'):
+        selected.update({'3:2':('Landscape','960x640','768x512'), '2:3':('Portrait','640x960','512x768')})
+    return selected
+
+def formats(model=None):
+    return [dict(id=ratio,name=ratio+' · '+label,size=size,preview_size=preview) for ratio,(label,size,preview) in model_formats(model).items()]
 
 def preview_size(size):
     width,height=map(int,size.split('x'))
@@ -350,6 +356,183 @@ for identifier, asset, name, description in MOSS_ASSET_RECIPES:
                     ' The complete asset fits inside the frame with space around all edges. Use neutral even lighting, a faint contact shadow and a small solid-color palette. No labels, grid or surrounding scenery.',
         tip='MOSS prepares the low-poly look. Use Blender reference for a clear asset view; choose one main subject and a few large material colors.'))
 
+# Curated 2026-11-01 from the model authors' prompting/capability guides.
+# These are our templates, not official presets or guarantees of a particular style.
+ADDITIONAL_RECIPES = [
+    dict(id='moss-risograph', model='moss', category='craft', name='Risograph · two-ink print', size='832x1216',
+         description='Two spot inks, visible paper grain and slightly offset printed layers.',
+         example=dict(subject='a red bicycle leaning against a leafy blue greenhouse', scene='on an ivory paper print', details='coral red and cobalt blue inks, generous cream margins'),
+         scene='on warm ivory paper', style='two-color risograph illustration, grainy soy ink, imperfect registration, overlapping spot colors',
+         composition='One bold illustration with large simplified shapes, open paper highlights and restrained ink overlap. Keep the subject readable without lettering.',
+         tip='Name two ink colors and leave some paper visible. This is a raster print concept, not separated print plates.'),
+    dict(id='moss-embroidery', model='moss', category='craft', name='Embroidery · stitched illustration', size='1024x1024',
+         description='Raised colored thread, visible stitches and a tactile woven fabric ground.',
+         example=dict(subject='an orange fox curled around a crescent moon with tiny blue flowers', scene='embroidered onto oatmeal linen', details='satin stitches, French knots, a small forest-green leaf border'),
+         scene='embroidered onto natural linen', style='photographed hand embroidery, tactile cotton thread, visible satin stitches and French knots, woven linen texture',
+         composition='An overhead close view of one complete stitched motif. Soft side light reveals raised threads and gentle fabric shadows; leave breathing room around the design.',
+         tip='Use broad shapes and a few thread colors. The output is a visual concept, not a machine embroidery file.'),
+    dict(id='moss-felt', model='moss', category='craft', name='Needle felt · tiny wool world', size='1024x1024',
+         description='Soft wool fibers, rounded handmade figures and a miniature scene.',
+         example=dict(subject='a tiny hedgehog carrying a red mushroom umbrella', scene='on a moss-green wool hill', details='loose fuzzy fibers, a small blue puddle, warm softbox light'),
+         scene='on a small wool-covered miniature set', style='needle-felted wool miniature, soft fuzzy fibers, handmade rounded shapes, macro craft photography',
+         composition='One complete miniature in a three-quarter view, with soft side light revealing wool texture. Keep the backdrop quiet and the silhouette clear.',
+         tip='Ask for visible wool fibers and one simple action to distinguish the look from smooth clay.'),
+    dict(id='moss-stained-glass', model='moss', category='craft', name='Stained glass · luminous window', size='832x1216',
+         description='Jewel-colored glass shapes, dark lead outlines and glowing transmitted light.',
+         example=dict(subject='a kingfisher perched above river reeds', scene='inside one arched stained-glass window', details='turquoise, amber and ruby glass, rippled hand-blown texture'),
+         scene='inside one illuminated stained-glass window', style='stained-glass artwork, luminous jewel colors, dark lead came outlines, textured translucent glass',
+         composition='Show the complete window straight on, with broad connected glass pieces and a strong central motif. Light shines through the colored glass; no text.',
+         tip='Use a recognizable silhouette and a few large color areas. Glass joins are an illustration, not a fabrication pattern.'),
+    dict(id='anima-woodblock', model='anima', category='anime', name='Woodblock · moonlit print', size='832x1216',
+         description='Carved contours, flat pigment areas and the texture of a traditional woodblock print.',
+         example=dict(subject='a white crane standing among wind-bent reeds', scene='beside a quiet river under a large autumn moon', details='indigo water, vermilion leaves, warm paper highlights'),
+         scene='beside a quiet river at dusk', style='Japanese woodblock print illustration, carved flowing contours, flat pigment, textured washi paper',
+         framing='single vertical print, asymmetrical composition, broad flat colors, open paper highlights, no lettering',
+         composition='One balanced print with large readable shapes and a limited palette.',
+         tip='Specify two or three pigments and a clear silhouette. Keep modern camera and glossy rendering terms out of the description.'),
+    dict(id='anima-pastel', model='anima', category='anime', name='Pastel · soft chalk illustration', size='1024x1024',
+         description='Powdery chalk marks, soft edges and luminous colors on textured paper.',
+         example=dict(subject='an adult astronomer in a lavender coat carrying a brass telescope', scene='walking through a peach-colored evening meadow', details='dusty blue shadows, golden grasses, a few first stars'),
+         scene='in a quiet meadow at dusk', style='soft pastel illustration, powdery chalk strokes, textured paper, luminous muted colors',
+         framing='single illustrated scene, readable main figure, soft broken edges, broad color masses, gentle evening light',
+         composition='A calm scene with textured color masses and a clear focal point.',
+         tip='Describe the chalk surface and a restrained palette; very fine costume details compete with the soft medium.'),
+    dict(id='anima-dark-fantasy', model='anima', category='anime', name='Dark fantasy · painted encounter', size='832x1216',
+         description='A painterly fantasy scene with dramatic scale, mist and a readable focal encounter.',
+         example=dict(subject='an adult armored traveler holding a small lantern before a sleeping stone dragon', scene='at the entrance to an overgrown ruined cathedral', details='mossy arches, cool blue fog, one warm light on the traveler'),
+         scene='among ancient overgrown ruins', style='dark fantasy digital painting, expressive brushwork, weathered stone, restrained cool colors',
+         framing='single vertical illustration, small readable foreground traveler, immense creature in middle distance, warm focal light, layered mist',
+         composition='One encounter with strong scale contrast and a visible focal subject.',
+         tip='Describe where the small and large subjects sit in the scene. Keep some light on the main figure so the silhouette stays readable.'),
+    dict(id='anima-solarpunk', model='anima', category='anime', name='Solarpunk · hopeful city', size='1216x832',
+         description='Sunlit terraces, lush planting and an illustrated city built around everyday life.',
+         example=dict(subject='a hillside neighborhood with planted balconies, a small tram and rooftop gardens', scene='on a clear spring morning', details='cream architecture, terracotta walkways, solar canopies and hanging vines'),
+         scene='under clear warm morning light', style='solarpunk anime environment illustration, hand-painted architectural scenery, lush greenery, hopeful warm colors',
+         framing='single wide establishing view, clear foreground terrace, connected middle-ground paths, distant hillside, readable architecture',
+         composition='One coherent neighborhood with layered depth and a clear focal route.',
+         tip='Choose a small neighborhood and three important structures. Greenery should support the paths and building silhouettes.'),
+    dict(id='qwen-infographic', model='qwen21', category='qwen', name='Qwen · illustrated explainer', size='832x1216',
+         description='A simple illustrated process with a short heading and a few clearly separated stages.',
+         example=dict(subject='the growth of a sunflower from seed to flowering plant in three stages', scene='on a warm cream educational poster', details='three large botanical drawings connected by simple arrows, no small captions', text='GROW'),
+         scene='on a clean cream poster', style='editorial educational infographic, simple flat illustration, clear visual hierarchy',
+         composition='Reserve the upper quarter for the requested headline in large bold dark lettering. Below the heading, arrange three large stages in reading order with generous spacing and simple connecting arrows. The only text is the requested headline; leave out small captions and statistics.',
+         tip='Keep wording short and verify every arrow and factual relationship; this is an illustration, not a validated scientific diagram.'),
+    dict(id='qwen-exploded', model='qwen21', category='qwen', name='Qwen · exploded product concept', size='1024x1024',
+         description='Separated product layers with readable materials and a coherent assembly direction.',
+         example=dict(subject='a compact portable speaker with a teal shell, brass grille and dark rubber base', scene='floating as three aligned layers above a pale studio surface', details='a small shadow below each part, no wires or labels'),
+         scene='against a pale studio background', style='industrial design exploded-view concept illustration, precise product edges, restrained material colors',
+         composition='Show three to five main parts separated along one common vertical axis, all in the same three-quarter perspective. Keep the full assembly visible and evenly spaced.',
+         tip='Name only the major components. Verify connections yourself; generated parts are not CAD or engineering documentation.'),
+    dict(id='qwen-packaging', model='qwen21', category='qwen', name='Qwen · packaging concept', size='1024x1024',
+         negative_extra='fine print, small text, extra captions, gibberish, ingredient list, barcode',
+         description='One package with a clear front label, material texture and a coordinated graphic motif.',
+         example=dict(subject='a small cream tea tin with a dark green lid and a simple orange blossom illustration', scene='on a pale limestone counter', details='matte printed paper label, soft side lighting, no fine print', text='BLOOM'),
+         scene='on a neutral studio surface', style='commercial packaging concept photography, refined print texture, clear front-facing label',
+         composition='Show one complete package in a gentle three-quarter view, with its front label readable. Use the requested wording as the only large brand line and leave fine print absent.',
+         tip='Use a short invented name and one package. Check the main label and any invented fine print. This is a mockup image, not a dieline or editable label file.'),
+    dict(id='qwen-neon-sign', model='qwen21', category='qwen', name='Qwen · neon lettering scene', size='1216x832', photographic=True,
+         negative_extra='underexposed facade, crushed blacks, blown-out neon, illegible lettering, unrequested text',
+         description='Short luminous lettering integrated into a rainy cinematic street scene.',
+         example=dict(subject='a small late-night noodle bar with one orange neon sign', scene='on a quiet rain-soaked street at blue hour', details='teal tiled walls, warm window light, subtle puddle reflections', text='OPEN LATE'),
+         scene='on a rainy street at night', style='cinematic night photography, realistic neon glow, wet material reflections',
+         composition='Frame the shop and its single sign together. Soft blue ambient fill and warm window light keep the teal facade, doorway and wet pavement clearly visible with open shadow detail. The exact requested wording belongs on the sign, large and readable, with restrained bloom and no other lettering.',
+         tip='Quote a short phrase in Visible text. Check every letter and keep the glow low enough to preserve its shape.'),
+    dict(id='pixel-creature', model='krea-pixel', category='pixel', name='Pixel · creature sprite', size='1024x1024', pixel_grid=64, pixel_colors=24,
+         description='One complete game creature with grouped shading and an expressive silhouette.',
+         example=dict(subject='a round turquoise cave lizard with orange crystal horns', scene='in a side-on idle pose on a plain cream background', details='short sturdy legs, a curled tail, one bright amber eye', pixel_grid=64, pixel_colors=24),
+         scene='in an idle pose on a plain background', style='retro monster sprite, crisp square clusters, limited color palette',
+         composition='Show one complete creature with space around every edge, distinct limbs and simple grouped shadows. No sprite sheet, interface or text.',
+         tip='Request one pose. Multiple generations do not guarantee matching animation frames; the background stays opaque.'),
+    dict(id='pixel-portrait', model='krea-pixel', category='pixel', name='Pixel · dialogue portrait', size='1024x1024', pixel_grid=64, pixel_colors=24,
+         description='A readable character bust suitable as a starting point for a game dialogue portrait.',
+         example=dict(subject='an adult airship captain with silver hair, round goggles and a navy scarf', scene='in a three-quarter bust view on a plain muted blue background', details='a friendly raised eyebrow, brass collar clasp, warm skin highlights', pixel_grid=64, pixel_colors=24),
+         scene='as a bust portrait on a plain background', style='retro RPG dialogue portrait, crisp square clusters, limited color palette',
+         composition='A single head-and-shoulders portrait fills the image, leaving clear space above the hair. Keep the face expressive and clothing shapes broad. No dialogue box or lettering.',
+         tip='Give the face one expression and one distinctive accessory. Use 128 for finer facial features.'),
+    dict(id='pixel-vehicle', model='krea-pixel', category='pixel', name='Pixel · tiny vehicle', size='1024x1024', pixel_grid=64, pixel_colors=24,
+         description='One small vehicle with clear wheels, readable bodywork and a simple background.',
+         example=dict(subject='a yellow lunar delivery rover with four chunky dark wheels and a small blue cargo box', scene='in a side view on a plain cream background', details='one orange headlight, a short antenna, simple gray chassis', pixel_grid=64, pixel_colors=24),
+         scene='in a side view on a plain background', style='retro game vehicle sprite, crisp square clusters, limited color palette',
+         composition='Show the complete vehicle with all outer edges inside the frame. Use broad body panels, readable wheels and one light direction. No track, interface or text.',
+         tip='Choose side view or three-quarter view and a few large parts. This is one concept, not matched directional sprites.'),
+    dict(id='pixel-dungeon', model='krea-pixel', category='pixel', name='Pixel · dungeon room', size='1024x1024', pixel_grid=128, pixel_colors=32,
+         description='A single overhead game room with clear boundaries and a few readable props.',
+         example=dict(subject='one small stone alchemist room with a round cauldron, wooden shelves and a blue rug', scene='seen from directly overhead', details='two amber lamps, one entrance at the bottom, moss in the stone corners', pixel_grid=128, pixel_colors=32),
+         scene='seen from directly overhead as one complete room', style='top-down pixel art dungeon environment, deliberate square clusters, limited color palette',
+         composition='Keep the entire rectangular room visible with clear floor space, wall boundaries and one entrance. Place a few large props near the walls. No interface, characters or text.',
+         tip='Use this as a room concept. It does not provide a seamless tileset, collision map or guaranteed navigable layout.'),
+    dict(id='zimage-fantasy', model='z-image', category='zimage', name='Z-Image · fantasy matte painting', size='1216x832',
+         description='A wide imaginative world with painted atmosphere and monumental scale.',
+         example=dict(subject='a stone observatory built on the back of an immense sleeping tortoise', scene='in a misty mountain valley at dawn', details='tiny warm windows, hanging gardens, a narrow bridge over the river'),
+         scene='in a misty mountain valley at dawn', style='fantasy matte painting, expressive painted textures, cinematic atmospheric depth',
+         composition='One wide establishing view with a clear foreground, a monumental middle-ground subject and distant layered mountains. Keep the main silhouette readable and the lighting coherent.',
+         tip='Describe one impossible idea with concrete materials and scale cues. Use the normal model for variety and negative-prompt control.'),
+    dict(id='zimage-ink', model='z-image', category='zimage', name='Z-Image · ink wash', size='832x1216',
+         description='Expressive black ink, soft washes and open rice-paper space.',
+         example=dict(subject='a black heron standing on a weathered branch above still water', scene='among pale mist and loosely painted reeds', details='one small vermilion leaf, dry-brush feathers, abundant open paper'),
+         scene='among pale mist and open rice-paper space', style='sumi-e ink wash illustration, expressive dry brush, bleeding black ink, textured rice paper',
+         composition='A single vertical composition balances one dark focal silhouette with broad empty areas and pale gray washes. Keep the forms loose and avoid lettering or seals.',
+         tip='Name the ink medium and one focal silhouette. Open paper is part of the composition, so keep extra details sparse.'),
+    dict(id='zimage-retro-scifi', model='z-image', category='zimage', name='Z-Image · retro science fiction', size='832x1216',
+         description='Airbrushed planets, imaginative machinery and the palette of a vintage paperback.',
+         example=dict(subject='a lone explorer in an orange pressure suit facing a giant ring-shaped space station', scene='on a pale desert moon under a violet sky', details='airbrushed gradients, two distant planets, a tiny cream exploration vehicle'),
+         scene='on a pale desert moon beneath a violet sky', style='1970s science-fiction paperback illustration, airbrushed gouache, subtle print grain, imaginative painted machinery',
+         composition='One vertical cover-like artwork with a small foreground explorer and a large distant structure. Keep the upper sky open, the palette limited and the image free of lettering.',
+         tip='Describe a vintage medium, palette and strong scale contrast. Use Qwen Cover when a checked title is the main requirement.'),
+    dict(id='zimage-fashion', model='z-image', category='zimage', name='Z-Image · editorial fashion', size='832x1216', photographic=True,
+         description='A deliberate fashion photograph with expressive fabric and directional light.',
+         example=dict(subject='an adult model wearing an oversized rust-orange coat and sculptural black boots', scene='beside a curved concrete wall in late afternoon', details='wind lifting one coat panel, a relaxed grounded pose, long soft shadows'),
+         scene='beside a textured architectural wall', style='editorial fashion photography, natural fabric texture, restrained art direction',
+         composition='Show one complete outfit in a three-quarter full-body view with clear space above the head and below the feet. Directional daylight reveals the fabric and architecture while keeping the face readable.',
+         tip='Name the garment silhouette, material and one pose. Negative prompts are available in free prompt mode.'),
+    dict(id='zimage-botanical', model='z-image', category='zimage', name='Z-Image · botanical plate', size='832x1216',
+         description='A delicate scientific-style plant illustration with clear stems, leaves and flowers.',
+         example=dict(subject='one flowering branch of wild blackberry with ripe dark berries and white blossoms', scene='on warm ivory paper', details='fine pen contours, translucent watercolor, pale green leaf undersides'),
+         scene='on warm ivory paper', style='vintage botanical watercolor illustration, fine pen contours, delicate transparent washes',
+         composition='Show one complete plant specimen with readable branching, leaf shapes and flower details, centered with broad paper margins. No labels, scale bars or text.',
+         tip='Use one plant and verify its anatomy. This is decorative artwork, not a reliable identification plate.'),
+    dict(id='zimage-turbo-photo', model='z-image-turbo', category='zturbo', name='Z-Image Turbo · everyday photograph', size='1024x1024', photographic=True,
+         description='A quick natural photograph with available light and an unforced everyday moment.',
+         example=dict(subject='an adult bicycle mechanic with curly dark hair wearing a faded blue work shirt', scene='taking a tea break by an open workshop door', details='a relaxed smile, grease on the fingers, soft overcast daylight'),
+         scene='beside an open workshop door in soft daylight', style='natural candid photograph, realistic skin and fabric texture, restrained colors',
+         composition='One eye-level medium view with a relaxed main subject and a quietly detailed environment. Available daylight, subtle natural grain and believable shadows.',
+         tip='Describe what should be visible directly. Turbo uses eight steps and ignores negative-prompt workflows.'),
+    dict(id='zimage-turbo-cinema', model='z-image-turbo', category='zturbo', name='Z-Image Turbo · cinematic night', size='1216x832', photographic=True,
+         description='A fast film-like scene with a clear action and motivated practical lighting.',
+         example=dict(subject='an adult traveler with a red suitcase waiting beside a small mountain train', scene='at a quiet station during blue hour', details='warm carriage windows, cool mist, one yellow platform lamp'),
+         scene='at a quiet station during blue hour', style='cinematic film still, realistic photographic texture, restrained teal and amber colors',
+         composition='One wide frame with a readable main action and layered depth. Warm practical lights illuminate the subject against cool evening air, with subtle reflections and controlled contrast.',
+         tip='Choose one action and two light sources. Local generation speed depends on resolution and CPU offloading.'),
+    dict(id='zimage-turbo-product', model='z-image-turbo', category='zturbo', name='Z-Image Turbo · product study', size='1024x1024', photographic=True,
+         description='A fast material and lighting study of one clearly framed product.',
+         example=dict(subject='a matte cobalt-blue portable radio with cream knobs and a woven speaker grille', scene='on a pale peach studio sweep', details='one broad softbox reflection, subtle contact shadow, brushed metal antenna'),
+         scene='on a clean neutral studio sweep', style='professional product photograph, controlled softbox lighting, accurate material texture',
+         composition='One complete product in a clear three-quarter view, centered with room around its outline. A soft contact shadow grounds it and restrained reflections reveal the materials.',
+         tip='Specify the material and finish of each major part. Use this to iterate on shape and color quickly.'),
+    dict(id='zimage-turbo-sign', model='z-image-turbo', category='zturbo', name='Z-Image Turbo · storefront lettering', size='1216x832', photographic=True,
+         description='A small storefront scene with one short English or Chinese sign.',
+         example=dict(subject='a tiny corner flower shop with one dark green painted sign', scene='on a quiet cobbled street after light rain', details='terracotta pots, cream awning, warm light through the doorway', text='PETAL'),
+         scene='on a quiet street after light rain', style='natural architectural photograph, realistic storefront materials, soft daylight',
+         composition='One straight-on view shows the complete storefront. Put the exact requested wording on the single large sign above the door, with clear letter spacing and restrained decoration.',
+         tip='Keep Visible text short and inspect the spelling. English and Chinese are documented strengths; other scripts need checking.'),
+    dict(id='zimage-turbo-food', model='z-image-turbo', category='zturbo', name='Z-Image Turbo · food editorial', size='1024x1024', photographic=True,
+         description='A quick appetizing food photograph with soft side light and tactile ingredients.',
+         example=dict(subject='a bowl of creamy pumpkin soup with toasted seeds and a small swirl of cream', scene='on a dark wooden table beside a large window', details='a torn slice of bread, linen napkin, a few scattered pumpkin seeds'),
+         scene='on a wooden table beside a large window', style='editorial food photography, natural ingredient textures, gentle warm colors',
+         composition='One close three-quarter view keeps the main dish sharp and the surrounding table softly receding. Soft window light reveals texture, gentle highlights and believable portions.',
+         tip='Use one dish, one surface and a few props. More steps are not the quality control for this distilled model.'),
+]
+for recipe in ADDITIONAL_RECIPES:
+    recipe['checked'] = '2026-11-01'
+    recipe['evidence'] = 'Curated template based on model-author guidance; inspect the generated example for style fit.'
+    if recipe['model']=='qwen21' and recipe['example'].get('text'):
+        recipe['example_quality']='standard'
+    if recipe['model'] in ('z-image', 'z-image-turbo'):
+        # Stay within the public API's 1024-dimension limit until local GPU
+        # verification has established larger sizes for these exact weights.
+        recipe['size'] = {'832x1216':'768x1024', '1216x832':'1024x768'}.get(recipe['size'], recipe['size'])
+RECIPES += ADDITIONAL_RECIPES
+
 def recipes():
     return [dict(r, model=r.get('model','anima'), version=VERSION,preview_size=r['size'] if r.get('model')=='krea-pixel' else preview_size(r['size']),
                  modeling_asset=modeling_reference.RECIPE_ASSETS.get(r['id']),
@@ -373,7 +556,7 @@ def compose(body):
             raise ValueError(f'{key}: use at most {maximum} characters.')
         fields[key]=value.strip()
     if not fields['subject']: raise ValueError('Enter what you would like to see in the image.')
-    if fields['text'] and model!='qwen21':raise ValueError('Visible text is available in Qwen recipes. Use the details field with other models.')
+    if fields['text'] and model not in ('qwen21','z-image','z-image-turbo'):raise ValueError('Visible text is available in Qwen and Z-Image recipes. Use the details field with other models.')
     ratio=body.get('aspect_ratio','auto')
     if not isinstance(ratio,str) or (ratio!='auto' and ratio not in FORMATS):raise ValueError('Choose a supported aspect ratio or Recommended.')
     quality=body.get('quality','standard')
@@ -404,13 +587,14 @@ def compose(body):
     else:
         negative=NEGATIVE+(', color, colored illustration' if recipe['id']=='anima-manga' else ', manga, comic, storyboard, letterboxing')
         if recipe['id'].startswith('lowpoly-'):negative+=' , smooth subdivided geometry, photorealistic textures, glossy plastic'
-    if recipe.get('category')=='craft' or model=='qwen21':
+    if recipe.get('category')=='craft' or model in ('qwen21','z-image','z-image-turbo'):
         prompt=f"{recipe['style']}. {fields['subject']}, {scene}. {recipe['composition']}"
         if fields['details']:prompt+=' Additional details: '+fields['details']+'.'
         if fields['text']:prompt+=' Visible wording must read exactly: '+repr(fields['text'])+'. Preserve the spelling, capitalization and line breaks.'
         if recipe.get('transparent'):prompt='This is an RGBA image with transparency. '+prompt+' The image has alpha channel and the background is transparent.'
         negative=PHOTO_NEGATIVE if recipe.get('photographic') else 'worst quality, low quality, watermark, jpeg artifacts, collage, split screen, cropped main subject'
     if recipe.get('negative_extra'):negative+=', '+recipe['negative_extra']
+    if not MODELS[model]['negative']:negative=''
     if model=='krea-pixel':
         from pixel_art import settings
         grid,colors=settings(body.get('pixel_grid',recipe['pixel_grid']),body.get('pixel_colors',recipe['pixel_colors']))
@@ -424,10 +608,11 @@ def compose(body):
         raise ValueError('Pixel settings are available with Krea Pixel Art.')
     if reference:
         prompt,negative=reference['prompt'],reference['negative_prompt']
-    size=(reference['size'] if reference else recipe['size']) if ratio=='auto' else FORMATS[ratio][1]
-    draft_size=preview_size(size) if ratio=='auto' else FORMATS[ratio][2]
+    selected_formats=model_formats(model)
+    size=(reference['size'] if reference else recipe['size']) if ratio=='auto' else selected_formats[ratio][1]
+    draft_size=preview_size(size) if ratio=='auto' else selected_formats[ratio][2]
     sampling_model=model
-    steps={'anima':{'preview':30,'standard':35,'detail':45},'moss':{'preview':recipe.get('preview_steps',30 if photo or reference else 20),'standard':50,'detail':60},'qwen21':{'preview':20,'standard':40,'detail':50},'krea-pixel':dict.fromkeys(('preview','standard','detail'),8)}[sampling_model]
+    steps={'anima':{'preview':30,'standard':35,'detail':45},'moss':{'preview':recipe.get('preview_steps',30 if photo or reference else 20),'standard':50,'detail':60},'qwen21':{'preview':20,'standard':40,'detail':50},'krea-pixel':dict.fromkeys(('preview','standard','detail'),8),'z-image':{'preview':28,'standard':40,'detail':50},'z-image-turbo':dict.fromkeys(('preview','standard','detail'),8)}[sampling_model]
     result=dict(model=model,prompt=prompt,size=draft_size if quality=='preview' and model!='krea-pixel' else size,
                 steps=steps[quality],cfg_scale=defaults(model)['cfg'],sampler='euler',negative_prompt=negative,preset='none')
     if model=='krea-pixel': result.update(pixel_grid=grid,pixel_colors=colors)

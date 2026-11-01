@@ -268,6 +268,7 @@ def discovery(args, load_config):
     if args.command == 'formats': return formats()
     cfg = load_config()
     models = {name: dict(model, defaults=defaults(name), free_prompt_quality_profiles=quality_profiles(name),
+                        formats=formats(name),
                         guided_qualities=['preview', 'standard', 'detail'],
                         configured=name in cfg['models'], installed=not missing_files(cfg, name),
                         missing=missing_files(cfg, name), recipes=[r['id'] for r in selection if r['model'] == name])

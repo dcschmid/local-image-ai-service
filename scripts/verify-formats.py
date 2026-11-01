@@ -11,6 +11,7 @@ import time
 from PIL import Image
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'src'))
 from recipes import formats
+from catalog import MODELS
 from service import Backend,load_config,WORK
 from studio_service import Studio,DATA
 
@@ -40,7 +41,7 @@ def store(path,receipts):
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--model',choices=('krea-pixel','qwen21','anima','moss'))
+    parser.add_argument('--model',choices=tuple(MODELS))
     parser.add_argument('--standard-only',action='store_true',help='Verify the seven final-output aspect-ratio sizes')
     args=parser.parse_args()
     os.umask(0o077)
@@ -48,14 +49,13 @@ def main():
     cfg=load_config();cfg['generation_timeout']=900
     backend=Backend(cfg);root=CACHE/'format-checks-20261031';studio=Studio(backend,root)
     path=DATA/'verification.json';receipts=json.loads(path.read_text()) if path.exists() else {}
-    desired={f[key] for f in formats() for key in ('size','preview_size')}
     roots=[root,DATA,CACHE/'recipe-examples-20261031',CACHE/'moss-photography-20261031']
     WORK.mkdir(parents=True,exist_ok=True);(WORK/'empty-model-catalog').mkdir(exist_ok=True)
     try:
-        for model in ('krea-pixel','qwen21','anima','moss'):
+        for model in MODELS:
             if args.model and model!=args.model:continue
             if model not in cfg['models']:continue
-            desired={f[key] for f in formats() for key in (('size',) if model=='krea-pixel' or args.standard_only else ('size','preview_size'))}
+            desired={f[key] for f in formats(model) for key in (('size',) if model=='krea-pixel' or args.standard_only else ('size','preview_size'))}
             fingerprint=studio.fingerprint(model)
             receipt=receipts.get(model,{})
             if receipt.get('fingerprint')!=fingerprint:receipt=dict(fingerprint=fingerprint,modes=['text'],sizes=[])

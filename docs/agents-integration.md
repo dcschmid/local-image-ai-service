@@ -146,15 +146,22 @@ agents should query live discovery before choosing IDs or reporting availability
 
 | Model ID | Best starting point | Guided presets |
 | --- | --- | ---: |
-| `moss` | Realistic photos, comic/craft illustrations, low-poly concepts and Blender references | 21: 9 photo, 3 craft/comic, 9 low-poly |
-| `anima` | Anime, manga, character art and illustrated backgrounds | 13 |
-| `qwen21` | Detailed scenes, poster/cover text, products and transparent stickers | 6 |
-| `krea-pixel` | Native pixel icons, characters, isometric buildings and landscapes | 4 |
+| `moss` | Realistic photos, comic/craft illustrations, low-poly concepts and Blender references | 25: 9 photo, 7 craft/comic, 9 low-poly |
+| `anima` | Anime, manga, character art, print styles and illustrated backgrounds | 17 |
+| `qwen21` | Detailed scenes, text, product/packaging concepts and transparent stickers | 10 |
+| `krea-pixel` | Native pixel icons, characters, creatures, vehicles, rooms and landscapes | 8 |
+| `z-image` | Fantasy paintings, ink wash, vintage science fiction, fashion and botanical art | 5 |
+| `z-image-turbo` | Eight-step photo, cinema, product, lettering and food studies | 5 |
 
-There are also 10 free-prompt styles and 7 aspect ratios. Discovery includes
+There are also 16 free-prompt styles and 7 aspect ratios. Discovery includes
 model licenses and installation status; Qwen's configured profile has a
 non-commercial research/evaluation license. Describe the installed profiles
 accurately when agents explain the choices.
+
+Each model’s `formats` lists its actual final and draft sizes; Z-Image’s 3:2 and
+2:3 formats differ from the common defaults. After adding profiles, reconnect
+long-running MCP clients so the bridge reloads its model and preset argument
+schema. See [the expanded catalog’s sources and GPU checks](z-image-and-presets.md).
 
 CLI discovery:
 

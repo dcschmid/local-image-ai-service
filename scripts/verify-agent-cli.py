@@ -91,7 +91,7 @@ def main():
                             result = await client.call_tool(name, values or {})
                             if result.is_error: raise RuntimeError(str(result.content))
                             return result.structured_content
-                        assert (await call('list_presets'))['count'] == 44
+                        assert (await call('list_presets'))['count'] == 70
                         composed = await call('compose', dict(params=dict(recipe='lowpoly-anything', example=True, quality='preview', seed=44)))
                         assert composed['request']['model'] == 'moss'
                         accepted = await call('generate_image', dict(params=dict(recipe='lowpoly-anything', example=True, quality='preview', seed=44)))

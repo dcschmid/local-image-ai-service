@@ -69,14 +69,17 @@ Keep `~/.local/bin` on your `PATH`. The application installer does not start the
 
 ## 4. Add the other models you want
 
-With the service stopped, the model installer can download and verify the pinned Anima and Qwen components:
+With the service stopped, the model installer can download and verify the pinned Anima, Qwen and Z-Image components:
 
 ```bash
 python3 scripts/install-models.py anima
 python3 scripts/install-models.py qwen21
+python3 scripts/install-models.py z-image z-image-turbo
 ```
 
 These downloads are optional and explicit. MOSS continues to use your existing components. For Krea Pixel Art, follow [the pixel-art setup](krea-pixel-art.md), which also prepares the grid-specific DoRA weights. Model files are large, so check available disk space first.
+
+The two Z-Image profiles share an encoder and VAE and require about 10.54 GB in total. The pinned base model uses the runtime author’s compatible Q4_0 file; see [Z-Image setup and GPU checks](z-image-and-presets.md) for settings and the blank-output issue found with the initial checkpoint.
 
 The catalog explains the model licenses. Qwen's configured release uses a non-commercial research/evaluation license; it is not an unrestricted commercial model.
 

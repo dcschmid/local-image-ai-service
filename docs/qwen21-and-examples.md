@@ -1,6 +1,6 @@
 # Qwen Image 2.1 and the recipe explorer
 
-Try Qwen when your image needs a clear headline, a detailed product scene or a transparent sticker. The Studio includes **Anima Aesthetic, MOSS SFT, Qwen Image 2.1 Uncensored GGUF and Krea Pixel Art**, with **44 guided presets** and real local examples. [See a Qwen poster](examples.md#posters) or [take the Studio tour](studio.md).
+Try Qwen when your image needs a clear headline, a detailed product scene or a transparent sticker. The Studio includes **Anima Aesthetic, MOSS SFT, Qwen Image 2.1 Uncensored GGUF, Krea Pixel Art, Z-Image and Z-Image Turbo**, with **70 guided presets** and 70 real local examples. The [expanded preset notes](z-image-and-presets.md) include sources and native GPU checks. [See a Qwen poster](examples.md#posters) or [take the Studio tour](studio.md).
 
 Model research checked October 31, 2026.
 

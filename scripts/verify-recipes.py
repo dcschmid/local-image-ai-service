@@ -9,6 +9,7 @@ import sys
 import time
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'src'))
 from recipes import recipes, VERSION
+from catalog import MODELS
 from service import Backend, load_config, WORK
 from studio_service import Studio
 
@@ -25,15 +26,18 @@ def main():
     report=[r for r in prior if r.get('request',{}).get('recipe_version')==VERSION]
     completed={(r['recipe'],r['quality']) for r in report}
     try:
-        for model in ('anima','moss','qwen21'):
+        for model in MODELS:
             if args.only and not any(r['model']==model and r['id'] in args.only for r in recipes()):continue
             backend.stop();backend.model=model;backend.start()
             if not backend.available():raise RuntimeError(backend.failure)
             items=[(r,'preview') for r in recipes() if r['model']==model and (not args.only or r['id'] in args.only)]
             if not args.no_full:
-                items.append((next(r for r in recipes() if r['id']=={'anima':'anima-neon','moss':'lowpoly-retro','qwen21':'qwen-poster'}[model]),'standard'))
+                items.append((next(r for r in recipes() if r['model']==model),'standard'))
             for recipe,quality in items:
                 if (recipe['id'],quality) in completed:continue
+                if model=='krea-pixel' and backend.pixel_grid!=recipe['example']['pixel_grid']:
+                    backend.stop();backend.pixel_grid=recipe['example']['pixel_grid'];backend.start()
+                    if not backend.available():raise RuntimeError(backend.failure)
                 body=dict(model=model,recipe=recipe['id'],quality=quality,seed=42,**recipe['example'])
                 # One real German-input test; input remains unchanged in the prompt.
                 if recipe['id']=='anima-cozy':body['subject']='eine erwachsene Buchhändlerin mit runder Brille und einer grünen Strickjacke'

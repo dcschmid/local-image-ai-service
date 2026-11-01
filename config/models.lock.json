@@ -91,5 +91,51 @@
       "size": 74406744,
       "sha256": "005cfe8e6ba05cbee90cf68ac9feb6f1f769d29a62a78c2eebcaa81955fb2a08"
     }
+  },
+  "z-image": {
+    "diffusion": {
+      "repo": "leejet/Z-Image-GGUF",
+      "revision": "96a6f157468e1372d47a7c96e32f2016bad12c3d",
+      "file": "z_image-Q4_0.gguf",
+      "sha256": "eb98b7153d60c7ffd2b917fa09dcc313c7755ee83a872e618e46bb6b49058b8a",
+      "size": 3838500672
+    },
+    "llm": {
+      "repo": "unsloth/Qwen3-4B-Instruct-2507-GGUF",
+      "revision": "a06e946bb6b655725eafa393f4a9745d460374c9",
+      "file": "Qwen3-4B-Instruct-2507-Q4_K_M.gguf",
+      "sha256": "3605803b982cb64aead44f6c1b2ae36e3acdb41d8e46c8a94c6533bc4c67e597",
+      "size": 2497281120
+    },
+    "vae": {
+      "repo": "Comfy-Org/z_image_turbo",
+      "revision": "6fc90a3b1b653e935a0d175e260736de25b84df5",
+      "file": "split_files/vae/ae.safetensors",
+      "sha256": "afc8e28272cd15db3919bacdb6918ce9c1ed22e96cb12c4d5ed0fba823529e38",
+      "size": 335304388
+    }
+  },
+  "z-image-turbo": {
+    "diffusion": {
+      "repo": "leejet/Z-Image-Turbo-GGUF",
+      "revision": "c61c0e422dc8b541b7548cf33a4ef8302b0f8085",
+      "file": "z_image_turbo-Q4_K.gguf",
+      "sha256": "14b375ab4f226bc5378f68f37e899ef3c2242b8541e61e2bc1aff40976086fbd",
+      "size": 3864250304
+    },
+    "llm": {
+      "repo": "unsloth/Qwen3-4B-Instruct-2507-GGUF",
+      "revision": "a06e946bb6b655725eafa393f4a9745d460374c9",
+      "file": "Qwen3-4B-Instruct-2507-Q4_K_M.gguf",
+      "sha256": "3605803b982cb64aead44f6c1b2ae36e3acdb41d8e46c8a94c6533bc4c67e597",
+      "size": 2497281120
+    },
+    "vae": {
+      "repo": "Comfy-Org/z_image_turbo",
+      "revision": "6fc90a3b1b653e935a0d175e260736de25b84df5",
+      "file": "split_files/vae/ae.safetensors",
+      "sha256": "afc8e28272cd15db3919bacdb6918ce9c1ed22e96cb12c4d5ed0fba823529e38",
+      "size": 335304388
+    }
   }
 }

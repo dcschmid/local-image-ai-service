@@ -2,7 +2,7 @@
 
 **Meet Atelier, your local image studio.** Pick a look, describe what you have in mind, and start creating. The same models and presets work in the browser, from the terminal, and through your coding agent.
 
-**4 models · 44 guided presets · 7 aspect ratios · Studio, CLI and MCP**
+**6 models · 70 guided presets · 7 aspect ratios · Studio, CLI and MCP**
 
 ![Atelier Studio with the Low Poly Anything preset and a fox scene in the image preview](docs/images/studio-create.webp)
 
@@ -51,14 +51,18 @@ Your image and its settings stay in the library. You can download it, reuse the 
 
 | Model | A good place to start | Guided presets |
 | --- | --- | ---: |
-| **MOSS SFT** | Realistic photos, comic and craft illustrations, low-poly scenes and modeling references | 21 |
-| **Anima Aesthetic 1.1** | Anime portraits, manga, mecha, cozy scenes and illustrated backgrounds | 13 |
-| **Qwen Image 2.1** | Posters, illustrated covers, short lettering, products and transparent stickers | 6 |
-| **Krea Pixel Art** | Small icons, game characters and pixel landscapes with native PNG exports | 4 |
+| **MOSS SFT** | Realistic photos, comic and craft illustrations, low-poly scenes and modeling references | 25 |
+| **Anima Aesthetic 1.1** | Anime portraits, manga, mecha, cozy scenes and illustrated backgrounds | 17 |
+| **Qwen Image 2.1** | Posters, illustrated covers, short lettering, products and transparent stickers | 10 |
+| **Krea Pixel Art** | Small icons, game characters and pixel landscapes with native PNG exports | 8 |
+| **Z-Image** | Fantasy painting, ink wash, vintage science fiction, fashion and botanical art | 5 |
+| **Z-Image Turbo** | Quick photo, cinema, product, lettering and food studies | 5 |
 
 The [complete catalog](skills/local-image-ai/references/catalog.md) lists every preset. Guided mode chooses the matching model for you; free prompt mode gives you the sampling controls too.
 
 Model licenses differ. In particular, the configured **Qwen profile is for non-commercial research and evaluation**. Each model has a license link in the Studio; see [the model notes](docs/README.md#models-and-looks) before choosing it for a project.
+
+See [Z-Image setup and the preset research notes](docs/z-image-and-presets.md) for sources, settings and the new looks.
 
 ## Explore before you write a prompt
 

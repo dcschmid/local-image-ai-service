@@ -30,9 +30,10 @@ def candidates(roots):
                 items.append(item)
     return items
 
-def matches(item,recipe):
+def matches(item,recipe,*,fingerprint=None):
     # A matching recipe ID alone cannot prove that the current prompt, sampling
     # and adapter revision produced this image. Check all of them before export.
+    if fingerprint is not None and item.get('fingerprint')!=fingerprint:return False
     request=item.get('request',{});inputs=request.get('recipe_inputs',{})
     if recipe['model']=='krea-pixel' and item.get('pixel',{}).get('weights')!='dora-v1':return False
     if inputs.get('recipe')!=recipe['id']:return False
@@ -49,6 +50,8 @@ def export(item,recipe,target):
         image.load()
         alpha='A' in image.getbands() and sum(image.getchannel('A').histogram()[:250])>image.width*image.height*.01
         if recipe.get('transparent') and not alpha:raise ValueError('Transparent example has no alpha: '+recipe['id'])
+        if all(low == high for low, high in image.convert('RGBA').getextrema()):
+            raise ValueError('Generated example is a uniform frame: ' + recipe['id'])
         pixel=bool(item.get('pixel'))
         image.thumbnail((1024,1024),Image.Resampling.NEAREST if pixel else Image.Resampling.LANCZOS)
         image.save(target/(recipe['id']+'.webp'),format='WEBP',quality=88,method=6,lossless=pixel)
@@ -84,7 +87,7 @@ def main():
     for recipe in recipes():
         if args.only and recipe['id'] not in args.only:continue
         required_quality=args.quality or recipe.get('example_quality')
-        eligible=[item for item in items if matches(item,recipe) and (not required_quality or item['request']['recipe_inputs'].get('quality','standard')==required_quality) and (item['_root']/(item['id']+'.png')).is_file()]
+        eligible=[item for item in items if matches(item,recipe,fingerprint=studio.fingerprint(recipe['model'])) and (not required_quality or item['request']['recipe_inputs'].get('quality','standard')==required_quality) and (item['_root']/(item['id']+'.png')).is_file()]
         if eligible:
             item=max(eligible,key=lambda i:({'preview':0,'standard':2,'detail':1}.get(i['request']['recipe_inputs'].get('quality','standard'),0),i.get('created',0)))
             manifest[recipe['id']]=export(item,recipe,target)
@@ -96,7 +99,7 @@ def main():
         if subprocess.run(['systemctl','--user','is-active','--quiet','local-image-ai.service']).returncode==0:raise SystemExit('Stop the service before GPU generation. Existing examples were exported.')
         WORK.mkdir(parents=True,exist_ok=True);(WORK/'empty-model-catalog').mkdir(exist_ok=True)
         try:
-            for model in ('moss','krea-pixel','qwen21','anima'):
+            for model in MODELS:
                 selected=[r for r in pending if r['model']==model]
                 if not selected:continue
                 backend.stop();backend.model=model;backend.start()

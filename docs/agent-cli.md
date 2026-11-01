@@ -36,7 +36,7 @@ commands do not start the service or switch a model. `configured_model` describe
 the configuration; use `status --json` to check live readiness.
 
 `recipes`, `presets` and `formats` work without a running service or configuration.
-Recipe IDs are the 44 guided presets used in the web UI. `presets` lists the ten
+Recipe IDs are the 70 guided presets used in the web UI. `presets` lists the sixteen
 optional styles for free prompts. Model `free_prompt_quality_profiles` and guided
 `preview`/`standard`/`detail` qualities are identified separately in the catalog.
 
@@ -45,6 +45,8 @@ optional styles for free prompts. Model `free_prompt_quality_profiles` and guide
 | `moss` | Photography, illustration and low-poly concepts. |
 | `anima` | Anima Aesthetic anime and illustration. |
 | `qwen21` | Qwen Image 2.1 scenes, text and transparent stickers; consult its displayed license. |
+| `z-image` | Creative illustration and photography with CFG and negative-prompt control. |
+| `z-image-turbo` | Eight-step photographic studies and short lettering at CFG 1. |
 | `krea-pixel` | Krea Pixel Art with prepared 32/64/128-grid variants and native pixel exports. |
 
 ## Preview before generating

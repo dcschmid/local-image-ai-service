@@ -1,6 +1,6 @@
 # Krea 2 Pixel Art in Atelier
 
-The fourth model adds four guided recipes and real local examples. Open [the studio](http://127.0.0.1:7861/studio/) and select **Krea 2 · Pixel Art**, or filter Explore by that model. The [English browser guide](http://127.0.0.1:7861/studio/pixel-guide/) includes the same generated examples and native PNG downloads.
+Krea Pixel Art offers eight guided recipes with real local examples. Open [the studio](http://127.0.0.1:7861/studio/) and select **Krea 2 · Pixel Art**, or filter Explore by that model. The [English browser guide](http://127.0.0.1:7861/studio/pixel-guide/) explains the workflow and native PNG downloads.
 
 | Recipe | Adapter grid at 1024 square | Palette | Starting point |
 | --- | --- | --- | --- |
@@ -8,8 +8,12 @@ The fourth model adds four guided recipes and real local examples. Open [the stu
 | Adventure character | 64 × 64 | 24 | One full-body game character |
 | Isometric hideaway | 64 × 64 | 32 | One building on a ground tile |
 | Scenic world | 128 × 128 | 32 | Foreground, focal point and distant scenery |
+| Creature sprite | 64 × 64 | 24 | One complete creature in an idle pose |
+| Dialogue portrait | 64 × 64 | 24 | An expressive character bust |
+| Tiny vehicle | 64 × 64 | 24 | One vehicle with readable bodywork and wheels |
+| Dungeon room | 128 × 128 | 32 | A complete overhead room with a few props |
 
-Only the subject is required. Settings and extra details are optional. “Use this example” restores the actual recorded inputs and seed. All four recipes use 1024 × 1024, eight Euler steps and CFG 1 by default. The Flux schedule uses a fixed mu of 1.15 to match the official Turbo timestep implementation, with eight intervals from 1 to 0. All seven existing aspect ratios remain available. A 64 grid on 1024 × 576 exports 64 × 36 native pixels. Grid size means the pixel density relative to a 1024-pixel canvas, rather than a forced square image.
+Only the subject is required. Settings and extra details are optional. “Use this example” restores the actual recorded inputs and seed. All eight recipes use 1024 × 1024, eight Euler steps and CFG 1 by default. The Flux schedule uses a fixed mu of 1.15 to match the official Turbo timestep implementation, with eight intervals from 1 to 0. All seven existing aspect ratios remain available. A 64 grid on 1024 × 576 exports 64 × 36 native pixels. Grid size means the pixel density relative to a 1024-pixel canvas, rather than a forced square image.
 
 The [author’s card](https://huggingface.co/e-n-v-y/Krea-2-Pixel-Art) specifies generation at 1024 square and the trigger “pixel art”, with an explicit exception for the 64-pixel adapter. Guided prompts follow that exception even when the grid changes. The [official Krea documentation](https://github.com/krea-ai/krea-2) recommends training LoRAs on Raw and applying them to Turbo. The eight-step Turbo path fits this GPU better than Raw’s much longer guided sampling.
 

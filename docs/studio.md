@@ -46,11 +46,13 @@ English is a useful starting point because the bundled examples and model guides
 | Anime characters, manga or illustrated backgrounds | **Anima Aesthetic** — portrait, film, neon, fantasy, cozy, manga, watercolor, chibi, retro, mecha, storybook and action presets |
 | A believable photo | **MOSS** — portrait, candid, street, cinematic, product, landscape, interior, food or macro |
 | Flat-shaded 3D-style art | **MOSS Low Poly** — anything, tracks, characters, vehicles, props, buildings, dioramas and game worlds |
-| Paper, clay or bold ink | **MOSS** — paper cut, clay miniature or comic |
+| Paper, clay, textile or print looks | **MOSS** — paper cut, clay, comic, risograph, embroidery, needle felt or stained glass |
 | A poster, cover or sticker | **Qwen** — optional **Visible text** supplies your exact short wording |
-| Small game art on a pixel grid | **Krea Pixel Art** — loot, character, isometric or landscape |
+| Small game art on a pixel grid | **Krea Pixel Art** — loot, character, creature, portrait, vehicle, room, isometric or landscape |
+| Painted worlds, ink or fashion | **Z-Image** — fantasy, ink wash, retro science fiction, fashion or botanical art |
+| Fast photographic studies | **Z-Image Turbo** — everyday photo, cinema, product, storefront lettering or food |
 
-There are [44 guided presets](../skills/local-image-ai/references/catalog.md). Choosing one selects its matching model. The service loads the required model when its job reaches the worker.
+There are [70 guided presets](../skills/local-image-ai/references/catalog.md). Choosing one selects its matching model. The service loads the required model when its job reaches the worker.
 
 Each model has a license link. Qwen's configured profile uses a non-commercial research/evaluation license. For pixel art, the adapter and base-model licenses both apply.
 
@@ -64,7 +66,7 @@ Use **Aspect ratio** for square images, wide scenes, portraits or covers: 1:1, 1
 | **Recommended** | Use the model's prepared settings for the larger final image |
 | **More detail · slower** | Try a longer run once the composition is already working |
 
-Draft settings depend on the recipe. MOSS photography and modeling references use 30 steps; the older MOSS scene presets use 20. Anima usually uses 30 for Draft and 35 for Recommended. Krea's prepared pixel workflow stays at eight steps. The full prompt preview shows the settings for your actual choice.
+Draft settings depend on the recipe. MOSS photography and modeling references use 30 steps; the older MOSS scene presets use 20. Anima usually uses 30 for Draft and 35 for Recommended. Krea's prepared pixel workflow stays at eight steps. Z-Image uses 28 for Draft, 40 for Recommended and 50 for More detail. Turbo keeps eight steps and CFG 1; its Draft uses a smaller canvas, and it has no negative-prompt control. The full prompt preview shows the settings for your actual choice.
 
 More steps can refine detail, but they do not fix an unclear brief or guarantee a better pose. Keep the seed fixed and change one field at a time when comparing results. [See the quality notes](quality.md) for measured comparisons.
 
@@ -86,9 +88,9 @@ Deletion asks for confirmation and removes the selected archive images and saved
 
 ## Want more control?
 
-Switch to **Free prompt · custom settings** to write the full prompt and adjust size, sampler, steps, CFG and the negative prompt directly. Ten free-prompt styles can add a starting look.
+Switch to **Free prompt · custom settings** to write the full prompt and adjust size, sampler, steps, CFG and the negative prompt directly. Sixteen free-prompt styles can add a starting look.
 
-The current four profiles are text-to-image workflows. Image-to-image, reference-image editing and mask editing are not available with this selection. For a low-poly reference you intend to model in Blender, use [the dedicated workflow](blender-references.md): separate generated views can change the design.
+The current six profiles are text-to-image workflows. Image-to-image, reference-image editing and mask editing are not available with this selection. For a low-poly reference you intend to model in Blender, use [the dedicated workflow](blender-references.md): separate generated views can change the design.
 
 ## Where everything lives
 

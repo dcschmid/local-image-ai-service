@@ -65,14 +65,14 @@ class AgentCLITests(unittest.TestCase):
         return identifier, full, small
 
     def test_discovery_is_json_and_offline_recipe_definitions_need_no_config(self):
-        for command, count in [('recipes', 44), ('presets', 10), ('formats', 7)]:
+        for command, count in [('recipes', 70), ('presets', 16), ('formats', 7)]:
             out = io.StringIO()
             with patch.object(manage, 'load_config', side_effect=AssertionError('No configuration needed')), redirect_stdout(out):
                 self.assertEqual(manage.main([command]), 0)
             self.assertEqual(len(json.loads(out.getvalue())), count)
         code, result, err = self.cli('catalog', '--model', 'moss')
         self.assertEqual(code, 0);self.assertIsNone(err)
-        self.assertEqual(list(result['models']), ['moss']);self.assertEqual(len(result['recipes']), 21)
+        self.assertEqual(list(result['models']), ['moss']);self.assertEqual(len(result['recipes']), 25)
         self.assertEqual(len(result['modeling']['assets']), 5)
         self.assertEqual(result['models']['moss']['defaults']['shift'], 5)
         self.assertIn('non-commercial', self.cli('models', '--model', 'qwen21')[1]['models']['qwen21']['license'])

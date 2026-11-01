@@ -18,7 +18,7 @@ If you just want to make an image, open the Studio and choose an example. You ca
 
 ## Models and looks
 
-**Start with the kind of picture you want.** MOSS covers photography, low poly and several illustration styles. Anima is the anime/illustration specialist. Qwen adds detailed scenes and lettering. Krea prepares small pixel grids and native exports.
+**Start with the kind of picture you want.** MOSS covers photography, low poly and several illustration styles. Anima is the anime/illustration specialist. Qwen adds detailed scenes and lettering. Krea prepares small pixel grids and native exports. Z-Image adds varied painted worlds and photography; Turbo offers eight-step photo and product studies.
 
 | What you have in mind | Read next |
 | --- | --- |
@@ -28,6 +28,7 @@ If you just want to make an image, open the Studio and choose an example. You ca
 | A modeler-friendly concept to build in Blender | [Blender references](blender-references.md) |
 | A poster, cover, sticker or short text in the image | [Qwen and the example explorer](qwen21-and-examples.md) |
 | Icons, sprites, isometric buildings or pixel landscapes | [Krea Pixel Art](krea-pixel-art.md) |
+| Fast photo studies, ink wash or imaginative painted worlds | [Z-Image and the expanded presets](z-image-and-presets.md) |
 | Every available preset and its ID | [Complete catalog](../skills/local-image-ai/references/catalog.md) |
 
 The model selector links to each model's license. Qwen's configured profile uses a non-commercial research/evaluation license; Anima and Krea also have model-specific terms. The catalog keeps these differences visible.
@@ -48,6 +49,7 @@ These reports describe checks that were actually run. Older reports may mention 
 
 | Area | Report |
 | --- | --- |
+| Z-Image, Turbo, all 70 examples and the expanded catalog | [Research, GPU measurements and integration checks](z-image-and-presets.md#verification-results) |
 | CLI, MCP, skill installation and all three agent clients | [Agent integration](agent-integration-test-report.md) |
 | Current MOSS low-poly presets and migration | [MOSS Low Poly](moss-lowpoly-test-report.md) |
 | Blender reference experiments and camera limitations | [Blender references](blender-reference-test-report.md) |

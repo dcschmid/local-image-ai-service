@@ -20,7 +20,7 @@ sys.path.insert(0, str(ROOT / 'src'))
 import service
 import studio_service
 from catalog import MODELS
-from recipes import VERSION, compose
+from recipes import VERSION, compose, formats
 
 DEMO_RECIPES = (
     'lowpoly-anything', 'anima-neon', 'photo-product', 'qwen-poster',
@@ -47,7 +47,8 @@ def main():
             studio = studio_service.Studio(backend, root)
             manifest = json.loads((static / 'recipe-examples/manifest.json').read_text())
             receipts = {name: dict(fingerprint=studio.fingerprint(name), modes=['text'],
-                                  sizes=['1024x1024', '832x1216', '1216x832']) for name in MODELS}
+                                  sizes=sorted({'1024x1024', '832x1216', '1216x832'} |
+                                               {f['size'] for f in formats(name)})) for name in MODELS}
             (root / 'verification.json').write_text(json.dumps(receipts))
             for index, identifier in enumerate(DEMO_RECIPES):
                 sample = manifest[identifier]

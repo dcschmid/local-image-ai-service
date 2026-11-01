@@ -8,7 +8,7 @@ required. The [in-app guide](http://127.0.0.1:7861/studio/lowpoly-guide/#blender
 includes direct character, kart, building and MOSS prop starters.
 
 The guide also shows a real kart generated with the starter, with a link to its
-recorded prompt and settings. It is separate from the 44 recipe examples.
+recorded prompt and settings. It is separate from the recipe examples.
 
 The service prepares a complete silhouette, broad polygon faces, simple joins,
 neutral lighting, a plain background and a small material palette. Characters

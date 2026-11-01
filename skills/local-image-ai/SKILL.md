@@ -20,8 +20,10 @@ CLI equivalents are `models`, `recipes`, `recipes ID`, `presets`, `formats` and
 `catalog`. Do not rely on a remembered count or revive retired models.
 
 The main choices are MOSS for photography/general art/low poly, Anima Aesthetic
-for anime/illustration, Qwen 2.1 for detailed scenes/text/stickers, and Krea Pixel
-Art for sprites/icons/scenes with native pixel exports. Consult the current
+for anime/illustration, Qwen 2.1 for detailed scenes/text/stickers, Krea Pixel
+Art for sprites/icons/scenes with native pixel exports, Z-Image for creative
+illustrations, and Z-Image Turbo for quick photographic studies. Turbo requires
+eight steps, CFG 1 and no negative prompt. Consult the current
 catalog's license information when the requested use requires it. The bundled
 [model and preset inventory](references/catalog.md) is an installation snapshot;
 query the catalog for current availability.

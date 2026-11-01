@@ -2,14 +2,15 @@ import { test, expect } from '@playwright/test';
 test('example browser filters all models and restores real example inputs',async({page})=>{
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  const reply=await page.request.get('/studio/api/catalog');expect(reply.ok()).toBeTruthy();
- const catalog=await reply.json();expect(catalog.recipes).toHaveLength(44);expect(Object.keys(catalog.examples)).toHaveLength(44);
+ const catalog=await reply.json();expect(catalog.recipes).toHaveLength(70);
+ expect(Object.keys(catalog.examples)).toHaveLength(catalog.recipes.length);
  for(const recipe of catalog.recipes){
   const sample=catalog.examples[recipe.id];expect(sample.inputs.subject).toBe(recipe.example.subject);
   const asset=await page.request.get(sample.url);expect(asset.ok()).toBeTruthy();
   const raw=await asset.body();expect(raw.subarray(0,4).toString()).toBe('RIFF');expect(raw.subarray(8,12).toString()).toBe('WEBP');
  }
  await page.goto('/studio/');await expect(page.locator('.recipe-card')).toHaveCount(6);
- await expect(page.locator('#recipe-total')).toHaveText('6 of 44 recipes');
+ await expect(page.locator('#recipe-total')).toHaveText('6 of 70 recipes');
  await page.locator('#recipe-model-filter').selectOption('qwen21');await expect(page.locator('.recipe-card')).toHaveCount(6);
  const sticker=page.locator('[data-recipe-id="qwen-sticker"]');
  await sticker.getByRole('button',{name:'View example:'}).click();
