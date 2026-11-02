@@ -28,13 +28,13 @@ class ModelingReferenceTests(unittest.TestCase):
                 for view in modeling_reference.VIEWS:
                     with self.subTest(recipe=recipe['id'], asset=asset, view=view):
                         result = compose(dict(recipe=recipe['id'], subject='a simple game asset', modeling_view=view, modeling_asset=asset, seed=42))
-                        validate_request({k: v for k, v in result.items() if k != 'preset'}, result['model'], max_dimension=1536)
+                        validate_request({k: v for k, v in result.items() if k not in ('preset','pixel_grid','pixel_colors')}, result['model'], max_dimension=1536)
                         self.assertIn('a simple game asset', result['prompt'])
-                        self.assertIn('plain light gray background', result['prompt'])
-                        self.assertNotIn(recipe['scene'], result['prompt'])
-                        self.assertEqual(result['size'], modeling_reference.ASSETS[asset]['size'])
-                        self.assertEqual(result['model'], 'moss')
-                        self.assertEqual(result['cfg_scale'], 3)
+                        self.assertIn('plain', result['prompt'])
+                        self.assertNotIn('Main subject:', result['prompt'])
+                        self.assertEqual(result['size'], '1024x1024' if view=='sheet' or recipe['model']=='krea-pixel' else modeling_reference.ASSETS[asset]['size'])
+                        self.assertEqual(result['model'], recipe['model'])
+                        self.assertEqual(result['cfg_scale'], 1 if recipe['model']=='krea-pixel' else 3)
 
     def test_character_replaces_portrait_and_vehicle_replaces_inventory_composition(self):
         character = compose(dict(recipe='lowpoly-character', subject='an adult courier', modeling_view='front'))
@@ -63,7 +63,7 @@ class ModelingReferenceTests(unittest.TestCase):
                       {'modeling_asset': 'vehicle'}, {'modeling_view': 'off', 'modeling_asset': 'vehicle'}):
             with self.subTest(extra=extra), self.assertRaises(ValueError):
                 compose(dict(recipe='lowpoly-prop', subject='a kart', **extra))
-        for recipe in ('anima-portrait', 'photo-product', 'qwen-world', 'pixel-character'):
+        for recipe in ('anima-portrait', 'photo-product', 'qwen-world', 'pixel-landscape'):
             with self.assertRaises(ValueError): compose(dict(recipe=recipe, subject='a robot', modeling_view='front'))
 
     def test_stored_inputs_reproduce_reference_and_still_reject_runtime_controls(self):

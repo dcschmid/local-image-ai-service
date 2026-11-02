@@ -123,6 +123,14 @@ Use a fresh Claude/OMP session after installation. The skill command is
 also uses the skill description. Models and presets are available through the
 same discovery tools as in Codex.
 
+The private Claude and OMP skill copies have been refreshed for the current
+82-preset catalog and [GLB asset workflow](asset-views.md). Their shared private
+catalog and the stack's source payload contain the same managed skill as Codex,
+including pixel/voxel exports and the five model-view tools. Verification found
+22 MCP tools, a connected Claude registration and a working OMP discovery call.
+Installed-profile and strict skill audits passed; see the
+[refresh verification](asset-views-test-report.md#private-client-skill-refresh).
+
 Working profiles keep their existing configuration. Claude Working uses its
 scoped strict MCP configuration and swaps out private skill links at launch;
 OMP Working has its own native MCP and skills directories. Neither Working
@@ -146,14 +154,14 @@ agents should query live discovery before choosing IDs or reporting availability
 
 | Model ID | Best starting point | Guided presets |
 | --- | --- | ---: |
-| `moss` | Realistic photos, comic/craft illustrations, low-poly concepts and Blender references | 25: 9 photo, 7 craft/comic, 9 low-poly |
+| `moss` | Realistic photos, comic/craft illustrations, low-poly concepts and Blender references | 34: 9 photo, 7 craft/comic, 12 low-poly, 6 voxel |
 | `anima` | Anime, manga, character art, print styles and illustrated backgrounds | 17 |
 | `qwen21` | Detailed scenes, text, product/packaging concepts and transparent stickers | 10 |
-| `krea-pixel` | Native pixel icons, characters, creatures, vehicles, rooms and landscapes | 8 |
+| `krea-pixel` | Native pixel icons, characters, creatures, vehicles, rooms, landscapes and concept sheets | 11 |
 | `z-image` | Fantasy paintings, ink wash, vintage science fiction, fashion and botanical art | 5 |
 | `z-image-turbo` | Eight-step photo, cinema, product, lettering and food studies | 5 |
 
-There are also 16 free-prompt styles and 7 aspect ratios. Discovery includes
+There are also 17 free-prompt styles and 7 aspect ratios. Discovery includes
 model licenses and installation status; Qwen's configured profile has a
 non-commercial research/evaluation license. Describe the installed profiles
 accurately when agents explain the choices.
@@ -195,6 +203,9 @@ The Studio example library remains available under `/studio/`.
 | `export_image` | Export PNG, JSON metadata and native pixel companion |
 | `list_images`, `get_image` | Find archived images and inspect their metadata |
 | `set_favorite` | Set/clear an image's favorite flag |
+| `list_asset_views`, `get_asset_views` | Inspect Blender options and CPU model render progress |
+| `render_asset_views` | Queue seven shared-scale views from one local GLB |
+| `export_asset_views`, `cancel_asset_views` | Export the model/view ZIP or cancel the specified CPU render |
 | `delete_images` | Delete 1–500 explicitly selected archive IDs |
 
 The `local-image-ai://catalog` resource exposes the full current catalog.

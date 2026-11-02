@@ -21,7 +21,7 @@ function guided(){return $('workflow').value==='guided';}
 function recipe(){return catalog.recipes.find(r=>r.id===$('recipe').value);}
 function pixelSettings(){return model()?.id==='krea-pixel'?{pixel_grid:Number($('pixel-grid').value),pixel_colors:Number($('pixel-colors').value)}:{};}
 function setPixelSettings(value){$('pixel-grid').value=value.pixel_grid||64;$('pixel-colors').value=value.pixel_colors||24;}
-function modelingSettings(){return recipe()?.modeling_asset&&$('modeling-view').value!=='off'?{modeling_view:$('modeling-view').value,modeling_asset:$('modeling-asset').value}:{};}
+function modelingSettings(){return recipe()?.modeling_asset?($('modeling-view').value!=='off'?{modeling_view:$('modeling-view').value,modeling_asset:$('modeling-asset').value}:recipe().default_modeling_view?{modeling_view:'off'}:{}):{};}
 function initializeModeling(){for(const [field,items] of [['modeling-view',catalog.modeling.views],['modeling-asset',catalog.modeling.assets]])$(field).replaceChildren(...items.map(item=>{const option=text('option',item.name);option.value=item.id;return option;}));}
 function restoreModeling(inputs){if(!recipe()?.modeling_asset)return;$('modeling-view').value=inputs.modeling_view||'off';$('modeling-asset').value=inputs.modeling_asset||recipe().modeling_asset;setRecipe();}
 function applyModelingStarter(){const asset=catalog.modeling.assets.find(a=>a.id===$('modeling-asset').value);$('subject').value=asset.example.subject;$('scene').value=asset.example.scene;$('scene-details').value=asset.example.details;$('seed').value=42;setRecipe();updateRecipePreview();}
@@ -36,7 +36,7 @@ function setRecipe(reset=false){
  const capable=!!r.modeling_asset;$('modeling-fields').hidden=!capable;
  // New low-poly work starts as a modeling reference; recorded examples and reuse
  // explicitly restore their original purpose after selecting the recipe.
- if(reset||modelingRecipe!==r.id){$('modeling-view').value=capable?'three-quarter':'off';$('modeling-asset').value=r.modeling_asset||'prop';}modelingRecipe=r.id;
+ if(reset||modelingRecipe!==r.id){$('modeling-view').value=capable?(r.default_modeling_view||'three-quarter'):'off';$('modeling-asset').value=r.modeling_asset||'prop';}modelingRecipe=r.id;
  const reference=capable&&$('modeling-view').value!=='off';$('modeling-asset-fields').hidden=!reference;$('modeling-note').hidden=!reference;
  $('scene-label').textContent=reference?'Construction or pose notes':'Setting or action';$('details-label').textContent=reference?'Materials, colors and design details':'Extra details';
  $('scene').placeholder=reference?'Optional: part connections, proportions or a neutral pose':r.scene;
@@ -44,9 +44,10 @@ function setRecipe(reset=false){
  $('example').textContent=reference?'Use recipe example':'Use example';
  $('recipe-description').textContent=r.description;$('recipe-tip').textContent=r.tip||'';$('recipe-tip').hidden=!r.tip;$('visible-text-fields').hidden=!['qwen21','z-image','z-image-turbo'].includes(r.model);$('subject').placeholder=r.example.subject;
  const format=(model().formats||catalog.formats)?.find(f=>f.id===$('aspect-ratio').value),asset=catalog.modeling.assets.find(a=>a.id===$('modeling-asset').value);
- const recommended=reference?asset.size:r.size;const [w,h]=recommended.split('x').map(Number);const draft=reference?(h>w?'576x832':w>h?'832x576':'768x768'):r.preview_size;
- const size=$('recipe-quality').value==='preview'?(format?.preview_size||draft):(format?.size||recommended);
- const dims=size.split('x').map(Number),cell=1024/Number($('pixel-grid').value);$('format-note').textContent='Output: '+size.replace('x',' × ')+' px'+(reference?' · single modeling concept':'')+(r.model==='krea-pixel'?' · '+dims.map(d=>d/cell).join(' × ')+' native pixels':'');scheduleRecipePreview();
+ const sheet=reference&&$('modeling-view').value==='sheet';
+ const recommended=reference?(sheet||r.model==='krea-pixel'?'1024x1024':asset.size):r.size;const [w,h]=recommended.split('x').map(Number);const draft=reference?(h>w?'576x832':w>h?'832x576':'768x768'):r.preview_size;
+ const size=$('recipe-quality').value==='preview'&&r.model!=='krea-pixel'?(format?.preview_size||draft):(format?.size||recommended);
+ const dims=size.split('x').map(Number),cell=1024/Number($('pixel-grid').value);$('format-note').textContent='Output: '+size.replace('x',' × ')+' px'+(reference?(sheet?' · four proposed AI views':' · single modeling concept'):'')+(r.model==='krea-pixel'?' · '+dims.map(d=>d/cell).join(' × ')+' native pixels':'');scheduleRecipePreview();
 }
 function updateWorkflow(){const simple=guided();$('guided-fields').hidden=!simple;$('free-fields').hidden=simple;$('expert-settings').hidden=simple;$('subject').required=simple;$('prompt').required=!simple;setRecipe();}
 function setModel(reset=true){const m=model();if(!m)return;$('model-note').textContent=m.tip;$('license').textContent=m.license+' · Model & license ↗';$('license').href=m.license_url||m.source;
@@ -57,7 +58,7 @@ function setModel(reset=true){const m=model();if(!m)return;$('model-note').textC
  for(const o of Array.from($('size').options)){if(o.dataset.extended&&!m.sizes.includes(o.value))o.remove();}
  if(!$('size').value)$('size').value='1024x1024';
  if(reset){$('quality').replaceChildren(...m.quality.map(q=>{const o=text('option',q.name);o.value=q.id;return o;}));$('quality').value='standard';$('steps').value=m.defaults.steps;$('cfg').value=m.defaults.cfg;$('sampler').value=m.defaults.sampler;if(!m.negative)$('negative').value='';}
- const previous=$('recipe').value;$('recipe').replaceChildren();for(const [category,label] of [['anime','Anima · anime and illustration'],['photo','MOSS · realistic photography'],['lowpoly','MOSS · Low Poly'],['craft','MOSS · illustration and craft'],['qwen','Qwen 2.1 · creative studio'],['pixel','Krea · Pixel Art'],['zimage','Z-Image · creative studio'],['zturbo','Z-Image Turbo · quick studies']]){const group=document.createElement('optgroup');group.label=label;for(const r of catalog.recipes.filter(r=>r.category===category)){const o=text('option',r.name);o.value=r.id;o.disabled=!catalog.models.find(model=>model.id===r.model)?.installed;group.append(o);}$('recipe').append(group);}if(catalog.recipes.some(r=>r.id===previous&&r.model===m.id))$('recipe').value=previous;else $('recipe').value=(catalog.recipes.find(r=>r.model===m.id&&r.category==='photo')||catalog.recipes.find(r=>r.model===m.id))?.id;
+ const previous=$('recipe').value;$('recipe').replaceChildren();for(const [category,label] of [['anime','Anima · anime and illustration'],['photo','MOSS · realistic photography'],['lowpoly','MOSS · Low Poly'],['voxel','MOSS · Voxel Art'],['craft','MOSS · illustration and craft'],['qwen','Qwen 2.1 · creative studio'],['pixel','Krea · Pixel Art'],['zimage','Z-Image · creative studio'],['zturbo','Z-Image Turbo · quick studies']]){const group=document.createElement('optgroup');group.label=label;for(const r of catalog.recipes.filter(r=>r.category===category)){const o=text('option',r.name);o.value=r.id;o.disabled=!catalog.models.find(model=>model.id===r.model)?.installed;group.append(o);}$('recipe').append(group);}if(catalog.recipes.some(r=>r.id===previous&&r.model===m.id))$('recipe').value=previous;else $('recipe').value=(catalog.recipes.find(r=>r.model===m.id&&r.category==='photo')||catalog.recipes.find(r=>r.model===m.id))?.id;
  const previousRatio=$('aspect-ratio').value;$('aspect-ratio').replaceChildren(...[text('option','Recommended · recipe format'),...(m.formats||catalog.formats||[]).map(f=>{const option=text('option',f.name);option.value=f.id;return option;})]);$('aspect-ratio').options[0].value='auto';$('aspect-ratio').value=previousRatio||'auto';
  if(reset&&m.id==='krea-pixel')setPixelSettings(recipe());updateWorkflow();updateMode();
 }

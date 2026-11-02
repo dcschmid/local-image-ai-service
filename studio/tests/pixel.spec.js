@@ -11,7 +11,7 @@ test('pixel presets, native exports, palette controls and keyboard access',async
  }
  await page.goto('/studio/');await page.locator('#recipe-model-filter').selectOption('krea-pixel');
  await expect(page.locator('.recipe-card')).toHaveCount(6);
- await expect(page.locator('#recipe-total')).toHaveText('6 of 8 recipes');
+ await expect(page.locator('#recipe-total')).toHaveText('6 of 11 recipes');
  const open=page.locator('[data-recipe-id="pixel-character"]').getByRole('button',{name:'View example:'});
  await open.focus();await page.keyboard.press('Enter');await expect(page.locator('#recipe-example')).toBeVisible();
  await expect(page.locator('#example-settings')).toContainText('64 × 64 native pixels');

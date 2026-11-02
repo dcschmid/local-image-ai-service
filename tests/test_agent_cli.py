@@ -65,14 +65,14 @@ class AgentCLITests(unittest.TestCase):
         return identifier, full, small
 
     def test_discovery_is_json_and_offline_recipe_definitions_need_no_config(self):
-        for command, count in [('recipes', 70), ('presets', 16), ('formats', 7)]:
+        for command, count in [('recipes', 82), ('presets', 17), ('formats', 7)]:
             out = io.StringIO()
             with patch.object(manage, 'load_config', side_effect=AssertionError('No configuration needed')), redirect_stdout(out):
                 self.assertEqual(manage.main([command]), 0)
             self.assertEqual(len(json.loads(out.getvalue())), count)
         code, result, err = self.cli('catalog', '--model', 'moss')
         self.assertEqual(code, 0);self.assertIsNone(err)
-        self.assertEqual(list(result['models']), ['moss']);self.assertEqual(len(result['recipes']), 25)
+        self.assertEqual(list(result['models']), ['moss']);self.assertEqual(len(result['recipes']), 34)
         self.assertEqual(len(result['modeling']['assets']), 5)
         self.assertEqual(result['models']['moss']['defaults']['shift'], 5)
         self.assertIn('non-commercial', self.cli('models', '--model', 'qwen21')[1]['models']['qwen21']['license'])
@@ -124,7 +124,7 @@ class AgentCLITests(unittest.TestCase):
         code, output, _ = self.cli('compose', '--recipe', 'lowpoly-prop', '--example', '--modeling-view', 'three-quarter',
                                     '--modeling-asset', 'vehicle', '--quality', 'preview', '--aspect-ratio', '16:9', '--seed', '42')
         self.assertEqual(code, 0);self.assertIn('racing kart', output['input']['subject'])
-        self.assertEqual(output['request']['modeling_version'], 1);self.assertEqual(output['request']['size'], '1024x576')
+        self.assertEqual(output['request']['modeling_version'], 2);self.assertEqual(output['request']['size'], '1024x576')
         self.assertIn('axles', output['request']['prompt'])
         code, output, _ = self.cli('compose', '--recipe', 'pixel-loot', '--example', '--pixel-grid', '64', '--pixel-colors', '16')
         self.assertEqual(code, 0);self.assertEqual(output['request']['pixel_grid'], 64)

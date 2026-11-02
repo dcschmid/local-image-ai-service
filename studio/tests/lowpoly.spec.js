@@ -3,8 +3,8 @@ test('MOSS supplies all low-poly presets while retired Anima styles disappear',a
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  const catalog=await(await page.request.get('/studio/api/catalog')).json();
  expect(catalog.models.map(m=>m.id)).toEqual(['moss','anima','qwen21','krea-pixel','z-image','z-image-turbo']);
- expect(catalog.recipes).toHaveLength(70);
- const recipes=catalog.recipes.filter(r=>r.category==='lowpoly');expect(recipes).toHaveLength(9);
+ expect(catalog.recipes).toHaveLength(82);
+ const recipes=catalog.recipes.filter(r=>r.category==='lowpoly');expect(recipes).toHaveLength(12);
  for(const recipe of recipes){
   expect(recipe.model).toBe('moss');const sample=catalog.examples[recipe.id];expect(sample.model).toBe('moss');
   expect((await page.request.get(sample.url)).ok()).toBeTruthy();

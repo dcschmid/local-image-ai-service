@@ -14,7 +14,7 @@ support agents independently of recent-list pagination. Client wait deadlines
 leave server work intact; accepted or uncertain submissions are not retried.
 
 `src/mcp_server.py` wraps the same CLI execution functions in a stdio MCP server:
-17 typed tools cover discovery, preview, asynchronous generation, jobs, exports
+22 typed tools cover discovery, preview, asynchronous generation, jobs, exports
 and library management. A catalog resource exposes the current definitions.
 Individual MCP waits are bounded; pending jobs continue on the service worker.
 The bridge uses a separately installed optional SDK and opens no network port.
@@ -82,7 +82,7 @@ See the [pixel-art setup guide](krea-pixel-art.md) for dependencies and disk usa
 
 ## Recipes and public examples
 
-The 70 recipes include composition, lighting, negative prompts, aspect ratios and
+The 82 recipes include composition, lighting, negative prompts, aspect ratios and
 model-specific sampling. Original guided inputs, the compiled request, recipe
 version, selected seed, component paths and sampling metadata are saved with each
 image. Additive recipes keep the existing recipe version; changes to existing
@@ -158,3 +158,7 @@ do not generate disposable checks into the user's gallery. Existing measurements
 and limitations are recorded in the model-specific test reports, including
 [historical Anima Low Poly](anima-lowpoly-test-report.md) and
 [Krea Pixel Art](krea-pixel-test-report.md). The current [Z-Image and expanded-preset report](z-image-and-presets.md#verification-results) includes the compatible checkpoint, all 70 examples, native format checks and CLI/MCP measurements.
+
+## CPU model views
+
+`asset_views.py` validates embedded GLB uploads and maintains an independent persistent CPU queue. `render_asset.py` runs in a separate factory-startup Blender process, bakes one static model and renders seven shared-scale orthographic cameras. Pixel postprocessing uses one cross-view palette; voxel conversion creates one shared cubic surface mesh before rendering. Authenticated API routes, the Astro asset page, CLI `assets` commands and five MCP tools share this workflow. See [formats, bounds and verification](asset-views.md).

@@ -52,7 +52,7 @@ English is a useful starting point because the bundled examples and model guides
 | Painted worlds, ink or fashion | **Z-Image** — fantasy, ink wash, retro science fiction, fashion or botanical art |
 | Fast photographic studies | **Z-Image Turbo** — everyday photo, cinema, product, storefront lettering or food |
 
-There are [70 guided presets](../skills/local-image-ai/references/catalog.md). Choosing one selects its matching model. The service loads the required model when its job reaches the worker.
+There are [82 guided presets](../skills/local-image-ai/references/catalog.md). Choosing one selects its matching model. The service loads the required model when its job reaches the worker.
 
 Each model has a license link. Qwen's configured profile uses a non-commercial research/evaluation license. For pixel art, the adapter and base-model licenses both apply.
 
@@ -124,3 +124,7 @@ The recipes are curated, editable prompts rather than official model presets. So
 The earlier cleanup retained 17 recipe images and newer custom results. It removed 100 older test/comparison images, eight unused uploads and six stale jobs from the Studio library. Deletion checks used temporary copies; the 17 retained images remained intact. These counts describe that cleanup, not the current library.
 
 </details>
+
+## Consistent asset views
+
+Open **3D Asset Views** in the navigation to import one GLB and render seven directions with shared geometry and camera scale. It supports original materials, flat shading, shared pixel palettes and a derived voxel mesh. The AI creator also offers low-poly/pixel concept sheets and six voxel concepts. [Full workflow, limits and downloads](asset-views.md).

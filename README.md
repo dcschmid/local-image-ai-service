@@ -2,7 +2,7 @@
 
 **Meet Atelier, your local image studio.** Pick a look, describe what you have in mind, and start creating. The same models and presets work in the browser, from the terminal, and through your coding agent.
 
-**6 models · 70 guided presets · 7 aspect ratios · Studio, CLI and MCP**
+**6 models · 82 guided presets · 7 aspect ratios · Studio, CLI and MCP**
 
 ![Atelier Studio with the Low Poly Anything preset and a fox scene in the image preview](docs/images/studio-create.webp)
 
@@ -27,7 +27,7 @@ These are actual outputs from the local service. Click a picture for its preset,
 </tr>
 </table>
 
-For game concepts, there are also [kart references and complete track overviews](docs/examples.md#game-concepts). The images are useful starting points for Blender; matching views come from a shared 3D blockout.
+For game concepts, there are also [kart references and complete track overviews](docs/examples.md#game-concepts). The images are useful starting points for Blender; [3D Asset Views](docs/asset-views.md) renders seven matching directions from an imported GLB, including shared pixel palettes and real voxel meshes.
 
 ## Open the Studio
 
@@ -51,10 +51,10 @@ Your image and its settings stay in the library. You can download it, reuse the 
 
 | Model | A good place to start | Guided presets |
 | --- | --- | ---: |
-| **MOSS SFT** | Realistic photos, comic and craft illustrations, low-poly scenes and modeling references | 25 |
+| **MOSS SFT** | Realistic photos, comic and craft illustrations, low-poly scenes and modeling references and voxel concepts | 34 |
 | **Anima Aesthetic 1.1** | Anime portraits, manga, mecha, cozy scenes and illustrated backgrounds | 17 |
 | **Qwen Image 2.1** | Posters, illustrated covers, short lettering, products and transparent stickers | 10 |
-| **Krea Pixel Art** | Small icons, game characters and pixel landscapes with native PNG exports | 8 |
+| **Krea Pixel Art** | Small icons, game characters and pixel landscapes with native PNG exports and concept sheets | 11 |
 | **Z-Image** | Fantasy painting, ink wash, vintage science fiction, fashion and botanical art | 5 |
 | **Z-Image Turbo** | Quick photo, cinema, product, lettering and food studies | 5 |
 
@@ -89,7 +89,7 @@ Discover the available choices with `models`, `recipes`, `presets` and `formats`
 
 ## Let your agent do the setup
 
-The installable **local-image-ai** skill teaches an agent to choose a preset, preview the prompt, generate locally and export the finished asset. MCP exposes the same workflow as 17 tools, including model discovery and library management.
+The installable **local-image-ai** skill teaches an agent to choose a preset, preview the prompt, generate locally and export the finished asset. MCP exposes the same workflow as 22 tools, including model discovery and library management.
 
 For Codex:
 
@@ -111,6 +111,7 @@ Then try a brief such as:
 | Learn the browser workflow | [Studio tour](docs/studio.md) |
 | See images and try their presets | [Example gallery](docs/examples.md) |
 | Make low-poly game concepts | [MOSS Low Poly](docs/moss-lowpoly.md) |
+| Render consistent Low Poly, Pixel and Voxel views | [3D Asset Views](docs/asset-views.md) |
 | Prepare useful Blender references | [Blender workflow](docs/blender-references.md) |
 | Use the terminal or an AI agent | [CLI](docs/agent-cli.md) · [MCP and skills](docs/agents-integration.md) |
 | Connect an application | [HTTP API](docs/api.md) · [Open WebUI](docs/open-webui.md) |

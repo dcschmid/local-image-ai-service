@@ -36,7 +36,7 @@ commands do not start the service or switch a model. `configured_model` describe
 the configuration; use `status --json` to check live readiness.
 
 `recipes`, `presets` and `formats` work without a running service or configuration.
-Recipe IDs are the 70 guided presets used in the web UI. `presets` lists the sixteen
+Recipe IDs are the 82 guided presets used in the web UI. `presets` lists the seventeen
 optional styles for free prompts. Model `free_prompt_quality_profiles` and guided
 `preview`/`standard`/`detail` qualities are identified separately in the catalog.
 
@@ -155,13 +155,13 @@ jq '.input' preview.json | local-image-ai-service render --input - --save-dir ./
 
 Guided sampling is controlled through `--quality` and `--aspect-ratio`; `--steps`,
 `--cfg-scale`, `--sampler`, `--negative-prompt`, `--size` and `--preset` belong to
-free prompts. Pixel options are exclusive to Krea. Blender options are exclusive
-to low-poly recipes. MOSS supplies the low-poly appearance without an additional style adapter.
+free prompts. Pixel options are exclusive to Krea. Asset view options are available
+with the supported low-poly, pixel and voxel recipes. MOSS supplies the low-poly appearance without an additional style adapter.
 Agents cannot pass arbitrary adapter paths or runtime control tags.
 
-Blender references are single-view concepts. Independently generated views can
+AI references are single-view concepts or proposed concept sheets. Independently generated views can
 change geometry or details. See [the shared-blockout workflow](blender-references.md)
-for consistent sheets. A seed does not establish geometric or cross-hardware identity.
+or use [assets render](asset-views.md#cli-and-mcp) for consistent sheets from an imported GLB. A seed does not establish geometric or cross-hardware identity.
 
 ## Asynchronous work, batches and recovery
 
@@ -212,3 +212,7 @@ switch occurs, and saving is opt-in. Use `render` for the complete Studio workfl
 
 See [the CLI verification report](agent-cli-test-report.md) for isolated HTTP
 coverage, real GPU rendering/export checks and user-data preservation.
+
+## Views from one GLB
+
+`assets options|list|render|get|wait|cancel|export` handles local CPU model renders separately from AI jobs. See [3D Asset Views](asset-views.md#cli-and-mcp) for commands, supported formats, recovery and export contents.

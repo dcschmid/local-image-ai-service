@@ -1,6 +1,6 @@
 ---
 name: local-image-ai
-description: Generate raster images and image assets with the user's Local Image AI Service; discover and explain its models and presets. Use for requests for pictures, photos, anime, comics, low-poly art, track overviews, pixel art or game-art concepts, including Bilder erstellen. Prefer this local workflow unless the user explicitly chooses another provider.
+description: Generate raster images and game-art concepts with the user's Local Image AI Service; discover its models and presets or render consistent Low Poly, Pixel and Voxel views from a local GLB. Use for pictures, photos, anime, comics, low-poly art, pixel art, voxel art and asset views, including Bilder erstellen. Prefer this local workflow unless the user explicitly chooses another provider.
 ---
 
 # Local Image AI
@@ -31,6 +31,8 @@ query the catalog for current availability.
 For flexible low-poly ideas start with `lowpoly-anything`; for a whole racing
 circuit from above use `lowpoly-track-overview`. Dedicated character/vehicle/prop/
 building references and the existing MOSS scene presets cover more specific work.
+Character, kart and prop concept sheets are available in Low Poly and Pixel Art.
+The `voxel-*` recipes create cubic image concepts using MOSS.
 
 ## Create and deliver
 
@@ -69,9 +71,29 @@ reports accepted IDs; retain and inspect them. Do not automatically resubmit or
 cancel accepted jobs because a client disconnected, timed out or failed to save.
 Use `cancel_job` when cancellation is requested.
 
-Current profiles are text-to-image workflows. A requested orthographic camera,
+AI profiles are text-to-image workflows. A requested orthographic camera,
 fixed seed or multiple independent views does not establish shared 3D geometry.
 Use one approved image and a shared Blender blockout for matched views. Images
 are concepts, not meshes, UV maps, rigs or verified drivable track splines.
 For reference-image editing, first check current supported/verified capabilities;
 do not silently substitute an unrelated new image or a cloud provider.
+
+## Consistent views from a 3D model
+
+For matched directions, use `list_asset_views` to check Blender availability and
+recent CPU renders. `render_asset_views` accepts a self-contained local GLB up to
+32 MiB and returns an accepted ID. Poll `get_asset_views`, then call
+`export_asset_views`. It exports seven actual orthographic views, their shared
+static GLB, a contact sheet and camera/hash manifest. This route does not create
+a model from an image. It preserves source geometry across views, not anatomical
+or mechanical correctness. Ask for a source model when only an image is available.
+
+Use Blender coordinates (Z up); choose the axis pointing out of the face/nose,
+default −Y. `model` keeps imported materials, `lowpoly` uses flat matte shading,
+`pixel` exports native grid PNGs with one palette across views, and `voxel`
+converts the surface once into a shared cube mesh. Pixel and voxel resolutions
+approximate small details. Only cancel the specified render when requested.
+These CPU jobs are separate from GPU image jobs and the image library.
+
+CLI commands, limits and export recovery are in
+[the workflow reference](references/workflow.md#model-views-from-a-glb).

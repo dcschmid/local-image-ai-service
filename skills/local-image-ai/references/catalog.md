@@ -50,6 +50,9 @@ Generated from the service catalog at installation/package time. Query the live 
 | `lowpoly-vehicle` | Low Poly · kart and vehicle reference | One complete low-poly vehicle with clear wheels, chassis and panel connections. |
 | `lowpoly-prop` | Low Poly · prop reference | A single low-poly object with clear thicknesses, simple joins and a plain background. |
 | `lowpoly-building` | Low Poly · building reference | A complete modular building with readable wall, roof, door and window volumes. |
+| `lowpoly-character-sheet` | Low Poly · character concept sheet | Four proposed views of one character design. AI estimates can differ; use a 3D model for geometry-consistent views. |
+| `lowpoly-kart-sheet` | Low Poly · kart concept sheet | Four proposed views of one kart design. AI estimates can differ; use a 3D model for geometry-consistent views. |
+| `lowpoly-prop-sheet` | Low Poly · prop concept sheet | Four proposed views of one prop design. AI estimates can differ; use a 3D model for geometry-consistent views. |
 
 ### moss / photo
 
@@ -104,6 +107,9 @@ Generated from the service catalog at installation/package time. Query the live 
 | `pixel-portrait` | Pixel · dialogue portrait | A readable character bust suitable as a starting point for a game dialogue portrait. |
 | `pixel-vehicle` | Pixel · tiny vehicle | One small vehicle with clear wheels, readable bodywork and a simple background. |
 | `pixel-dungeon` | Pixel · dungeon room | A single overhead game room with clear boundaries and a few readable props. |
+| `pixel-character-sheet` | Pixel · character concept sheet | Four proposed views of one character design. AI estimates can differ; use a 3D model for geometry-consistent views. |
+| `pixel-kart-sheet` | Pixel · kart concept sheet | Four proposed views of one kart design. AI estimates can differ; use a 3D model for geometry-consistent views. |
+| `pixel-prop-sheet` | Pixel · prop concept sheet | Four proposed views of one prop design. AI estimates can differ; use a 3D model for geometry-consistent views. |
 
 ### z-image / zimage
 
@@ -124,3 +130,14 @@ Generated from the service catalog at installation/package time. Query the live 
 | `zimage-turbo-product` | Z-Image Turbo · product study | A fast material and lighting study of one clearly framed product. |
 | `zimage-turbo-sign` | Z-Image Turbo · storefront lettering | A small storefront scene with one short English or Chinese sign. |
 | `zimage-turbo-food` | Z-Image Turbo · food editorial | A quick appetizing food photograph with soft side light and tactile ingredients. |
+
+### moss / voxel
+
+| ID | Preset | Purpose |
+| --- | --- | --- |
+| `voxel-character` | Voxel · character asset | A cubic voxel-style character concept with readable block shapes and a small material palette. |
+| `voxel-kart` | Voxel · kart asset | A cubic voxel-style kart concept with readable block shapes and a small material palette. |
+| `voxel-prop` | Voxel · prop asset | A cubic voxel-style prop concept with readable block shapes and a small material palette. |
+| `voxel-building` | Voxel · building asset | A cubic voxel-style building concept with readable block shapes and a small material palette. |
+| `voxel-diorama` | Voxel · diorama asset | A cubic voxel-style diorama concept with readable block shapes and a small material palette. |
+| `voxel-anything` | Voxel · anything | Voxel-style creatures, objects and small worlds built from clear cubic blocks. |

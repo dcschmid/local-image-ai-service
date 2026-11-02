@@ -23,7 +23,7 @@ class RecipeTests(unittest.TestCase):
 
     def test_all_lowpoly_recipes_use_moss_and_retired_recipes_are_unavailable(self):
         selected=[recipe for recipe in recipes() if recipe['category']=='lowpoly']
-        self.assertEqual(len(selected),9)
+        self.assertEqual(len(selected),12)
         self.assertTrue(all(recipe['model']=='moss' for recipe in selected))
         for recipe_id in ('lowpoly-character','lowpoly-vehicle','lowpoly-prop','lowpoly-building'):
             recipe=next(recipe for recipe in selected if recipe['id']==recipe_id)

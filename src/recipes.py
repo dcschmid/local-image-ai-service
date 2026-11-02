@@ -533,6 +533,34 @@ for recipe in ADDITIONAL_RECIPES:
         recipe['size'] = {'832x1216':'768x1024', '1216x832':'1024x768'}.get(recipe['size'], recipe['size'])
 RECIPES += ADDITIONAL_RECIPES
 
+ASSET_RECIPES = []
+for family,model in (('lowpoly','moss'),('pixel','krea-pixel')):
+    for asset,label in (('character','character'),('vehicle','kart'),('prop','prop')):
+        example=dict(modeling_reference.ASSETS[asset]['example'],modeling_view='sheet',modeling_asset=asset)
+        if family=='pixel':example.update(pixel_grid=128,pixel_colors=32)
+        ASSET_RECIPES.append(dict(id=family+'-'+label+'-sheet',model=model,category='lowpoly' if family=='lowpoly' else 'pixel',
+            name=('Low Poly' if family=='lowpoly' else 'Pixel')+' · '+label+' concept sheet',size='1024x1024',
+            description='Four proposed views of one '+label+' design. AI estimates can differ; use a 3D model for geometry-consistent views.',
+            example=example,scene='on a plain light gray background',style='game asset concept sheet',composition='Four aligned proposed views of one asset.',
+            default_modeling_view='sheet',pixel_grid=128,pixel_colors=32,example_quality='standard' if family=='pixel' else 'preview',
+            tip='Compare the four proposed silhouettes, part counts and colors yourself. For exact matching views, open 3D Asset Views and import one GLB.'))
+for identifier,asset,label in (('voxel-character','character','character'),('voxel-kart','vehicle','kart'),
+                              ('voxel-prop','prop','prop'),('voxel-building','building','building'),('voxel-diorama','scene','diorama')):
+    example=dict(modeling_reference.ASSETS[asset]['example'],modeling_view='three-quarter',modeling_asset=asset)
+    ASSET_RECIPES.append(dict(id=identifier,model='moss',category='voxel',name='Voxel · '+label+' asset',size=modeling_reference.ASSETS[asset]['size'],
+        description='A cubic voxel-style '+label+' concept with readable block shapes and a small material palette.',
+        example=example,scene='on a plain light gray background',style='voxel art, visible cubic blocks, stepped forms, consistent cube size, matte limited colors',
+        composition='One complete voxel-style asset, clear silhouette, neutral light and plain background.',
+        tip='This preset generates a voxel-style image. Import a GLB in 3D Asset Views for a real shared voxel mesh and matching directions.'))
+ASSET_RECIPES.append(dict(id='voxel-anything',model='moss',category='voxel',name='Voxel · anything',size='1024x1024',
+    description='Voxel-style creatures, objects and small worlds built from clear cubic blocks.',
+    example=dict(subject='a small orange fox beside a blue pond and three pine trees',scene='on one square voxel terrain tile',details='large visible cubes, orange fur, green trees and pale blue water'),
+    scene='on a simple square base',style='voxel art 3D scene, large visible cubic blocks, stepped forms, limited matte colors',
+    composition='One complete miniature scene with a consistent cube size and clear color groups, seen from an elevated three-quarter angle.',
+    tip='Describe the main shapes and a few colors. This is an image concept; it does not contain voxel geometry.'))
+for recipe in ASSET_RECIPES:recipe.update(checked='2026-11-02',evidence='Curated asset concept; camera directions and cross-view geometry are not certified.')
+RECIPES += ASSET_RECIPES
+
 def recipes():
     return [dict(r, model=r.get('model','anima'), version=VERSION,preview_size=r['size'] if r.get('model')=='krea-pixel' else preview_size(r['size']),
                  modeling_asset=modeling_reference.RECIPE_ASSETS.get(r['id']),

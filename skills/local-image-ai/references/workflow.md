@@ -82,3 +82,26 @@ local-image-ai-service gallery delete IMAGE_ID ANOTHER_IMAGE_ID
 Pages contain up to 60 images. Multi-delete accepts 1–500 explicit IDs and removes
 their archive PNG/native companions. It leaves exported project copies intact.
 Use deletion only for the images the user requested to remove.
+
+## Model views from a GLB
+
+For actual matching cameras use `assets options`, then:
+
+```bash
+local-image-ai-service assets render --input ./kart.glb --style pixel --front=-Y --pixel-grid 64 --colors 24 --async
+local-image-ai-service assets get JOB_ID
+local-image-ai-service assets export JOB_ID --save-dir ./artifacts
+```
+
+`assets list` recovers recent imports. `assets wait JOB_ID --timeout 30` retains
+an accepted ID on timeout. `assets cancel JOB_ID` stops only that own CPU job.
+ZIP exports contain seven transparent views, a sheet, the rendered static GLB,
+camera/hash metadata and native grid PNGs for Pixel Art. Do not extract arbitrary
+archive paths from an untrusted server. The service's exports use fixed filenames.
+
+Styles are `model`, `lowpoly`, `pixel`, `voxel`; front axes use Blender Z-up
+coordinates, default −Y. Voxel resolution is 16/24/32/48/64 cubes along the longest
+dimension. It produces a shared surface approximation, not a solid volume or a
+reconstruction from an image. Native pixel grids are 32/64/128 with one palette
+across all views. Self-contained uncompressed GLB files are limited to 32 MiB,
+with embedded PNG/JPEG textures. Blender runs separately on CPU.

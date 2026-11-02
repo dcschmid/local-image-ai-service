@@ -7,7 +7,7 @@ test('guided recipes, photography, low poly, free prompt, guide and mobile layou
  await expect(page.locator('#model option')).toHaveCount(6);
  await expect(page.locator('#model')).toHaveValue('anima');
  await expect(page.locator('#workflow')).toHaveValue('guided');
- await expect(page.locator('#recipe option')).toHaveCount(70);
+ await expect(page.locator('#recipe option')).toHaveCount(82);
  await expect(page.locator('#aspect-ratio option')).toHaveCount(8);
  await expect(page.locator('#recipe optgroup[label="MOSS · realistic photography"] option')).toHaveCount(9);
  await expect(page.locator('#recipe option:checked')).toHaveText('Cinematic character portrait');

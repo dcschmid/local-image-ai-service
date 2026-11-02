@@ -1,11 +1,17 @@
 """Single-view low-poly concepts intended for rebuilding in Blender, not measured blueprints."""
 
-VERSION = 1
+VERSION = 2
 RECIPE_ASSETS = {
     'lowpoly-diorama': 'scene', 'lowpoly-retro': 'vehicle', 'lowpoly-world': 'scene',
     'lowpoly-character': 'character', 'lowpoly-vehicle': 'vehicle',
     'lowpoly-prop': 'prop', 'lowpoly-building': 'building',
 }
+RECIPE_ASSETS.update({
+    'lowpoly-character-sheet':'character','lowpoly-kart-sheet':'vehicle','lowpoly-prop-sheet':'prop',
+    'pixel-character':'character','pixel-vehicle':'vehicle','pixel-loot':'prop','pixel-isometric':'building',
+    'pixel-character-sheet':'character','pixel-kart-sheet':'vehicle','pixel-prop-sheet':'prop',
+    'voxel-character':'character','voxel-kart':'vehicle','voxel-prop':'prop','voxel-building':'building','voxel-diorama':'scene',
+})
 ASSETS = {
     'character': dict(name='Character · full body', size='832x1216',
         example=dict(subject='an adult forest courier with short brown hair, a green jacket and brown boots', scene='neutral A-pose, a short jacket ending above the hips, simple trousers', details='three main material colors: forest green cloth, brown leather and cream fabric; one small belt pouch'),
@@ -35,6 +41,11 @@ VIEWS = {
     'top': dict(name='Top · directly overhead',
         prompt='One top view looking vertically down, orthographic projection, no tilted camera and no perspective convergence.'),
 }
+VIEWS.update({
+    'right':dict(name='Right side · proposed profile',prompt='One strict right-side profile, camera level and perpendicular to the side, orthographic-style projection.'),
+    'bottom':dict(name='Bottom · proposed underside',prompt='One underside view looking vertically upward at the bottom of the asset, orthographic-style projection.'),
+    'sheet':dict(name='Concept sheet · four proposed views',prompt='Four views of one proposed design; these are AI concepts, not measured projections.'),
+})
 STYLES = {
     'moss': 'low-poly 3D asset modeling reference, flat-shaded polygon geometry, simple matte base colors',
 }
@@ -48,11 +59,11 @@ def options():
 
 def compose(body, recipe, fields):
     """Return an optional reference composition while leaving legacy recipes unchanged."""
-    if not {'modeling_view', 'modeling_asset'} & body.keys():
+    if not {'modeling_view', 'modeling_asset'} & body.keys() and not recipe.get('default_modeling_view'):
         return None
     if recipe['id'] not in RECIPE_ASSETS:
-        raise ValueError('Blender reference settings are available only with low-poly recipes.')
-    view = body.get('modeling_view', 'off')
+        raise ValueError('Asset reference settings are available with low-poly, pixel and voxel asset recipes.')
+    view = body.get('modeling_view', recipe.get('default_modeling_view','off'))
     if not isinstance(view, str) or view not in ('off', *VIEWS):
         raise ValueError('Choose a supported Blender reference view.')
     if view == 'off':
@@ -62,9 +73,33 @@ def compose(body, recipe, fields):
     asset = body.get('modeling_asset', RECIPE_ASSETS[recipe['id']])
     if not isinstance(asset, str) or asset not in ASSETS:
         raise ValueError('Choose a supported Blender asset type.')
+    pixel=recipe['model']=='krea-pixel'
+    voxel=recipe.get('category')=='voxel'
+    if pixel:
+        from pixel_art import settings
+        grid,_=settings(body.get('pixel_grid',recipe.get('pixel_grid',64)),body.get('pixel_colors',recipe.get('pixel_colors',32)))
+        style=('pixel art, ' if grid!=64 else '')+'retro game asset, deliberate square pixel clusters, crisp silhouette, limited palette'
+    else:style='voxel art game asset, visible cubic blocks, consistent cube size, stepped block silhouettes, matte colors' if voxel else STYLES[recipe['model']]
+    if view=='sheet':
+        fourth='top' if asset in ('vehicle','building','scene') else 'three-quarter'
+        prompt=(f'{style}. A single square four-view concept sheet proposes one asset: {fields["subject"]}. '
+                f'Exactly four equally sized panels in a two-by-two grid: upper left front view, upper right left-side profile, '
+                f'lower left back view, lower right {fourth} view. Repeat the same main shapes, colors, part count and design features in each panel. '
+                f'{ASSETS[asset]["construction"]} Use one consistent scale, a plain light gray background, even light, complete silhouettes and clear margins. '
+                'Keep separate panels aligned. No extra figures, captions, text, borders, arrows or measurement lines.')
+        if fields['scene']:prompt+=' Construction notes: '+fields['scene']+'.'
+        if fields['details']:prompt+=' Shared design and material colors: '+fields['details']+'.'
+        negative='' if pixel else 'worst quality, blurry, extra panels, cropped asset, cut off feet, text, labels, watermark, background scenery'
+        return dict(prompt=prompt,negative_prompt=negative,size='1024x1024')
+    if pixel:
+        prompt=f'{style}. {fields["subject"]}. {VIEWS[view]["prompt"]} {ASSETS[asset]["construction"]}'
+        if fields['scene']:prompt+=' Construction and pose: '+fields['scene']+'.'
+        if fields['details']:prompt+=' Design details: '+fields['details']+'.'
+        prompt+=' One complete asset centered on a plain background, with clear space around all edges, readable pixel clusters and no lettering or interface. Use one neutral light direction.'
+        return dict(prompt=prompt,negative_prompt='',size='1024x1024')
     # Replace the beauty-shot composition rather than appending contradictory
     # full-body instructions to a portrait, cinematic scene or floating island.
-    prompt = f"{STYLES[recipe['model']]}. {fields['subject']}. {VIEWS[view]['prompt']} {ASSETS[asset]['construction']}"
+    prompt = f"{style}. {fields['subject']}. {VIEWS[view]['prompt']} {ASSETS[asset]['construction']}"
     if fields['scene']:
         prompt += ' Construction and pose requirements: ' + fields['scene'] + '.'
     if fields['details']:
@@ -74,6 +109,7 @@ def compose(body, recipe, fields):
                ' Neutral even studio lighting reveals the forms with only a faint contact shadow.'
                ' Keep material color separate from lighting: no painted shadows, highlights or reflections in the textures.'
                ' Show a single asset in a single view without text, grids, measurement lines or a surrounding scene.')
+    if voxel:prompt=prompt.replace('broad simple polygon faces','large cubic voxel blocks')
     negative = ('worst quality, low quality, blurry, jpeg artifacts, watermark, signature, cropped asset, cut off feet,'
                 ' close-up portrait, dramatic pose, motion blur, depth of field, fog, dramatic lighting, hard cast shadows,'
                 ' glossy reflections, baked lighting, photorealistic textures, smooth subdivided geometry, tiny surface details,'

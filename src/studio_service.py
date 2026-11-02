@@ -82,6 +82,7 @@ class Studio:
         self.worker = None
         self.native_id = None
         self.active_id = None
+        self.asset_views = None
         with self.db() as db:
             db.execute('CREATE TABLE IF NOT EXISTS records (id TEXT NOT NULL, kind TEXT NOT NULL, data TEXT NOT NULL, PRIMARY KEY (id, kind))')
             if len([r for r in db.execute('PRAGMA table_info(records)') if r[5]]) == 1:
@@ -564,6 +565,25 @@ class Studio:
             if path.is_dir(): path=path/'index.html'
             return self.send_file(h,path)
         h.authorize()
+        if route=='/studio/api/assets' or route.startswith('/studio/api/assets/'):
+            from asset_views import AssetViews,MAX_BODY as ASSET_MAX_BODY
+            with self.lock:
+                if self.asset_views is None:self.asset_views=AssetViews(self.root/'asset-views')
+            assets=self.asset_views
+            try:
+                if h.command=='GET' and route=='/studio/api/assets/options':return h.send_json(200,assets.options())
+                if h.command=='GET' and route=='/studio/api/assets':return h.send_json(200,assets.listing())
+                if h.command=='POST' and route=='/studio/api/assets':return h.send_json(202,assets.submit(self.read_body(h,ASSET_MAX_BODY)))
+                match=re.fullmatch('/studio/api/assets/([a-f0-9]{32})/files/([^/]+)',route)
+                if h.command=='GET' and match:return self.send_file(h,assets.file(*match.groups()))
+                match=re.fullmatch('/studio/api/assets/([a-f0-9]{32})',route)
+                if h.command=='GET' and match:return h.send_json(200,assets.get(match[1]))
+                match=re.fullmatch('/studio/api/assets/([a-f0-9]{32})/cancel',route)
+                if h.command=='POST' and match:
+                    self.read_body(h);return h.send_json(200,assets.cancel(match[1]))
+            except FileNotFoundError:error(404,'Asset render not found.')
+            except ValueError as exc:error(400,str(exc))
+            error(404,'Unknown asset endpoint.')
         with self.lock:
             if self.worker is None:
                 self.generation=h.server.generation

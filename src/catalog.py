@@ -45,6 +45,7 @@ STYLES = [
     ('ink-wash', 'Ink wash', 'expressive ink wash illustration, dry-brush contours, soft gray washes, open rice-paper space', '', 'Choose one focal subject and leave broad quiet areas.'),
     ('retro-scifi', 'Vintage science fiction', '1970s science-fiction illustration, airbrushed gouache, subtle print grain, imaginative painted machinery', '', 'Give the scene a scale contrast and a limited palette.'),
     ('pastel', 'Soft pastel', 'soft pastel illustration, powdery chalk strokes, broken edges, textured paper, luminous muted colors', '', 'Prefer broad color masses and a clear focal subject over fine details.'),
+    ('voxel', 'Voxel art', 'voxel art, visible cubic blocks, consistent cube size, stepped silhouettes, matte limited palette', '', 'Keep the main shapes chunky. This creates a voxel-style image; use 3D Asset Views for an actual cubic mesh.'),
 ]
 
 def quality_profiles(model):
@@ -59,7 +60,7 @@ def quality_profiles(model):
 
 def presets():
     return [dict(id=i, name=n, suffix=s, negative=neg, tip=t,
-                 source=MODELS['moss' if i in ('none','photo','portrait','product','cinema','comic','risograph','embroidery') else 'anima']['source'],
+                 source=MODELS['moss' if i in ('none','photo','portrait','product','cinema','comic','risograph','embroidery','voxel') else 'anima']['source'],
                  checked=CHECKED, evidence='Curated style preset; no measured quality guarantee')
             for i,n,s,neg,t in STYLES]
 

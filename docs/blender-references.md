@@ -1,6 +1,6 @@
 # Low-poly references for rebuilding in Blender
 
-Seven MOSS low-poly asset/scene recipes offer a **Blender reference** composition.
+Supported MOSS low-poly, Krea pixel and MOSS voxel recipes offer an **Asset concept** composition. Dedicated character, kart and prop sheet presets request four proposed views. [3D Asset Views](asset-views.md) additionally renders seven consistent directions from one imported GLB.
 New low-poly selections in guided mode start in three-quarter view. Choose an
 asset type: full-body character, vehicle, prop, building or modular environment.
 **Use Blender starter** fills an editable example brief. Only the subject is
@@ -24,6 +24,8 @@ details are optional and visible in the full prompt preview.
 | Left side | Explore a side profile. |
 | Back | Explore a proposed rear design. |
 | Top | Explore the footprint of vehicles, props and structures. |
+| Right / Bottom | Explore the opposite profile or underside. |
+| Concept sheet | Request four proposed views in one 2×2 image; geometry is not certified. |
 | Concept image | Use the original recipe composition and settings. |
 
 These are requested views, not measured projections. Text-to-image generation
@@ -65,7 +67,7 @@ Blender's official manual covers [image empties for references](https://docs.ble
 [orthographic cameras](https://docs.blender.org/manual/en/4.1/render/cameras.html)
 and [flat shading](https://docs.blender.org/manual/en/latest/modeling/meshes/editing/face/shading.html).
 Our recommended workflow uses these tools to obtain consistent views from shared
-geometry. The image generator itself does not export meshes, UVs or rigged assets.
+geometry. The image generator itself does not export meshes, UVs or rigged assets. The separate GLB renderer exports the static mesh it actually rendered; it does not reconstruct a mesh from the concept image.
 
 ## Settings and compatibility
 
@@ -99,3 +101,5 @@ The saved image records the original guided inputs, complete prompt, sampling
 settings and `modeling_version` independently of the unchanged recipe version.
 Reusing it restores the requested asset type and view. Separate AI views remain
 independent concepts; the UI does not mark them as geometrically verified.
+
+Pixel references keep their native grid/palette controls and eight-step Krea profile. Voxel concepts use MOSS with a cubic style. Concept sheets use a square recommended canvas; their aspect ratio and quality controls still apply. See [the asset workflow](asset-views.md) for presets, real voxel geometry and shared pixel palettes from GLB.

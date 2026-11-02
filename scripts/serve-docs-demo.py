@@ -31,6 +31,7 @@ DEMO_RECIPES = (
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--port', type=int, default=7862)
+    parser.add_argument('--allow-asset-renders',action='store_true',help='Enable local CPU GLB imports for asset UI verification; AI inference remains disabled')
     args = parser.parse_args()
     static = ROOT / 'studio/dist'
     if not (static / 'index.html').is_file():
@@ -69,7 +70,8 @@ def main():
 
             class ReadOnlyHandler(base):
                 def dispatch(self):
-                    if self.command != 'GET' and not (self.command == 'POST' and self.path == '/studio/api/compose'):
+                    asset_write=args.allow_asset_renders and self.command=='POST' and (self.path=='/studio/api/assets' or self.path.startswith('/studio/api/assets/') and self.path.endswith('/cancel'))
+                    if self.command != 'GET' and not (self.command == 'POST' and self.path == '/studio/api/compose') and not asset_write:
                         return self.send_json(405, dict(error=dict(message='This documentation demo cannot generate or change images.')))
                     return super().dispatch()
 
