@@ -9,16 +9,10 @@ MODELS['anima'] = dict(name='Anima Aesthetic · 1.1', license='CircleStone (comm
     license_url='https://huggingface.co/circlestone-labs/Anima/blob/main/LICENSE.md',
     source='https://huggingface.co/circlestone-labs/Anima', steps=35,cfg=4.5,sampler='euler',scheduler='discrete',shift=None,
     modes=['text'],negative=True,tip='For anime and illustration: choose a recipe and describe your subject. Aesthetic needs no score_* tags.')
-MODELS['qwen21'] = dict(name='Qwen Image 2.1 · Uncensored GGUF', license='Qwen Research (non-commercial research/evaluation)',
-    license_url='https://huggingface.co/Qwen/Qwen-Image-2.1/blob/main/LICENSE',
-    source='https://huggingface.co/abenzerps/Qwen-Image-2.1-Uncensored-Quantized',
-    steps=40,cfg=6.,sampler='euler',scheduler='flux',shift=None,modes=['text'],negative=True,
-    tip='For detailed scenes, typography and transparent stickers. The supplier labels this upstream-weight GGUF uncensored. Qwen Research License: non-commercial research and evaluation only.')
-MODELS['krea-pixel'] = dict(name='Krea 2 · Pixel Art',license='LoRAs: MIT · Base: Krea 2 Community License',
-    license_url='https://www.krea.ai/krea-2-licensing',source='https://huggingface.co/e-n-v-y/Krea-2-Pixel-Art',
-    steps=8,cfg=1.,sampler='euler',scheduler='flux',shift=None,modes=['text'],negative=False,
-    extra_sample_args='base_shift=1.15,max_shift=1.15',
-    tip='Pixel art with the 32, 64 or 128 pixel LoRA on Krea 2 Turbo. Generate at 1024 square, then refine to a clean grid and palette. LoRA and base-model licenses both apply.')
+MODELS['flux-pixel'] = dict(name='FLUX.2-klein · Pixel Art', license='Apache-2.0',
+    source='https://huggingface.co/adirik/pixel-art-lora-flux.2-klein-4B',
+    steps=20, cfg=4., sampler='euler', scheduler='flux', shift=None, modes=['text'], negative=True,
+    tip='Pixel art on FLUX.2-klein-4B with the PXART4 LoRA. Generate at 1024 square; the LoRA produces a clean pixel grid. All components are Apache-2.0.')
 SAMPLERS = ['euler', 'euler_a', 'heun', 'dpm++2m']
 MODELS['z-image'] = dict(name='Z-Image', license='Apache-2.0',
     source='https://huggingface.co/Tongyi-MAI/Z-Image',
@@ -52,6 +46,10 @@ def quality_profiles(model):
     m=MODELS[model]
     if not m['negative']:
         return [{'id':'standard','name':'Recommended · fewer steps','steps':m['steps']}]
+    if model=='flux-pixel':
+        return [{'id':'preview','name':'Draft · faster','steps':12},
+                {'id':'standard','name':'Recommended','steps':m['steps']},
+                {'id':'compare','name':'More steps · compare','steps':35}]
     anima=model=='anima'
     preview=30 if anima else 28 if model=='z-image' else 20
     return [{'id':'preview','name':'Draft · faster','steps':preview},

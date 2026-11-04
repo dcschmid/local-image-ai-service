@@ -73,12 +73,10 @@ def compose(body, recipe, fields):
     asset = body.get('modeling_asset', RECIPE_ASSETS[recipe['id']])
     if not isinstance(asset, str) or asset not in ASSETS:
         raise ValueError('Choose a supported Blender asset type.')
-    pixel=recipe['model']=='krea-pixel'
+    pixel=recipe['model']=='flux-pixel'
     voxel=recipe.get('category')=='voxel'
     if pixel:
-        from pixel_art import settings
-        grid,_=settings(body.get('pixel_grid',recipe.get('pixel_grid',64)),body.get('pixel_colors',recipe.get('pixel_colors',32)))
-        style=('pixel art, ' if grid!=64 else '')+'retro game asset, deliberate square pixel clusters, crisp silhouette, limited palette'
+        style='PXART4. retro game asset, deliberate square pixel clusters, crisp silhouette, limited palette'
     else:style='voxel art game asset, visible cubic blocks, consistent cube size, stepped block silhouettes, matte colors' if voxel else STYLES[recipe['model']]
     if view=='sheet':
         fourth='top' if asset in ('vehicle','building','scene') else 'three-quarter'

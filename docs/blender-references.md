@@ -1,6 +1,6 @@
 # Low-poly references for rebuilding in Blender
 
-Supported MOSS low-poly, Krea pixel and MOSS voxel recipes offer an **Asset concept** composition. Dedicated character, kart and prop sheet presets request four proposed views. [3D Asset Views](asset-views.md) additionally renders seven consistent directions from one imported GLB.
+Supported MOSS low-poly, FLUX.2-klein pixel and MOSS voxel recipes offer an **Asset concept** composition. Dedicated character, kart and prop sheet presets request four proposed views. [3D Asset Views](asset-views.md) additionally renders seven consistent directions from one imported GLB.
 New low-poly selections in guided mode start in three-quarter view. Choose an
 asset type: full-body character, vehicle, prop, building or modular environment.
 **Use Blender starter** fills an editable example brief. Only the subject is
@@ -102,4 +102,4 @@ settings and `modeling_version` independently of the unchanged recipe version.
 Reusing it restores the requested asset type and view. Separate AI views remain
 independent concepts; the UI does not mark them as geometrically verified.
 
-Pixel references keep their native grid/palette controls and eight-step Krea profile. Voxel concepts use MOSS with a cubic style. Concept sheets use a square recommended canvas; their aspect ratio and quality controls still apply. See [the asset workflow](asset-views.md) for presets, real voxel geometry and shared pixel palettes from GLB.
+Pixel references use the PXART4 LoRA on FLUX.2-klein. Voxel concepts use MOSS with a cubic style. Concept sheets use a square recommended canvas; their aspect ratio and quality controls still apply. See [the asset workflow](asset-views.md) for presets, real voxel geometry and shared pixel palettes from GLB.

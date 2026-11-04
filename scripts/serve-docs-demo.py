@@ -23,7 +23,7 @@ from catalog import MODELS
 from recipes import VERSION, compose, formats
 
 DEMO_RECIPES = (
-    'lowpoly-anything', 'anima-neon', 'photo-product', 'qwen-poster',
+    'lowpoly-anything', 'anima-neon', 'photo-product', 'zimage-fantasy',
     'pixel-landscape', 'moss-comic', 'lowpoly-track-overview', 'lowpoly-vehicle',
 )
 
@@ -62,9 +62,6 @@ def main():
                 record = dict(id=record_id, request=request, sampling=dict(steps=sample['steps'],
                               cfg=sample['cfg_scale'], sampler=sample['sampler']), seconds=sample['seconds'],
                               created=1760000000 - index, favorite=index < 2, public_example=identifier)
-                if sample.get('pixel'):
-                    record['pixel'] = sample['pixel']
-                    studio.write_file(record_id, (static / 'recipe-examples' / Path(sample['native_url']).name).read_bytes(), pixel=True)
                 studio.put('image', record)
             base = service.make_handler(backend, None)
 

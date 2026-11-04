@@ -59,8 +59,7 @@ Reference-image editing remains outside these text-to-image profiles.
 | --- | --- | --- |
 | MOSS SFT | [Official model card](https://huggingface.co/OpenMOSS-Team/MOSS-Image-SFT), [MOSS user guide](https://github.com/OpenMOSS/MOSS-Image/blob/main/USERGUIDE.md) | Keep the locally established 50 steps, CFG 3, Euler and shift 5. Add risograph, embroidery, needle felt and stained glass. These prompt-driven material studies need no new adapters. |
 | Anima Aesthetic 1.1 | [Author's settings and Aesthetic prompting section](https://huggingface.co/circlestone-labs/Anima) | Keep 35 steps, CFG 4.5, Euler and no score tags. Add woodblock print, chalk pastel, dark fantasy and solarpunk scenery. Explicit medium, framing and palette cues keep these distinct from the existing anime looks. |
-| Qwen Image 2.1 | [Official model card](https://huggingface.co/Qwen/Qwen-Image-2.1) | Keep 40 steps and the existing transparent-image wording. Add a three-stage illustrated explainer, exploded product concept, packaging and neon lettering. The current research-license notice still applies. |
-| Krea Pixel Art | [LoRA author's card](https://huggingface.co/e-n-v-y/Krea-2-Pixel-Art), [Krea prompting guide](https://github.com/krea-ai/krea-2/blob/main/docs/prompting.md) | Keep eight steps, 1024-square inference and native-grid cleanup. Preserve the author's advice to omit the pixel-art trigger at 64 pixels. Add creature, dialogue portrait, vehicle and overhead room concepts. |
+| FLUX.2-klein · Pixel Art | [PXART4 LoRA card](https://huggingface.co/adirik/pixel-art-lora-flux.2-klein-4B), [FLUX.2-klein-4B](https://huggingface.co/black-forest-labs/FLUX.2-klein-4B) | Twenty steps, CFG 4, 1024-square inference. The PXART4 LoRA produces a clean pixel grid directly. Add creature, dialogue portrait, vehicle and overhead room concepts. |
 
 These sources establish model capabilities and prompting guidance. The new
 looks are a curation decision; the sources do not certify that every generated
@@ -82,7 +81,7 @@ those established examples.
 ## Verification results
 
 All 70 presets now have real public examples. All 26 additions were generated
-locally and visually reviewed, including the four new native pixel PNGs. The
+locally and visually reviewed. The
 builder reused 33 original examples with matching component fingerprints and
 regenerated 11 older examples whose stored fingerprints differed. These images
 live in the separate verification cache; the private user gallery stays separate.
@@ -100,7 +99,7 @@ The final automated checks cover the full Python/MCP suite (**125 tests, one
 optional NumPy-dependent converter check skipped**), the Astro production build,
 eight Firefox browser checks and Semgrep (**219 rules, no findings**). An artifact
 contract checks every public image, original inputs, composed prompt, sampling,
-required example quality and native pixel dimensions. It also rejects uniform
+required example quality and dimensions. It also rejects uniform
 frames while preserving valid single-color alpha silhouettes.
 
 Both Z-Image variants completed native CUDA generation. In addition to the
@@ -160,10 +159,6 @@ offloading. They describe these fixed-seed examples, not general performance.
 | `anima-pastel` | preview | 768x768 | 30 | 25.47 |
 | `anima-dark-fantasy` | preview | 576x832 | 30 | 20.01 |
 | `anima-solarpunk` | preview | 832x576 | 30 | 20.03 |
-| `qwen-infographic` | standard | 832x1216 | 40 | 174.51 |
-| `qwen-exploded` | preview | 768x768 | 20 | 47.24 |
-| `qwen-packaging` | standard | 1024x1024 | 40 | 177.77 |
-| `qwen-neon-sign` | standard | 1216x832 | 40 | 169.81 |
 | `pixel-creature` | preview | 1024x1024 | 8 | 36.20 |
 | `pixel-portrait` | preview | 1024x1024 | 8 | 32.35 |
 | `pixel-vehicle` | preview | 1024x1024 | 8 | 32.28 |

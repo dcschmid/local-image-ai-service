@@ -44,10 +44,9 @@ optional styles for free prompts. Model `free_prompt_quality_profiles` and guide
 | --- | --- |
 | `moss` | Photography, illustration and low-poly concepts. |
 | `anima` | Anima Aesthetic anime and illustration. |
-| `qwen21` | Qwen Image 2.1 scenes, text and transparent stickers; consult its displayed license. |
 | `z-image` | Creative illustration and photography with CFG and negative-prompt control. |
 | `z-image-turbo` | Eight-step photographic studies and short lettering at CFG 1. |
-| `krea-pixel` | Krea Pixel Art with prepared 32/64/128-grid variants and native pixel exports. |
+| `flux-pixel` | FLUX.2-klein Pixel Art with the PXART4 LoRA. |
 
 ## Preview before generating
 
@@ -95,15 +94,15 @@ local-image-ai-service render --recipe lowpoly-vehicle --example \
   --modeling-view three-quarter --modeling-asset vehicle \
   --seed 42 --save-dir ./artifacts/kart
 
-# Native pixel art plus an enlarged preview
+# Pixel art with the PXART4 LoRA
 local-image-ai-service render --recipe pixel-loot \
-  --subject 'a red mushroom with white spots' --pixel-grid 32 --pixel-colors 24 \
+  --subject 'a red mushroom with white spots' \
   --seed 42 --save-dir ./artifacts/pixel
 
-# Qwen poster with literal wording
-local-image-ai-service render --recipe qwen-poster \
-  --subject 'a tiny spacecraft rising above a rust-red canyon' --text 'EXPLORE' \
-  --aspect-ratio 2:3 --save-dir ./artifacts/poster
+# Z-Image Turbo storefront with literal wording
+local-image-ai-service render --recipe zimage-turbo-sign \
+  --subject 'a tiny corner flower shop with one dark green painted sign' --text 'PETAL' \
+  --aspect-ratio 16:9 --save-dir ./artifacts/sign
 
 # Free prompt with a style preset and explicit sampling
 local-image-ai-service render --model moss --prompt 'a lighthouse above a quiet harbor' \
@@ -117,9 +116,8 @@ is needed for an ordinary queued model change. Generation itself is not retried.
 
 Without `--save-dir`, the JSON result contains image metadata and authenticated
 relative file URLs, and the image remains in the Studio archive. With the flag,
-each completed image is exported to a unique private PNG and JSON sidecar. Krea
-also exports its native pixel PNG. The paths are under
-`images[i].exports.image`, `.metadata` and optional `.native_pixels`.
+each completed image is exported to a unique private PNG and JSON sidecar. The paths are under
+`images[i].exports.image` and `.metadata`.
 
 Exports preserve the archived PNG bytes, alpha and embedded text metadata. Both
 pixel variants are decoded and dimension-checked before writing. Files use mode
@@ -155,7 +153,7 @@ jq '.input' preview.json | local-image-ai-service render --input - --save-dir ./
 
 Guided sampling is controlled through `--quality` and `--aspect-ratio`; `--steps`,
 `--cfg-scale`, `--sampler`, `--negative-prompt`, `--size` and `--preset` belong to
-free prompts. Pixel options are exclusive to Krea. Asset view options are available
+free prompts. Asset view options are available
 with the supported low-poly, pixel and voxel recipes. MOSS supplies the low-poly appearance without an additional style adapter.
 Agents cannot pass arbitrary adapter paths or runtime control tags.
 

@@ -71,17 +71,17 @@ def main():
             report['tests'].append(dict(model='moss', mode='async render/get/wait/export', size=image['request']['size'],
                                         seconds=image['seconds'], image_id=image['id']))
             print(json.dumps(dict(event='passed', **report['tests'][-1])), flush=True)
-            pixel = cli('render', '--recipe', 'pixel-loot', '--example', '--pixel-grid', '32', '--seed', '43',
+            pixel = cli('render', '--recipe', 'pixel-loot', '--example', '--seed', '43',
                         '--timeout', '300', '--save-dir', str(root / 'pixel-export'))['images'][0]
-            assert pixel['pixel']['width'] == 32 and pixel['pixel']['height'] == 32
-            assert pixel['pixel']['weights'] == 'dora-v1'
-            assert Path(pixel['exports']['native_pixels']).is_file()
-            assert backend.model == 'krea-pixel' and backend.pixel_grid == 32
+            assert pixel['request']['model'] == 'flux-pixel'
+            assert 'PXART4' in pixel['request']['prompt']
+            assert Path(pixel['exports']['image']).is_file() and Path(pixel['exports']['metadata']).is_file()
+            assert backend.model == 'flux-pixel'
             exported = cli('export', pixel['id'], '--save-dir', str(root / 'pixel-repeat'))
             assert Path(exported['exports']['image']).read_bytes() == Path(pixel['exports']['image']).read_bytes()
             assert len(cli('jobs', 'list')) == 2
-            report['tests'].append(dict(model='krea-pixel', mode='synchronous render/native export/re-export', size=pixel['request']['size'],
-                                        native_size='32x32', seconds=pixel['seconds'], image_id=pixel['id']))
+            report['tests'].append(dict(model='flux-pixel', mode='synchronous render/export/re-export', size=pixel['request']['size'],
+                                        seconds=pixel['seconds'], image_id=pixel['id']))
             print(json.dumps(dict(event='passed', **report['tests'][-1])), flush=True)
             if args.with_mcp:
                 async def mcp_verification():

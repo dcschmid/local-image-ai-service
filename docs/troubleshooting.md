@@ -54,7 +54,7 @@ used as a runtime fallback. `doctor` must report CUDA0; CPU fallback is not sile
 
 ## HTTP 404, 409, 429, or 504
 
-404 `model_not_found`: choose an installed curated model from `local-image-ai-service models`; the six supported IDs are `moss`, `anima`, `qwen21`, `krea-pixel`, `z-image` and `z-image-turbo`.
+404 `model_not_found`: choose an installed curated model from `local-image-ai-service models`; the five supported IDs are `moss`, `anima`, `flux-pixel`, `z-image` and `z-image-turbo`.
 409 `model_not_loaded`: the compatibility API requires the selected model to be loaded with `local-image-ai-service use MODEL`. Guided CLI `render` and Studio jobs switch models automatically.
 429: the synchronous compatibility API is busy; wait for its current generation. Studio and CLI `render` requests use the persistent job queue.
 504: the owned runtime was stopped. Inspect logs and restart manually. Client timeouts must

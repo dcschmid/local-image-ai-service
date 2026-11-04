@@ -55,7 +55,7 @@ def main():
         for model in MODELS:
             if args.model and model!=args.model:continue
             if model not in cfg['models']:continue
-            desired={f[key] for f in formats(model) for key in (('size',) if model=='krea-pixel' or args.standard_only else ('size','preview_size'))}
+            desired={f[key] for f in formats(model) for key in (('size',) if args.standard_only else ('size','preview_size'))}
             fingerprint=studio.fingerprint(model)
             receipt=receipts.get(model,{})
             if receipt.get('fingerprint')!=fingerprint:receipt=dict(fingerprint=fingerprint,modes=['text'],sizes=[])

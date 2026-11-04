@@ -61,8 +61,8 @@ still detects corrupt responses and dimensions that differ from the request.
 
 Optional local extensions: `steps` (1–100), `cfg_scale` (finite, 1–12), `sampler`
 (`euler`, `euler_a`, `heun`, `dpm++2m`) and `negative_prompt` (up to 16,000 characters).
-The curated profiles are `moss`, `anima`, `qwen21`, `krea-pixel`, `z-image` and `z-image-turbo`. Low-poly recipes use MOSS without a separate adapter; see [the MOSS guide](moss-lowpoly.md).
-Krea Pixel Art and Z-Image Turbo require CFG 1 and an empty negative prompt. Z-Image supports ordinary CFG and negative prompting; [its guide](z-image-and-presets.md) lists the defaults for both variants.
+The curated profiles are `moss`, `anima`, `flux-pixel`, `z-image` and `z-image-turbo`. Low-poly recipes use MOSS without a separate adapter; see [the MOSS guide](moss-lowpoly.md).
+Z-Image Turbo requires CFG 1 and an empty negative prompt. Z-Image supports ordinary CFG and negative prompting; [its guide](z-image-and-presets.md) lists the defaults for both variants.
 All other parameters receive 400, including `quality`, `style`, `background`, `output_compression`, and arbitrary model paths.
 Administrative `sampling` controls the MOSS defaults (50 steps, CFG 3.0). Other
 profiles use their catalog defaults; request overrides take precedence without

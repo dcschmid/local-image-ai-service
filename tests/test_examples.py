@@ -56,7 +56,7 @@ class ExampleTests(unittest.TestCase):
                 self.assertFalse((target/(recipe['id']+'.webp')).exists())
 
     def test_single_color_sticker_with_a_visible_alpha_silhouette_is_not_a_blank_frame(self):
-        recipe=next(r for r in recipes() if r['id']=='qwen-sticker')
+        recipe=next(r for r in recipes() if r['id']=='photo-portrait')
         inputs=dict(recipe=recipe['id'],**recipe['example'],quality='standard')
         with tempfile.TemporaryDirectory() as directory:
             root=Path(directory)
@@ -76,7 +76,7 @@ class ExampleTests(unittest.TestCase):
         self.assertFalse(builder.matches(item,recipe))
 
     def test_custom_inputs_and_outdated_compiled_prompts_are_not_reused(self):
-        recipe=next(r for r in recipes() if r['id']=='qwen-poster')
+        recipe=next(r for r in recipes() if r['id']=='zimage-turbo-sign')
         inputs=dict(recipe=recipe['id'],**recipe['example'],quality='standard')
         request=dict(compose(dict(inputs,seed=42)),recipe_inputs=inputs)
         item={'request':request}
@@ -87,13 +87,13 @@ class ExampleTests(unittest.TestCase):
         self.assertFalse(builder.matches(changed,recipe))
 
     def test_export_distinguishes_real_transparency_from_nearly_opaque_alpha(self):
-        recipe=next(r for r in recipes() if r['id']=='qwen-sticker')
+        recipe=next(r for r in recipes() if r['id']=='photo-portrait')
         inputs=dict(recipe=recipe['id'],**recipe['example'],quality='standard')
         with tempfile.TemporaryDirectory() as directory:
             root=Path(directory);target=root/'export'
             item=dict(id='a'*32,_root=root,request=dict(compose(dict(inputs,seed=42)),recipe_inputs=inputs))
-            image=Image.new('RGBA',(1024,1024),(40,100,80,254));image.save(root/(item['id']+'.png'))
-            with self.assertRaisesRegex(ValueError,'no alpha'):builder.export(item,recipe,target)
+            image=Image.new('RGBA',(1024,1024),(40,100,80,254));ImageDraw.Draw(image).rectangle((0,0,512,1024),fill=(80,120,60,254));image.save(root/(item['id']+'.png'))
+            sample=builder.export(item,recipe,target);self.assertFalse(sample['transparent'])
             image=Image.new('RGBA',(1024,1024),(0,0,0,0));ImageDraw.Draw(image).ellipse((100,100,900,900),fill=(255,100,0,255));image.save(root/(item['id']+'.png'))
             sample=builder.export(item,recipe,target);self.assertTrue(sample['transparent'])
             with Image.open(target/(recipe['id']+'.webp')) as result:

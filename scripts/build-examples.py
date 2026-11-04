@@ -3,7 +3,6 @@
 import argparse
 import json
 import os
-import shutil
 from pathlib import Path
 import sqlite3
 import subprocess
@@ -35,9 +34,8 @@ def matches(item,recipe,*,fingerprint=None):
     # and adapter revision produced this image. Check all of them before export.
     if fingerprint is not None and item.get('fingerprint')!=fingerprint:return False
     request=item.get('request',{});inputs=request.get('recipe_inputs',{})
-    if recipe['model']=='krea-pixel' and item.get('pixel',{}).get('weights')!='dora-v1':return False
     if inputs.get('recipe')!=recipe['id']:return False
-    for key in ('subject','scene','details','text','pixel_grid','pixel_colors','modeling_view','modeling_asset'):
+    for key in ('subject','scene','details','text','modeling_view','modeling_asset'):
         if inputs.get(key,'')!=recipe['example'].get(key,''):return False
     body=dict(model=recipe['model'],recipe=recipe['id'],**recipe['example'],quality=inputs.get('quality','standard'),seed=request.get('seed',42))
     expected=compose(body)
@@ -52,19 +50,14 @@ def export(item,recipe,target):
         if recipe.get('transparent') and not alpha:raise ValueError('Transparent example has no alpha: '+recipe['id'])
         if all(low == high for low, high in image.convert('RGBA').getextrema()):
             raise ValueError('Generated example is a uniform frame: ' + recipe['id'])
-        pixel=bool(item.get('pixel'))
-        image.thumbnail((1024,1024),Image.Resampling.NEAREST if pixel else Image.Resampling.LANCZOS)
-        image.save(target/(recipe['id']+'.webp'),format='WEBP',quality=88,method=6,lossless=pixel)
+        image.thumbnail((1024,1024),Image.Resampling.LANCZOS)
+        image.save(target/(recipe['id']+'.webp'),format='WEBP',quality=88,method=6)
     request=item['request']
     entry=dict(recipe=recipe['id'],model=recipe['model'],url='/studio/recipe-examples/'+recipe['id']+'.webp',
                 inputs=dict(recipe=recipe['id'],**recipe['example']),quality=request['recipe_inputs'].get('quality','standard'),
                 seed=request['seed'],size=request['size'],steps=request['steps'],cfg_scale=request['cfg_scale'],sampler=request['sampler'],
                 prompt=request['prompt'],negative_prompt=request.get('negative_prompt',''),seconds=item.get('seconds'),
                 runtime_revision=item.get('runtime_revision'),transparent=alpha)
-    if item.get('pixel'):
-        name=recipe['id']+'-pixels.png'
-        shutil.copyfile(item['_root']/(item['id']+'.pixels.png'),target/name)
-        entry.update(pixel=item['pixel'],native_url='/studio/recipe-examples/'+name)
     return entry
 
 def main():
@@ -105,9 +98,6 @@ def main():
                 backend.stop();backend.model=model;backend.start()
                 if not backend.available():raise RuntimeError(backend.failure)
                 for recipe in selected:
-                    if model=='krea-pixel' and backend.pixel_grid!=recipe['example']['pixel_grid']:
-                        backend.stop();backend.pixel_grid=recipe['example']['pixel_grid'];backend.start()
-                        if not backend.available():raise RuntimeError(backend.failure)
                     quality=args.quality or recipe.get('example_quality','preview')
                     body=dict(model=model,recipe=recipe['id'],**recipe['example'],quality=quality,seed=42)
                     job=studio.submit(body,verification=True);job['started']=time.time();studio.put('job',job)

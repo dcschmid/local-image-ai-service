@@ -21,8 +21,8 @@ These are actual outputs from the local service. Click a picture for its preset,
 <td align="center"><a href="docs/examples.md#low-poly"><img src="studio/public/recipe-examples/lowpoly-anything.webp" height="210" alt="A faceted orange fox beside a pond in a low-poly forest" /></a><br/><strong>Low-poly ideas</strong><br/>MOSS · animals, objects and entire scenes</td>
 </tr>
 <tr>
-<td align="center"><a href="docs/examples.md#posters"><img src="studio/public/recipe-examples/qwen-poster.webp" height="210" alt="An orange and navy space-travel poster with the headline EXPLORE" /></a><br/><strong>Posters and lettering</strong><br/>Qwen · a scene with your own headline</td>
-<td align="center"><a href="docs/examples.md#pixel-art"><img src="studio/public/recipe-examples/pixel-landscape.webp" height="210" alt="A pixel-art mountain lake and cabin beneath a peach-colored sky" /></a><br/><strong>Pixel art</strong><br/>Krea · icons, characters and landscapes</td>
+<td align="center"><a href="docs/examples.md#lettering"><img src="studio/public/recipe-examples/zimage-turbo-sign.webp" height="210" alt="A small corner flower shop with a dark green painted sign" /></a><br/><strong>Lettering in the image</strong><br/>Z-Image Turbo · a short sign or label</td>
+<td align="center"><a href="docs/examples.md#pixel-art"><img src="studio/public/recipe-examples/pixel-landscape.webp" height="210" alt="A pixel-art mountain lake and cabin beneath a peach-colored sky" /></a><br/><strong>Pixel art</strong><br/>FLUX.2-klein · icons, characters and landscapes</td>
 <td align="center"><a href="docs/examples.md#comics"><img src="studio/public/recipe-examples/moss-comic.webp" height="210" alt="A comic courier in a yellow jacket carrying a red parcel through a city" /></a><br/><strong>Bold comic art</strong><br/>MOSS · ink, halftones and strong colors</td>
 </tr>
 </table>
@@ -53,14 +53,13 @@ Your image and its settings stay in the library. You can download it, reuse the 
 | --- | --- | ---: |
 | **MOSS SFT** | Realistic photos, comic and craft illustrations, low-poly scenes and modeling references and voxel concepts | 34 |
 | **Anima Aesthetic 1.1** | Anime portraits, manga, mecha, cozy scenes and illustrated backgrounds | 17 |
-| **Qwen Image 2.1** | Posters, illustrated covers, short lettering, products and transparent stickers | 10 |
-| **Krea Pixel Art** | Small icons, game characters and pixel landscapes with native PNG exports and concept sheets | 11 |
+| **FLUX.2-klein · Pixel Art** | Small icons, game characters and pixel landscapes with concept sheets | 11 |
 | **Z-Image** | Fantasy painting, ink wash, vintage science fiction, fashion and botanical art | 5 |
 | **Z-Image Turbo** | Quick photo, cinema, product, lettering and food studies | 5 |
 
 The [complete catalog](skills/local-image-ai/references/catalog.md) lists every preset. Guided mode chooses the matching model for you; free prompt mode gives you the sampling controls too.
 
-Model licenses differ. In particular, the configured **Qwen profile is for non-commercial research and evaluation**. Each model has a license link in the Studio; see [the model notes](docs/README.md#models-and-looks) before choosing it for a project.
+Model licenses differ. In particular, **Anima's model weights are non-commercial** (generated images may be used commercially). Each model has a license link in the Studio; see [the model notes](docs/README.md#models-and-looks) before choosing it for a project.
 
 See [Z-Image setup and the preset research notes](docs/z-image-and-presets.md) for sources, settings and the new looks.
 

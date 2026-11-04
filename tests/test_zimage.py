@@ -97,7 +97,7 @@ class ZImageTests(unittest.TestCase):
                     with self.subTest(recipe=recipe['id'], quality=quality, ratio=format['id']):
                         result = compose(dict(recipe=recipe['id'], **recipe['example'], quality=quality, aspect_ratio=format['id']))
                         # Pixel settings are Studio postprocessing inputs, not native inference controls.
-                        native = {k:v for k,v in result.items() if k not in ('preset', 'pixel_grid', 'pixel_colors')}
+                        native = {k:v for k,v in result.items() if k != 'preset'}
                         validate_request(native, recipe['model'], max_dimension=1536)
                         self.assertEqual(result['cfg_scale'], defaults(recipe['model'])['cfg'])
 

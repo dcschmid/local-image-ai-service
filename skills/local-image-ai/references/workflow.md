@@ -44,10 +44,10 @@ local-image-ai-service render --recipe photo-product \
   --subject 'an amber perfume bottle with a brass cap' --save-dir ./artifacts
 
 local-image-ai-service render --recipe pixel-loot \
-  --subject 'a red mushroom with white spots' --pixel-grid 32 --pixel-colors 24 --save-dir ./artifacts
+  --subject 'a red mushroom with white spots' --save-dir ./artifacts
 
-local-image-ai-service render --recipe qwen-poster \
-  --subject 'a tiny spacecraft above a desert canyon' --text 'EXPLORE' --save-dir ./artifacts
+local-image-ai-service render --recipe zimage-turbo-sign \
+  --subject 'a tiny corner flower shop with one dark green painted sign' --text 'PETAL' --save-dir ./artifacts
 ```
 
 Discover IDs rather than inventing them. Guided mode uses quality
@@ -58,9 +58,8 @@ request flags. The `compose` result contains `.input` for replay and `.request`
 for inspection; internal prepared fields are not accepted as raw request input.
 
 `--count` accepts 1–8 and increments the resolved seed modulo 2^31. Export paths
-are in `images[i].exports.image`, `.metadata` and optional `.native_pixels`.
-Exports use unique private files and preserve the archived bytes. Do not infer
-filenames or assume the enlarged pixel preview is the native sprite.
+are in `images[i].exports.image` and `.metadata`.
+Exports use unique private files and preserve the archived bytes.
 
 Exit 2 means invalid input/arguments; exit 3 means a waited job failed/cancelled;
 exit 4 means the client wait expired. Exit 1 covers transport/API/config/export

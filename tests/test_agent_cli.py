@@ -54,18 +54,14 @@ class AgentCLITests(unittest.TestCase):
             info = PngImagePlugin.PngInfo();info.add_text('parameters', 'seed 42; original metadata')
             image.save(out, format='PNG', pnginfo=info);return out.getvalue()
         full = raw((256, 256));self.studio.write_file(identifier, full)
-        request = dict(model='krea-pixel' if pixels else 'moss', seed=42, size='256x256', prompt='an angular chest')
+        request = dict(model='flux-pixel' if pixels else 'moss', seed=42, size='256x256', prompt='an angular chest')
         item = dict(id=identifier, request=request, sampling={}, seconds=1, created=time.time())
-        small = None
-        if pixels:
-            small = raw((16, 16));self.studio.write_file(identifier, small, pixel=True)
-            item['pixel'] = dict(width=16, height=16, grid=64, colors=24)
         self.studio.put('image', item)
         self.studio.put('job', dict(id=identifier, status='completed', image_id=identifier, request=request, created=0))
-        return identifier, full, small
+        return identifier, full, None
 
     def test_discovery_is_json_and_offline_recipe_definitions_need_no_config(self):
-        for command, count in [('recipes', 82), ('presets', 17), ('formats', 7)]:
+        for command, count in [('recipes', 72), ('presets', 17), ('formats', 7)]:
             out = io.StringIO()
             with patch.object(manage, 'load_config', side_effect=AssertionError('No configuration needed')), redirect_stdout(out):
                 self.assertEqual(manage.main([command]), 0)
@@ -75,12 +71,11 @@ class AgentCLITests(unittest.TestCase):
         self.assertEqual(list(result['models']), ['moss']);self.assertEqual(len(result['recipes']), 34)
         self.assertEqual(len(result['modeling']['assets']), 5)
         self.assertEqual(result['models']['moss']['defaults']['shift'], 5)
-        self.assertIn('non-commercial', self.cli('models', '--model', 'qwen21')[1]['models']['qwen21']['license'])
         self.assertEqual(self.studio.listing('job'), [])
 
     def test_discovery_filters_and_unknown_ids(self):
         self.assertIn('lowpoly-prop', [r['id'] for r in self.cli('recipes', '--model', 'moss', '--search', 'prop')[1]])
-        self.assertEqual(self.cli('recipes', 'pixel-loot')[1]['pixel_grid'], 32)
+        self.assertEqual(self.cli('recipes', 'pixel-loot')[1]['model'], 'flux-pixel')
         self.assertEqual(self.cli('presets', 'comic')[1]['id'], 'comic')
         self.assertEqual(self.cli('recipes', 'unknown')[0], 2)
         self.assertEqual(self.cli('presets', 'unknown')[0], 2)
@@ -112,9 +107,9 @@ class AgentCLITests(unittest.TestCase):
         code, exported, _ = self.cli('export', identifier, '--save-dir', str(self.root / 'history'))
         self.assertEqual(code, 0);self.assertEqual(Path(exported['exports']['image']).read_bytes(), raw)
 
-    def test_compose_supports_all_four_profiles_without_queueing(self):
-        for recipe, model in [('photo-product', 'moss'), ('anima-portrait', 'anima'), ('qwen-poster', 'qwen21'),
-                              ('pixel-loot', 'krea-pixel')]:
+    def test_compose_supports_all_profiles_without_queueing(self):
+        for recipe, model in [('photo-product', 'moss'), ('anima-portrait', 'anima'),
+                              ('pixel-loot', 'flux-pixel')]:
             code, result, err = self.cli('compose', '--recipe', recipe, '--example', '--quality', 'preview', '--seed', '42')
             self.assertEqual((code, err), (0, None));self.assertEqual(result['request']['model'], model)
             self.assertEqual(result['request']['seed'], 42)
@@ -126,15 +121,15 @@ class AgentCLITests(unittest.TestCase):
         self.assertEqual(code, 0);self.assertIn('racing kart', output['input']['subject'])
         self.assertEqual(output['request']['modeling_version'], 2);self.assertEqual(output['request']['size'], '1024x576')
         self.assertIn('axles', output['request']['prompt'])
-        code, output, _ = self.cli('compose', '--recipe', 'pixel-loot', '--example', '--pixel-grid', '64', '--pixel-colors', '16')
-        self.assertEqual(code, 0);self.assertEqual(output['request']['pixel_grid'], 64)
-        self.assertEqual(output['request']['pixel_colors'], 16);self.assertEqual(output['request']['steps'], 8)
+        code, output, _ = self.cli('compose', '--recipe', 'pixel-loot', '--example', '--quality', 'standard', '--seed', '42')
+        self.assertEqual(code, 0);self.assertIn('PXART4', output['request']['prompt'])
+        self.assertEqual(output['request']['model'], 'flux-pixel');self.assertEqual(output['request']['size'], '1024x1024')
 
     def test_free_preset_and_explicit_negative_override(self):
         code, output, _ = self.cli('compose', '--prompt', 'an angular city', '--model', 'anima', '--preset', 'manga', '--size', '512x512')
         self.assertEqual(code, 0);self.assertIn('screentone', output['request']['prompt'])
         self.assertIn('color', output['request']['negative_prompt'])
-        code, output, _ = self.cli('compose', '--prompt', 'a robot', '--model', 'krea-pixel', '--preset', 'anime', '--negative-prompt', '')
+        code, output, _ = self.cli('compose', '--prompt', 'a robot', '--model', 'flux-pixel', '--preset', 'anime', '--negative-prompt', '')
         self.assertEqual(code, 0);self.assertEqual(output['request']['negative_prompt'], '')
 
     def test_json_stdin_is_exact_and_conflicting_flags_are_rejected(self):
@@ -183,18 +178,16 @@ class AgentCLITests(unittest.TestCase):
         self.assertEqual(self.cli('jobs', 'get', identifier)[1]['image_id'], identifier)
         self.assertEqual(self.cli('jobs', 'get', 'd' * 32)[2]['error']['http_status'], 404)
 
-    def test_export_preserves_alpha_metadata_native_pixels_and_private_files(self):
-        identifier, full, small = self.image(pixels=True)
+    def test_export_preserves_alpha_metadata_and_private_files(self):
+        identifier, full, _ = self.image(pixels=True)
         directory = self.root / 'exports'
         code, output, err = self.cli('export', identifier, '--save-dir', str(directory))
         self.assertEqual((code, err), (0, None))
         exports = output['exports'];self.assertEqual(Path(exports['image']).read_bytes(), full)
-        self.assertEqual(Path(exports['native_pixels']).read_bytes(), small)
         self.assertEqual(json.loads(Path(exports['metadata']).read_text()), output)
         for path in directory.iterdir(): self.assertEqual(stat.S_IMODE(path.stat().st_mode), 0o600)
         self.assertEqual(len(self.studio.listing('image')), 1)
         self.assertEqual(self.cli('export', identifier, '--save-dir', str(directory))[0], 0)
-        self.assertEqual(len(list(directory.iterdir())), 6)
 
     def test_completed_job_wait_exports_without_submitting_anything(self):
         identifier, full, _ = self.image()
@@ -203,17 +196,10 @@ class AgentCLITests(unittest.TestCase):
         self.assertEqual(Path(output['images'][0]['exports']['image']).read_bytes(), full)
         self.assertEqual(len(self.studio.listing('job')), 1)
 
-    def test_corrupt_native_pixels_create_no_partial_export(self):
-        identifier, _, _ = self.image(pixels=True)
-        self.studio.pixel_file(identifier).write_bytes(b'broken PNG')
-        directory = self.root / 'exports'
-        self.assertEqual(self.cli('export', identifier, '--save-dir', str(directory))[0], 1)
-        self.assertFalse(directory.exists());self.assertTrue(self.studio.file(identifier).is_file())
-
     def test_disk_failure_rolls_back_only_this_export_and_retains_the_archive(self):
         identifier, full, _ = self.image(pixels=True)
         directory = self.root / 'exports';directory.mkdir();(directory / 'keep.txt').write_text('keep')
-        with patch('os.fsync', side_effect=[None, None, OSError('disk full')]):
+        with patch('os.fsync', side_effect=[None, OSError('disk full')]):
             code, _, error = self.cli('export', identifier, '--save-dir', str(directory))
         self.assertEqual(code, 1);self.assertEqual(error['error']['code'], 'export_failed')
         self.assertEqual([p.name for p in directory.iterdir()], ['keep.txt'])

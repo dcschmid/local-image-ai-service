@@ -62,13 +62,6 @@ def main():
     import subprocess
     if subprocess.run(['systemctl', '--user', 'is-active', '--quiet', 'local-image-ai.service']).returncode == 0:
         raise SystemExit('Downloads verified. Stop service and rerun to update config safely.')
-    if 'krea-pixel' in installed:
-        converter_python=HOME/'.cache/local-image-ai-service/krea-converter/venv/bin/python'
-        if not converter_python.is_file():raise SystemExit('Prepare the pixel converter first; see docs/krea-pixel-art.md.')
-        subprocess.run([str(converter_python),str(ROOT/'scripts/prepare-pixel-models.py')],check=True,
-                       env=dict(os.environ,OPENBLAS_NUM_THREADS='4'))
-        receipt=json.loads((target/'krea-pixel-dora.json').read_text())
-        installed['krea-pixel'].update(receipt['roles'])
     cfg = json.loads(config.read_text())
     cfg['models'].update(installed)
     backup = config.with_suffix('.pre-studio.json')

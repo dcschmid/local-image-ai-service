@@ -20,7 +20,6 @@ import warnings
 from PIL import Image, ImageFilter, ImageOps, PngImagePlugin
 from catalog import MODELS, SAMPLERS, defaults, presets, quality_profiles
 from recipes import compose, recipes, formats, VERSION as RECIPE_VERSION
-import pixel_art
 import modeling_reference
 
 DATA = Path.home() / '.local/share/local-image-ai-service-images/studio'
@@ -142,11 +141,8 @@ class Studio:
             error(404, 'Image not found.')
         return self.root / (identifier + '.png')
 
-    def pixel_file(self, identifier):
-        return self.file(identifier).with_name(identifier + '.pixels.png')
-
-    def write_file(self, identifier, raw, *, pixel=False):
-        path = self.pixel_file(identifier) if pixel else self.file(identifier)
+    def write_file(self, identifier, raw):
+        path = self.file(identifier)
         with path.open('xb') as stream:
             stream.write(raw)
             stream.flush()
@@ -154,7 +150,6 @@ class Studio:
 
     def finish_deletion(self, identifier):
         self.file(identifier).unlink(missing_ok=True)
-        self.pixel_file(identifier).unlink(missing_ok=True)
         # QA reports can contain a second copy of the same image's settings.
         for name in ('recipe-report.json','gpu-report.json'):
             path=self.root/name
@@ -271,7 +266,7 @@ class Studio:
             if body.get('modeling_view','off')!='off':
                 prepared['modeling_version']=modeling_reference.VERSION
             return prepared
-        allowed = {'model','prompt','size','seed','steps','cfg_scale','sampler','negative_prompt','mode','image_id','mask_id','strength','feather','preset','pixel_grid','pixel_colors'}
+        allowed = {'model','prompt','size','seed','steps','cfg_scale','sampler','negative_prompt','mode','image_id','mask_id','strength','feather','preset'}
         if set(body) - allowed:
             error(400, 'Unknown job settings: ' + ', '.join(sorted(set(body)-allowed)))
         model = body.get('model', self.backend.model)
@@ -304,14 +299,6 @@ class Studio:
             except (OSError,ValueError): pass
         native, seed = validate_request(request, model, max_dimension=max_dimension)
         request.update(model=model,seed=seed,size=native['size'],mode=mode)
-        if model=='krea-pixel':
-            try: grid,colors=pixel_art.settings(body.get('pixel_grid',64),body.get('pixel_colors',24))
-            except ValueError as exc: error(400,str(exc))
-            if any(d % (1024//grid) for d in map(int,request['size'].split('x'))):
-                error(400,'The canvas must align with the selected pixel grid.')
-            request.update(pixel_grid=grid,pixel_colors=colors)
-        elif 'pixel_grid' in body or 'pixel_colors' in body:
-            error(400,'Pixel settings are available with Krea Pixel Art.')
         for key, default, maximum in [('strength',.65,1),('feather',8,32)]:
             value = body.get(key,default)
             if type(value) not in (int,float) or not 0 <= value <= maximum:
@@ -356,16 +343,15 @@ class Studio:
                     self.backend.stop()
             return job
 
-    def switch(self, model, pixel_grid=64):
+    def switch(self, model):
         from service import missing_files
         if model not in MODELS or missing_files(self.backend.cfg,model):
             error(409, 'Model is not installed.')
-        if self.backend.model == model and self.backend.available() and (model!='krea-pixel' or self.backend.pixel_grid==pixel_grid):
+        if self.backend.model == model and self.backend.available():
             return
         self.backend.stop()
         self.backend.failure = None
         self.backend.model = model
-        self.backend.pixel_grid = pixel_grid
         self.backend.start()
         if not self.backend.available():
             error(503, self.backend.failure or 'The model could not be loaded.')
@@ -400,7 +386,7 @@ class Studio:
                     self.active_id = job['id']
                     job.update(status='loading',started=time.time())
                     self.put('job',job)
-                self.switch(job['request']['model'],job['request'].get('pixel_grid',64))
+                self.switch(job['request']['model'])
                 if self.get(job['id'],'job')['status']=='cancelled':
                     continue
                 result = self.generate(job)
@@ -438,8 +424,6 @@ class Studio:
         payload = dict(prompt=req['prompt'],negative_prompt=req.get('negative_prompt',''),width=width,height=height,seed=req['seed'],
                        batch_count=1,sample_params=sample,output_format='png',embed_image_metadata=True,
                        vae_tiling_params={'enabled':True},preview='proj',preview_interval=1)
-        if req['model']=='krea-pixel' and self.backend.pixel_grid!=req['pixel_grid']:
-            raise ValueError('The loaded pixel variant does not match the requested grid.')
         if req['mode']=='reference':
             payload['ref_images'] = [self.encoded(req['image_id'])]
         elif req['mode'] in ('img2img','inpaint'):
@@ -509,22 +493,14 @@ class Studio:
                 merged.save(out,format='PNG',pnginfo=info)
                 raw = out.getvalue()
         identifier = job['id']
-        pixel = None
-        if req['model']=='krea-pixel':
-            raw,small,pixel=pixel_art.refine(raw,req['pixel_grid'],req['pixel_colors'])
-            pixel['weights']='dora-v1'
-            self.write_file(identifier,small,pixel=True)
         self.write_file(identifier,raw)
         sampling = dict(defaults(req['model']), steps=req['steps'], cfg=req['cfg_scale'], sampler=req['sampler'])
-        if MODELS[req['model']].get('extra_sample_args'):
-            sampling['extra_sample_args']=MODELS[req['model']]['extra_sample_args']
         receipt_path = Path(self.backend.cfg['runtime']).parent.parent / 'receipt.json'
         try: runtime_receipt = json.loads(receipt_path.read_text())
         except (OSError,ValueError): runtime_receipt = {}
         metadata = dict(id=identifier,request=req,sampling=sampling,runtime_revision=runtime_receipt.get('revision'),
                         components=self.backend.cfg['models'].get(req['model'],{}),created=time.time(),seconds=round(time.time()-job['started'],2),favorite=False,
                         runtime=self.backend.cfg['runtime'],fingerprint=self.fingerprint(req['model']),license=MODELS[req['model']]['license'])
-        if pixel: metadata['pixel']=pixel
         # SQLite commits gallery visibility only after PNG is durable.
         self.put('image',metadata)
         job['image_id']=identifier
@@ -604,10 +580,6 @@ class Studio:
                 except ValueError: error(400,'Invalid library offset.')
                 favorites=parse_qs(urlsplit(h.path).query).get('favorites',['0'])[0]=='1'
                 return h.send_json(200,self.listing('image',60,offset,favorites))
-            match=re.fullmatch('/studio/api/files/([a-f0-9]{32})/pixels',route)
-            if match:
-                self.get(match[1],'image')
-                return self.send_file(h,self.pixel_file(match[1]),'image/png')
             if route.startswith('/studio/api/files/'):
                 return self.send_file(h,self.visible_file(route.split('/')[-1]),'image/png')
         if h.command=='DELETE':
@@ -629,16 +601,11 @@ class Studio:
             if route=='/studio/api/models/load':
                 model=body.get('model')
                 if not isinstance(model,str) or model not in MODELS: error(404,'Unknown model.')
-                grid=64
-                if model=='krea-pixel':
-                    try: grid,_=pixel_art.settings(body.get('pixel_grid',64))
-                    except ValueError as exc:error(400,str(exc))
-                elif 'pixel_grid' in body:error(400,'Pixel settings are available with Krea Pixel Art.')
                 from service import missing_files
                 if missing_files(self.backend.cfg,model): error(409,'Model is not installed.')
                 if not self.generation.acquire(blocking=False): error(409,'GPU is busy. You can switch models when the job finishes.')
                 def load():
-                    try: self.switch(model,grid)
+                    try: self.switch(model)
                     except Exception as exc: self.backend.failure=str(exc)
                     finally: self.generation.release()
                 threading.Thread(target=load,name='studio-model-loader',daemon=True).start()

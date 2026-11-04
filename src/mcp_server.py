@@ -43,8 +43,6 @@ class ImageRequest(BaseModel):
     aspect_ratio: Aspect | None = None
     modeling_view: Literal['off', 'three-quarter', 'front', 'side', 'back', 'top', 'right', 'bottom', 'sheet'] | None = None
     modeling_asset: Literal['character', 'vehicle', 'prop', 'building', 'scene'] | None = None
-    pixel_grid: Literal[32, 64, 128] | None = None
-    pixel_colors: Literal[16, 24, 32, 64, 128] | None = None
     seed: int | None = Field(default=None, ge=0, lt=2**31)
     size: str | None = Field(default=None, pattern=r'^\d{3,4}x\d{3,4}$')
     steps: int | None = Field(default=None, ge=1, le=100)

@@ -51,22 +51,11 @@ class StudioTests(unittest.TestCase):
             with self.assertRaises(APIError):validate_request({'prompt':'tree',**body},'moss')
         with self.assertRaises(APIError):validate_request({'prompt':'tree','cfg_scale':99},'anima')
 
-    def test_qwen_uses_flux_schedule_without_moss_flow_shift(self):
-        backend=Backend({'active_model':'qwen21','runtime':'/unused','models':{'qwen21':{}},'generation_timeout':2})
-        studio=Studio(backend,self.work.name)
-        job=studio.submit({'model':'qwen21','prompt':'a ceramic mug','size':'512x512'})
-        with patch('studio_service.native_request',side_effect=[{'id':'native'},{'status':'completed','result':{'ok':True}}]) as native:
-            self.assertEqual(studio.generate(job),{'ok':True})
-        payload=native.call_args_list[0].args[3]
-        self.assertEqual(payload['sample_params']['scheduler'],'flux')
-        self.assertEqual(payload['sample_params']['guidance']['txt_cfg'],6)
-        self.assertNotIn('flow_shift',payload['sample_params'])
-
-    def test_qwen_alpha_is_preserved_in_saved_png(self):
+    def test_alpha_is_preserved_in_saved_png(self):
         import time
         from PIL import ImageDraw
-        self.backend.model='qwen21';self.backend.cfg['models']['qwen21']={}
-        job=self.studio.submit({'model':'qwen21','prompt':'a transparent sticker','size':'512x512'})
+        self.backend.model='moss';self.backend.cfg['models']['moss']={}
+        job=self.studio.submit({'model':'moss','prompt':'a transparent sticker','size':'512x512'})
         job['started']=time.time()
         image=Image.new('RGBA',(512,512),(0,0,0,0));ImageDraw.Draw(image).ellipse((100,100,400,400),fill=(255,100,0,255))
         stream=io.BytesIO();image.save(stream,format='PNG')
@@ -108,19 +97,14 @@ class StudioHTTPTests(unittest.TestCase):
 
     def test_delete_requires_auth_and_same_origin(self):
         studio=Studio(self.backend,self.work.name);identifier='c'*32
-        studio.write_file(identifier,png());studio.write_file(identifier,png(),pixel=True);studio.put('image',dict(id=identifier,created=1,request={'model':'moss'}))
+        studio.write_file(identifier,png());studio.put('image',dict(id=identifier,created=1,request={'model':'moss'}))
         route='/studio/api/gallery/'+identifier
         self.assertEqual(self.call(route,'DELETE',headers={'Authorization':''})[0],401)
         self.assertEqual(self.call(route,'DELETE',headers={'Origin':'https://evil.example'})[0],403)
         self.assertTrue(studio.file(identifier).exists())
-        pixel_route='/studio/api/files/'+identifier+'/pixels'
-        self.assertEqual(self.call(pixel_route,headers={'Authorization':''})[0],401)
-        self.assertEqual(self.call(pixel_route)[0],200)
         origin='http://127.0.0.1:'+str(self.server.server_port)
         self.assertEqual(self.call(route,'DELETE',headers={'Origin':origin})[0],200)
         self.assertFalse(studio.file(identifier).exists())
-        self.assertFalse(studio.pixel_file(identifier).exists())
-        self.assertEqual(self.call(pixel_route)[0],404)
         self.assertEqual(self.call('/studio/api/files/'+identifier)[0],404)
         self.assertEqual(self.call(route,'DELETE')[0],404)
 

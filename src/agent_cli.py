@@ -57,14 +57,12 @@ def request_arguments(parser):
     parser.add_argument('--subject')
     parser.add_argument('--scene')
     parser.add_argument('--details')
-    parser.add_argument('--text', help='Exact visible wording for Qwen recipes')
+    parser.add_argument('--text', help='Exact visible wording for Z-Image recipes')
     parser.add_argument('--example', action='store_true', help='Start with the recipe example, then apply explicit inputs')
     parser.add_argument('--quality', choices=('preview', 'standard', 'detail'))
     parser.add_argument('--aspect-ratio', choices=['auto', *[f['id'] for f in formats()]])
     parser.add_argument('--modeling-view', choices=['off', *VIEWS])
     parser.add_argument('--modeling-asset', choices=list(ASSETS))
-    parser.add_argument('--pixel-grid', type=int, choices=(32, 64, 128))
-    parser.add_argument('--pixel-colors', type=int, choices=(16, 24, 32, 64, 128))
     parser.add_argument('--seed', type=int)
     parser.add_argument('--size', help='Free prompt only: WIDTHxHEIGHT, subject to local verification')
     parser.add_argument('--steps', type=int)
@@ -136,7 +134,7 @@ def add_commands(commands):
 
 def build_request(args, cfg):
     keys = ('model', 'subject', 'scene', 'details', 'text', 'quality', 'aspect_ratio', 'modeling_view',
-            'modeling_asset', 'pixel_grid', 'pixel_colors', 'seed', 'size', 'steps', 'cfg_scale', 'sampler', 'negative_prompt', 'preset')
+            'modeling_asset', 'seed', 'size', 'steps', 'cfg_scale', 'sampler', 'negative_prompt', 'preset')
     values = {key: getattr(args, key) for key in keys if getattr(args, key) is not None}
     if args.input is not None:
         if values or args.example:
@@ -237,8 +235,6 @@ class Client:
         if not isinstance(metadata, dict) or metadata.get('id') != image_id:
             raise CommandError('API returned invalid image metadata.', 'invalid_response')
         output = dict(metadata, urls=dict(image='/studio/api/files/' + image_id))
-        pixel = metadata.get('pixel')
-        if pixel: output['urls']['native_pixels'] = '/studio/api/files/' + image_id + '/pixels'
         if directory is None: return output
         request = metadata['request']
         model, seed = request['model'], request['seed']
@@ -247,19 +243,12 @@ class Client:
         size = tuple(map(int, request['size'].split('x')))
         raw = self.call('files/' + image_id, raw=True)
         checked_png(raw, size)
-        small = None
-        if pixel:
-            small = self.call('files/' + image_id + '/pixels', raw=True)
-            checked_png(small, (pixel['width'], pixel['height']))
-        # Validate both variants before writing. Roll back only files created by
+        # Validate the image before writing. Roll back only files created by
         # this export; the server's archived image remains available for retry.
         written = []
         try:
             path = self.save_image(raw, directory, model, seed);written.append(path)
             output['exports'] = dict(image=str(path))
-            if small is not None:
-                native = self.save_image(small, directory, model + '-pixels', seed);written.append(native)
-                output['exports']['native_pixels'] = str(native)
             sidecar = path.with_suffix('.json')
             descriptor = os.open(sidecar, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
             written.append(sidecar)

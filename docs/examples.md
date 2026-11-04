@@ -102,46 +102,13 @@ Recorded settings: 30 euler steps, CFG 3.0, seed 42. The published WebP may be s
 
 </details>
 
-## Posters
+## Lettering
 
-**A poster with your own headline.** The Visible text field contains EXPLORE for this example. Change it to a short phrase and check the result: lettering can still contain mistakes. Qwen uses a non-commercial research/evaluation license.
+**A short sign in the image.** The Visible text field contains PETAL for this example. Change it to a short phrase and check the result: lettering can still contain mistakes.
 
-![An orange and navy travel poster with the headline EXPLORE above a spacecraft.](../studio/public/recipe-examples/qwen-poster.webp)
+![A small corner flower shop with a dark green painted sign.](../studio/public/recipe-examples/zimage-turbo-sign.webp)
 
-**Preset:** `qwen-poster` · **Model:** `qwen21` · **Quality:** Recommended · **Canvas:** 832 × 1216
-
-<details>
-<summary>Try this example from the terminal</summary>
-
-With the service running, save these inputs as `example.json`:
-
-```json
-{
-  "recipe": "qwen-poster",
-  "subject": "a tiny silver spacecraft rising above a rust-red desert canyon",
-  "scene": "beneath a deep blue starry sky",
-  "details": "cream geometric shapes, a small orange sun, a restrained screen-print texture",
-  "text": "EXPLORE",
-  "quality": "standard",
-  "seed": 42
-}
-```
-
-```bash
-local-image-ai-service render --input example.json --save-dir ./artifacts
-```
-
-Recorded settings: 40 euler steps, CFG 6.0, seed 42. The published WebP may be smaller than the generation canvas.
-
-</details>
-
-## Pixel Art
-
-**A landscape on a native pixel grid.** This example uses the 128-pixel variant. The large picture is a nearest-neighbor preview; the small PNG is the native asset. Smaller grids simplify the subject much more.
-
-![A pixel-art cabin and mountain lake at sunset, enlarged from a 128-pixel grid.](../studio/public/recipe-examples/pixel-landscape.webp)
-
-**Preset:** `pixel-landscape` · **Model:** `krea-pixel` · **Quality:** Recommended · **Canvas:** 1024 × 1024
+**Preset:** `zimage-turbo-sign` · **Model:** `z-image-turbo` · **Quality:** Recommended · **Canvas:** 1024 × 768
 
 <details>
 <summary>Try this example from the terminal</summary>
@@ -150,12 +117,11 @@ With the service running, save these inputs as `example.json`:
 
 ```json
 {
-  "recipe": "pixel-landscape",
-  "subject": "a quiet mountain lake with a small wooden cabin and tall pine trees",
-  "scene": "at sunset beneath lavender mountains and a peach-colored sky",
-  "details": "a warm window reflected in the water, reeds in the foreground, a thin crescent moon",
-  "pixel_grid": 128,
-  "pixel_colors": 32,
+  "recipe": "zimage-turbo-sign",
+  "subject": "a tiny corner flower shop with one dark green painted sign",
+  "scene": "on a quiet cobbled street after light rain",
+  "details": "terracotta pots, cream awning, warm light through the doorway",
+  "text": "PETAL",
   "quality": "standard",
   "seed": 42
 }
@@ -169,7 +135,37 @@ Recorded settings: 8 euler steps, CFG 1.0, seed 42. The published WebP may be sm
 
 </details>
 
-[Download the native pixel PNG](../studio/public/recipe-examples/pixel-landscape-pixels.png). Use this file when you need the actual sprite dimensions.
+## Pixel Art
+
+**A scenic world with the PXART4 LoRA.** The LoRA produces a clean pixel grid directly at 1024 square.
+
+![A pixel-art cabin and mountain lake at sunset.](../studio/public/recipe-examples/pixel-landscape.webp)
+
+**Preset:** `pixel-landscape` · **Model:** `flux-pixel` · **Quality:** Recommended · **Canvas:** 1024 × 1024
+
+<details>
+<summary>Try this example from the terminal</summary>
+
+With the service running, save these inputs as `example.json`:
+
+```json
+{
+  "recipe": "pixel-landscape",
+  "subject": "a quiet mountain lake with a small wooden cabin and tall pine trees",
+  "scene": "at sunset beneath lavender mountains and a peach-colored sky",
+  "details": "a warm window reflected in the water, reeds in the foreground, a thin crescent moon",
+  "quality": "standard",
+  "seed": 42
+}
+```
+
+```bash
+local-image-ai-service render --input example.json --save-dir ./artifacts
+```
+
+Recorded settings: 20 euler steps, CFG 4.0, seed 42. The published WebP may be smaller than the generation canvas.
+
+</details>
 
 ## Comics
 
@@ -280,8 +276,8 @@ The expanded catalog adds 26 guided looks. A few starting points:
 <td align="center"><a href="http://127.0.0.1:7861/studio/?recipe=zimage-fantasy#workspace"><img src="../studio/public/recipe-examples/zimage-fantasy.webp" height="210" alt="A giant stone tortoise with an observatory on its shell in a mountain valley" /></a><br/><strong>Z-Image · painted worlds</strong><br/>One impossible idea with a sense of scale</td>
 </tr>
 <tr>
-<td align="center"><a href="http://127.0.0.1:7861/studio/?recipe=qwen-packaging#workspace"><img src="../studio/public/recipe-examples/qwen-packaging.webp" height="210" alt="A cream tea tin with a green lid and a short front label" /></a><br/><strong>Qwen · packaging</strong><br/>Material, motif and a short label</td>
-<td align="center"><a href="http://127.0.0.1:7861/studio/?recipe=pixel-creature#workspace"><img src="../studio/public/recipe-examples/pixel-creature.webp" height="210" alt="A turquoise cave lizard with orange crystal horns in pixel art" /></a><br/><strong>Krea · creature sprite</strong><br/>A small silhouette with native pixel export</td>
+<td align="center"><a href="http://127.0.0.1:7861/studio/?recipe=zimage-retro-scifi#workspace"><img src="../studio/public/recipe-examples/zimage-retro-scifi.webp" height="210" alt="A vintage science-fiction scene with airbrushed planets and imaginative machinery" /></a><br/><strong>Z-Image · retro science fiction</strong><br/>Airbrushed planets and vintage machinery</td>
+<td align="center"><a href="http://127.0.0.1:7861/studio/?recipe=pixel-creature#workspace"><img src="../studio/public/recipe-examples/pixel-creature.webp" height="210" alt="A turquoise cave lizard with orange crystal horns in pixel art" /></a><br/><strong>FLUX.2-klein · creature sprite</strong><br/>A small silhouette with a clean pixel grid</td>
 <td align="center"><a href="http://127.0.0.1:7861/studio/?recipe=zimage-turbo-product#workspace"><img src="../studio/public/recipe-examples/zimage-turbo-product.webp" height="210" alt="A cobalt blue portable radio with cream knobs on a peach studio background" /></a><br/><strong>Z-Image Turbo · product study</strong><br/>Eight steps for material and color ideas</td>
 </tr>
 </table>

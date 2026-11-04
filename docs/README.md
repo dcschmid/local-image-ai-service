@@ -18,7 +18,7 @@ If you just want to make an image, open the Studio and choose an example. You ca
 
 ## Models and looks
 
-**Start with the kind of picture you want.** MOSS covers photography, low poly and several illustration styles. Anima is the anime/illustration specialist. Qwen adds detailed scenes and lettering. Krea prepares small pixel grids and native exports. Z-Image adds varied painted worlds and photography; Turbo offers eight-step photo and product studies.
+**Start with the kind of picture you want.** MOSS covers photography, low poly and several illustration styles. Anima is the anime/illustration specialist. FLUX.2-klein produces clean pixel art with the PXART4 LoRA. Z-Image adds varied painted worlds and photography; Turbo offers eight-step photo and product studies.
 
 | What you have in mind | Read next |
 | --- | --- |
@@ -27,12 +27,11 @@ If you just want to make an image, open the Studio and choose an example. You ca
 | Animals, props, buildings, a kart or a whole track in low poly | [MOSS Low Poly](moss-lowpoly.md) |
 | Matching Low Poly, Pixel and Voxel views from one model | [3D Asset Views](asset-views.md) |
 | A modeler-friendly concept to build in Blender | [Blender references](blender-references.md) |
-| A poster, cover, sticker or short text in the image | [Qwen and the example explorer](qwen21-and-examples.md) |
-| Icons, sprites, isometric buildings or pixel landscapes | [Krea Pixel Art](krea-pixel-art.md) |
+| Icons, sprites, isometric buildings or pixel landscapes | [Pixel Art](pixel-art.md) |
 | Fast photo studies, ink wash or imaginative painted worlds | [Z-Image and the expanded presets](z-image-and-presets.md) |
 | Every available preset and its ID | [Complete catalog](../skills/local-image-ai/references/catalog.md) |
 
-The model selector links to each model's license. Qwen's configured profile uses a non-commercial research/evaluation license; Anima and Krea also have model-specific terms. The catalog keeps these differences visible.
+The model selector links to each model's license. Anima's model weights are non-commercial (generated images may be used commercially). The catalog keeps these differences visible.
 
 ## Connect and maintain
 
@@ -56,8 +55,7 @@ These reports describe checks that were actually run. Older reports may mention 
 | Current MOSS low-poly presets and migration | [MOSS Low Poly](moss-lowpoly-test-report.md) |
 | Blender reference experiments and camera limitations | [Blender references](blender-reference-test-report.md) |
 | MOSS photography | [Photography checks](moss-photography-test-report.md) |
-| Qwen and its examples | [Qwen checks](qwen21-test-report.md) |
-| Pixel processing and prepared adapters | [Krea checks](krea-pixel-test-report.md) |
+| Pixel art with FLUX.2-klein | [Pixel Art](pixel-art.md) |
 | Original guided recipes | [Recipe checks](recipes-test-report.md) |
 | Earlier Studio, CLI and runtime measurements | [Studio](studio-test-report.md) · [CLI](agent-cli-test-report.md) · [Runtime](test-report.md) |
 | Retired Anima low-poly profiles | [Historical report](anima-lowpoly-test-report.md) |

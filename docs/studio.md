@@ -48,7 +48,7 @@ English is a useful starting point because the bundled examples and model guides
 | Flat-shaded 3D-style art | **MOSS Low Poly** — anything, tracks, characters, vehicles, props, buildings, dioramas and game worlds |
 | Paper, clay, textile or print looks | **MOSS** — paper cut, clay, comic, risograph, embroidery, needle felt or stained glass |
 | A poster, cover or sticker | **Qwen** — optional **Visible text** supplies your exact short wording |
-| Small game art on a pixel grid | **Krea Pixel Art** — loot, character, creature, portrait, vehicle, room, isometric or landscape |
+| Small game art on a pixel grid | **FLUX.2-klein · Pixel Art** — loot, character, creature, portrait, vehicle, room, isometric or landscape |
 | Painted worlds, ink or fashion | **Z-Image** — fantasy, ink wash, retro science fiction, fashion or botanical art |
 | Fast photographic studies | **Z-Image Turbo** — everyday photo, cinema, product, storefront lettering or food |
 
@@ -66,7 +66,7 @@ Use **Aspect ratio** for square images, wide scenes, portraits or covers: 1:1, 1
 | **Recommended** | Use the model's prepared settings for the larger final image |
 | **More detail · slower** | Try a longer run once the composition is already working |
 
-Draft settings depend on the recipe. MOSS photography and modeling references use 30 steps; the older MOSS scene presets use 20. Anima usually uses 30 for Draft and 35 for Recommended. Krea's prepared pixel workflow stays at eight steps. Z-Image uses 28 for Draft, 40 for Recommended and 50 for More detail. Turbo keeps eight steps and CFG 1; its Draft uses a smaller canvas, and it has no negative-prompt control. The full prompt preview shows the settings for your actual choice.
+Draft settings depend on the recipe. MOSS photography and modeling references use 30 steps; the older MOSS scene presets use 20. Anima usually uses 30 for Draft and 35 for Recommended. FLUX.2-klein pixel art uses 12 for Draft and 20 for Recommended. Z-Image uses 28 for Draft, 40 for Recommended and 50 for More detail. Turbo keeps eight steps and CFG 1; its Draft uses a smaller canvas, and it has no negative-prompt control. The full prompt preview shows the settings for your actual choice.
 
 More steps can refine detail, but they do not fix an unclear brief or guarantee a better pose. Keep the seed fixed and change one field at a time when comparing results. [See the quality notes](quality.md) for measured comparisons.
 
@@ -74,7 +74,7 @@ More steps can refine detail, but they do not fix an unclear brief or guarantee 
 
 Click **Generate image**. The job appears beside the preview, with progress when available. Only one job uses the GPU at a time; other Studio jobs wait in the queue.
 
-Completed Studio images are saved automatically with their original inputs, prompt, seed and sampling settings. Download the PNG from the result. Pixel presets also offer a separate **native pixel PNG**; use that file when you need the actual small grid rather than the enlarged preview.
+Completed Studio images are saved automatically with their original inputs, prompt, seed and sampling settings. Download the PNG from the result.
 
 ![The image library showing eight public examples, selection checkboxes and favorite and comparison controls](images/studio-library.webp)
 
@@ -114,7 +114,7 @@ Installing does not enable login autostart. The installed Python service serves 
 
 ## Further reading
 
-[Example gallery](examples.md) · [MOSS photography](moss-photography.md) · [MOSS Low Poly](moss-lowpoly.md) · [Qwen](qwen21-and-examples.md) · [Pixel art](krea-pixel-art.md) · [All documentation](README.md)
+[Example gallery](examples.md) · [MOSS photography](moss-photography.md) · [MOSS Low Poly](moss-lowpoly.md) · [Pixel art](pixel-art.md) · [All documentation](README.md)
 
 The recipes are curated, editable prompts rather than official model presets. Source links and research notes remain in the model guides. Verification details are in [the recipe report](recipes-test-report.md) and [the agent integration report](agent-integration-test-report.md).
 

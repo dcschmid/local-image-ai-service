@@ -417,141 +417,6 @@
     "runtime_revision": "a77d3623180b2bc1886f3dd04c0aa04156a987ef",
     "transparent": false
   },
-  "qwen-poster": {
-    "recipe": "qwen-poster",
-    "model": "qwen21",
-    "url": "/studio/recipe-examples/qwen-poster.webp",
-    "inputs": {
-      "recipe": "qwen-poster",
-      "subject": "a tiny silver spacecraft rising above a rust-red desert canyon",
-      "scene": "beneath a deep blue starry sky",
-      "details": "cream geometric shapes, a small orange sun, a restrained screen-print texture",
-      "text": "EXPLORE"
-    },
-    "quality": "standard",
-    "seed": 42,
-    "size": "832x1216",
-    "steps": 40,
-    "cfg_scale": 6.0,
-    "sampler": "euler",
-    "prompt": "graphic travel poster, bold geometric illustration, limited cream orange and midnight blue palette, subtle print texture. a tiny silver spacecraft rising above a rust-red desert canyon, beneath a deep blue starry sky. A single minimalist poster uses one clear focal illustration and generous negative space. Render only the requested headline, large and readable at the top. There are no subtitles, fine print, extra captions, logos or invented lettering. Keep the illustration and the single headline balanced in one cohesive design. Additional details: cream geometric shapes, a small orange sun, a restrained screen-print texture. Visible wording must read exactly: 'EXPLORE'. Preserve the spelling, capitalization and line breaks.",
-    "negative_prompt": "worst quality, low quality, watermark, jpeg artifacts, collage, split screen, cropped main subject, unrequested text, fine print, gibberish, extra captions, extra logos",
-    "seconds": 176.48,
-    "runtime_revision": "a77d3623180b2bc1886f3dd04c0aa04156a987ef",
-    "transparent": false
-  },
-  "qwen-sticker": {
-    "recipe": "qwen-sticker",
-    "model": "qwen21",
-    "url": "/studio/recipe-examples/qwen-sticker.webp",
-    "inputs": {
-      "recipe": "qwen-sticker",
-      "subject": "a cheerful orange robot holding a tiny potted cactus",
-      "scene": "as one isolated sticker design",
-      "details": "rounded enamel-like shapes, dark teal outlines, a neat white sticker border"
-    },
-    "quality": "standard",
-    "seed": 42,
-    "size": "1024x1024",
-    "steps": 40,
-    "cfg_scale": 6.0,
-    "sampler": "euler",
-    "prompt": "This is an RGBA image with transparency. polished character sticker illustration, clean expressive shapes, crisp outline, harmonious colors. a cheerful orange robot holding a tiny potted cactus, as one isolated sticker design. Show the complete subject as one centered sticker with a clean silhouette and clear space around every edge. Keep the outer background empty and preserve transparent space outside the sticker. Additional details: rounded enamel-like shapes, dark teal outlines, a neat white sticker border. The image has alpha channel and the background is transparent.",
-    "negative_prompt": "worst quality, low quality, watermark, jpeg artifacts, collage, split screen, cropped main subject",
-    "seconds": 177.55,
-    "runtime_revision": "a77d3623180b2bc1886f3dd04c0aa04156a987ef",
-    "transparent": true
-  },
-  "qwen-portrait": {
-    "recipe": "qwen-portrait",
-    "model": "qwen21",
-    "url": "/studio/recipe-examples/qwen-portrait.webp",
-    "inputs": {
-      "recipe": "qwen-portrait",
-      "subject": "an adult ceramic artist with short silver hair wearing a rust-colored work apron",
-      "scene": "standing beside a window in a pottery studio",
-      "details": "clay dust on the apron, a relaxed smile, shelves of handmade bowls"
-    },
-    "quality": "preview",
-    "seed": 42,
-    "size": "576x832",
-    "steps": 20,
-    "cfg_scale": 6.0,
-    "sampler": "euler",
-    "prompt": "realistic editorial portrait photography, natural skin texture, restrained colors. an adult ceramic artist with short silver hair wearing a rust-colored work apron, standing beside a window in a pottery studio. A single waist-up portrait at eye level uses soft available window light. Keep the face in clear focus, realistic fabric and skin texture, and a gently receding environment that supports the person. Additional details: clay dust on the apron, a relaxed smile, shelves of handmade bowls.",
-    "negative_prompt": "worst quality, low quality, watermark, jpeg artifact, anime, manga, cartoon, illustration, painting, CGI, 3d render, low poly, waxy skin, airbrushed skin, oversharpening, oversaturated colors, collage, contact sheet",
-    "seconds": 36.75,
-    "runtime_revision": "a77d3623180b2bc1886f3dd04c0aa04156a987ef",
-    "transparent": false
-  },
-  "qwen-product": {
-    "recipe": "qwen-product",
-    "model": "qwen21",
-    "url": "/studio/recipe-examples/qwen-product.webp",
-    "inputs": {
-      "recipe": "qwen-product",
-      "subject": "an amber glass perfume bottle with a brushed brass cap",
-      "scene": "on a warm limestone plinth beside a softly lit cream wall",
-      "details": "one curved reflection on the glass, a subtle botanical shadow, a small cream label",
-      "text": "SOL"
-    },
-    "quality": "preview",
-    "seed": 42,
-    "size": "768x768",
-    "steps": 20,
-    "cfg_scale": 6.0,
-    "sampler": "euler",
-    "prompt": "realistic commercial product photography, refined material texture, controlled studio highlights. an amber glass perfume bottle with a brushed brass cap, on a warm limestone plinth beside a softly lit cream wall. The complete product is clearly visible in a three-quarter view. Softbox highlights describe the material without hiding its outline. A grounded contact shadow, realistic scale and a simple supporting environment create one coherent campaign image. Place any requested wording on the product label. Additional details: one curved reflection on the glass, a subtle botanical shadow, a small cream label. Visible wording must read exactly: 'SOL'. Preserve the spelling, capitalization and line breaks.",
-    "negative_prompt": "worst quality, low quality, watermark, jpeg artifact, anime, manga, cartoon, illustration, painting, CGI, 3d render, low poly, waxy skin, airbrushed skin, oversharpening, oversaturated colors, collage, contact sheet",
-    "seconds": 47.6,
-    "runtime_revision": "a77d3623180b2bc1886f3dd04c0aa04156a987ef",
-    "transparent": false
-  },
-  "qwen-cover": {
-    "recipe": "qwen-cover",
-    "model": "qwen21",
-    "url": "/studio/recipe-examples/qwen-cover.webp",
-    "inputs": {
-      "recipe": "qwen-cover",
-      "subject": "a lone deep-sea diver facing a luminous ancient gateway beneath the ocean",
-      "scene": "among dark submerged ruins",
-      "details": "teal bioluminescence, a warm diving lamp, a few drifting particles",
-      "text": "WORLDS BELOW"
-    },
-    "quality": "preview",
-    "seed": 42,
-    "size": "576x832",
-    "steps": 20,
-    "cfg_scale": 6.0,
-    "sampler": "euler",
-    "prompt": "illustrated speculative-fiction book cover, painterly dramatic lighting, rich restrained colors. a lone deep-sea diver facing a luminous ancient gateway beneath the ocean, among dark submerged ruins. One vertical cover composition has a readable central subject and strong depth. The only typography is the single requested title at the top, clearly separated from the focal illustration. All other areas contain artwork or empty space, without subtitles, author names or invented lettering. Additional details: teal bioluminescence, a warm diving lamp, a few drifting particles. Visible wording must read exactly: 'WORLDS BELOW'. Preserve the spelling, capitalization and line breaks.",
-    "negative_prompt": "worst quality, low quality, watermark, jpeg artifacts, collage, split screen, cropped main subject, unrequested text, subtitles, fine print, gibberish, extra captions, author names",
-    "seconds": 36.65,
-    "runtime_revision": "a77d3623180b2bc1886f3dd04c0aa04156a987ef",
-    "transparent": false
-  },
-  "qwen-world": {
-    "recipe": "qwen-world",
-    "model": "qwen21",
-    "url": "/studio/recipe-examples/qwen-world.webp",
-    "inputs": {
-      "recipe": "qwen-world",
-      "subject": "a tiny coastal research station with white domes, orange walkways and a turquoise harbor",
-      "scene": "on a rocky island surrounded by calm water",
-      "details": "small solar panels, a moored research boat, warm evening lights"
-    },
-    "quality": "standard",
-    "seed": 42,
-    "size": "1216x832",
-    "steps": 40,
-    "cfg_scale": 6.0,
-    "sampler": "euler",
-    "prompt": "detailed stylized isometric world illustration, precise architectural shapes, rich miniature environmental detail. a tiny coastal research station with white domes, orange walkways and a turquoise harbor, on a rocky island surrounded by calm water. A single elevated isometric view reveals the whole location with clear relationships between buildings and paths. Use consistent scale, readable silhouettes and soft directional light. The scene fills one cohesive frame. Additional details: small solar panels, a moored research boat, warm evening lights.",
-    "negative_prompt": "worst quality, low quality, watermark, jpeg artifacts, collage, split screen, cropped main subject",
-    "seconds": 168.97,
-    "runtime_revision": "a77d3623180b2bc1886f3dd04c0aa04156a987ef",
-    "transparent": false
-  },
   "anima-cozy": {
     "recipe": "anima-cozy",
     "model": "anima",
@@ -752,139 +617,91 @@
   },
   "pixel-loot": {
     "recipe": "pixel-loot",
-    "model": "krea-pixel",
+    "model": "flux-pixel",
     "url": "/studio/recipe-examples/pixel-loot.webp",
     "inputs": {
       "recipe": "pixel-loot",
       "subject": "a red mushroom with white spots",
       "scene": "centered on a plain white background",
-      "details": "a cream stem and a bold black outline",
-      "pixel_grid": 32,
-      "pixel_colors": 24
+      "details": "a cream stem and a bold black outline"
     },
     "quality": "standard",
     "seed": 42,
     "size": "1024x1024",
-    "steps": 8,
-    "cfg_scale": 1.0,
+    "steps": 20,
+    "cfg_scale": 4.0,
     "sampler": "euler",
-    "prompt": "pixel art, 8-bit pixel art inventory icon, centered on a plain white background\n\na red mushroom with white spots Additional details: a cream stem and a bold black outline.",
-    "negative_prompt": "",
+    "prompt": "PXART4. 8-bit pixel art inventory icon. a red mushroom with white spots, centered on a plain white background. One large isolated item fills most of the frame. Use a bold readable silhouette, chunky deliberate pixel clusters and simple shading. Leave a clear margin around the item. No lettering or interface. Additional details: a cream stem and a bold black outline.",
+    "negative_prompt": "worst quality, low quality, blurry, jpeg artifacts, chromatic aberration, watermark, signature, comic panels, panel layout, split screen, collage, multiple views, reference sheet, white borders, manga, comic, storyboard, letterboxing",
     "seconds": 35.26,
     "runtime_revision": "a77d3623180b2bc1886f3dd04c0aa04156a987ef",
-    "transparent": false,
-    "pixel": {
-      "algorithm_version": 1,
-      "grid": 32,
-      "colors": 24,
-      "width": 32,
-      "height": 32,
-      "scale": 32,
-      "weights": "dora-v1"
-    },
-    "native_url": "/studio/recipe-examples/pixel-loot-pixels.png"
+    "transparent": false
   },
   "pixel-character": {
     "recipe": "pixel-character",
-    "model": "krea-pixel",
+    "model": "flux-pixel",
     "url": "/studio/recipe-examples/pixel-character.webp",
     "inputs": {
       "recipe": "pixel-character",
       "subject": "a small red-haired forest ranger in a green cloak holding a wooden staff",
       "scene": "standing in a relaxed three-quarter view against a plain cream background",
-      "details": "brown boots, a small leather satchel, warm amber highlights",
-      "pixel_grid": 64,
-      "pixel_colors": 24
+      "details": "brown boots, a small leather satchel, warm amber highlights"
     },
     "quality": "standard",
     "seed": 42,
     "size": "1024x1024",
-    "steps": 8,
-    "cfg_scale": 1.0,
+    "steps": 20,
+    "cfg_scale": 4.0,
     "sampler": "euler",
-    "prompt": "retro 16-bit RPG character sprite, crisp square clusters, limited color palette. a small red-haired forest ranger in a green cloak holding a wooden staff, standing in a relaxed three-quarter view against a plain cream background. Show one complete character from head to feet, centered, with a clear silhouette and space around the edges. Use a consistent light direction and simple grouped shading. No text or interface. Additional details: brown boots, a small leather satchel, warm amber highlights.",
-    "negative_prompt": "",
+    "prompt": "PXART4. retro 16-bit RPG character sprite, crisp square clusters, limited color palette. a small red-haired forest ranger in a green cloak holding a wooden staff, standing in a relaxed three-quarter view against a plain cream background. Show one complete character from head to feet, centered, with a clear silhouette and space around the edges. Use a consistent light direction and simple grouped shading. No text or interface. Additional details: brown boots, a small leather satchel, warm amber highlights.",
+    "negative_prompt": "worst quality, low quality, blurry, jpeg artifacts, chromatic aberration, watermark, signature, comic panels, panel layout, split screen, collage, multiple views, reference sheet, white borders, manga, comic, storyboard, letterboxing",
     "seconds": 40.11,
     "runtime_revision": "a77d3623180b2bc1886f3dd04c0aa04156a987ef",
-    "transparent": false,
-    "pixel": {
-      "algorithm_version": 1,
-      "grid": 64,
-      "colors": 24,
-      "width": 64,
-      "height": 64,
-      "scale": 16,
-      "weights": "dora-v1"
-    },
-    "native_url": "/studio/recipe-examples/pixel-character-pixels.png"
+    "transparent": false
   },
   "pixel-isometric": {
     "recipe": "pixel-isometric",
-    "model": "krea-pixel",
+    "model": "flux-pixel",
     "url": "/studio/recipe-examples/pixel-isometric.webp",
     "inputs": {
       "recipe": "pixel-isometric",
       "subject": "a tiny timber cabin with a red roof and a glowing round window",
       "scene": "on one small grassy isometric tile against a dark blue background",
-      "details": "a stone path, one pine tree, a chimney with a small puff of smoke",
-      "pixel_grid": 64,
-      "pixel_colors": 32
+      "details": "a stone path, one pine tree, a chimney with a small puff of smoke"
     },
     "quality": "standard",
     "seed": 42,
     "size": "1024x1024",
-    "steps": 8,
-    "cfg_scale": 1.0,
+    "steps": 20,
+    "cfg_scale": 4.0,
     "sampler": "euler",
-    "prompt": "retro isometric game asset, crisp square clusters, limited color palette. a tiny timber cabin with a red roof and a glowing round window, on one small grassy isometric tile against a dark blue background. Show the complete miniature structure from an elevated three-quarter view on one isolated square ground tile. Consistent isometric perspective, clear roof and walls, simple grouped shadows. No lettering or interface. Additional details: a stone path, one pine tree, a chimney with a small puff of smoke.",
-    "negative_prompt": "",
+    "prompt": "PXART4. retro isometric game asset, crisp square clusters, limited color palette. a tiny timber cabin with a red roof and a glowing round window, on one small grassy isometric tile against a dark blue background. Show the complete miniature structure from an elevated three-quarter view on one isolated square ground tile. Consistent isometric perspective, clear roof and walls, simple grouped shadows. No lettering or interface. Additional details: a stone path, one pine tree, a chimney with a small puff of smoke.",
+    "negative_prompt": "worst quality, low quality, blurry, jpeg artifacts, chromatic aberration, watermark, signature, comic panels, panel layout, split screen, collage, multiple views, reference sheet, white borders, manga, comic, storyboard, letterboxing",
     "seconds": 32.3,
     "runtime_revision": "a77d3623180b2bc1886f3dd04c0aa04156a987ef",
-    "transparent": false,
-    "pixel": {
-      "algorithm_version": 1,
-      "grid": 64,
-      "colors": 32,
-      "width": 64,
-      "height": 64,
-      "scale": 16,
-      "weights": "dora-v1"
-    },
-    "native_url": "/studio/recipe-examples/pixel-isometric-pixels.png"
+    "transparent": false
   },
   "pixel-landscape": {
     "recipe": "pixel-landscape",
-    "model": "krea-pixel",
+    "model": "flux-pixel",
     "url": "/studio/recipe-examples/pixel-landscape.webp",
     "inputs": {
       "recipe": "pixel-landscape",
       "subject": "a quiet mountain lake with a small wooden cabin and tall pine trees",
       "scene": "at sunset beneath lavender mountains and a peach-colored sky",
-      "details": "a warm window reflected in the water, reeds in the foreground, a thin crescent moon",
-      "pixel_grid": 128,
-      "pixel_colors": 32
+      "details": "a warm window reflected in the water, reeds in the foreground, a thin crescent moon"
     },
     "quality": "standard",
     "seed": 42,
     "size": "1024x1024",
-    "steps": 8,
-    "cfg_scale": 1.0,
+    "steps": 20,
+    "cfg_scale": 4.0,
     "sampler": "euler",
-    "prompt": "pixel art, detailed pixel art landscape, classic adventure game background. a quiet mountain lake with a small wooden cabin and tall pine trees, at sunset beneath lavender mountains and a peach-colored sky. One cohesive landscape with distinct foreground, middle distance and background. Group colors into deliberate square clusters and use a consistent light direction. No text, border or interface. Additional details: a warm window reflected in the water, reeds in the foreground, a thin crescent moon.",
-    "negative_prompt": "",
+    "prompt": "PXART4. detailed pixel art landscape, classic adventure game background. a quiet mountain lake with a small wooden cabin and tall pine trees, at sunset beneath lavender mountains and a peach-colored sky. One cohesive landscape with distinct foreground, middle distance and background. Group colors into deliberate square clusters and use a consistent light direction. No text, border or interface. Additional details: a warm window reflected in the water, reeds in the foreground, a thin crescent moon.",
+    "negative_prompt": "worst quality, low quality, blurry, jpeg artifacts, chromatic aberration, watermark, signature, comic panels, panel layout, split screen, collage, multiple views, reference sheet, white borders, manga, comic, storyboard, letterboxing",
     "seconds": 40.04,
     "runtime_revision": "a77d3623180b2bc1886f3dd04c0aa04156a987ef",
-    "transparent": false,
-    "pixel": {
-      "algorithm_version": 1,
-      "grid": 128,
-      "colors": 32,
-      "width": 128,
-      "height": 128,
-      "scale": 8,
-      "weights": "dora-v1"
-    },
-    "native_url": "/studio/recipe-examples/pixel-landscape-pixels.png"
+    "transparent": false
   },
   "lowpoly-character": {
     "recipe": "lowpoly-character",
@@ -1224,232 +1041,93 @@
     "runtime_revision": "a77d3623180b2bc1886f3dd04c0aa04156a987ef",
     "transparent": false
   },
-  "qwen-infographic": {
-    "recipe": "qwen-infographic",
-    "model": "qwen21",
-    "url": "/studio/recipe-examples/qwen-infographic.webp",
-    "inputs": {
-      "recipe": "qwen-infographic",
-      "subject": "the growth of a sunflower from seed to flowering plant in three stages",
-      "scene": "on a warm cream educational poster",
-      "details": "three large botanical drawings connected by simple arrows, no small captions",
-      "text": "GROW"
-    },
-    "quality": "standard",
-    "seed": 42,
-    "size": "832x1216",
-    "steps": 40,
-    "cfg_scale": 6.0,
-    "sampler": "euler",
-    "prompt": "editorial educational infographic, simple flat illustration, clear visual hierarchy. the growth of a sunflower from seed to flowering plant in three stages, on a warm cream educational poster. Reserve the upper quarter for the requested headline in large bold dark lettering. Below the heading, arrange three large stages in reading order with generous spacing and simple connecting arrows. The only text is the requested headline; leave out small captions and statistics. Additional details: three large botanical drawings connected by simple arrows, no small captions. Visible wording must read exactly: 'GROW'. Preserve the spelling, capitalization and line breaks.",
-    "negative_prompt": "worst quality, low quality, watermark, jpeg artifacts, collage, split screen, cropped main subject",
-    "seconds": 174.51,
-    "runtime_revision": "a77d3623180b2bc1886f3dd04c0aa04156a987ef",
-    "transparent": false
-  },
-  "qwen-exploded": {
-    "recipe": "qwen-exploded",
-    "model": "qwen21",
-    "url": "/studio/recipe-examples/qwen-exploded.webp",
-    "inputs": {
-      "recipe": "qwen-exploded",
-      "subject": "a compact portable speaker with a teal shell, brass grille and dark rubber base",
-      "scene": "floating as three aligned layers above a pale studio surface",
-      "details": "a small shadow below each part, no wires or labels"
-    },
-    "quality": "preview",
-    "seed": 42,
-    "size": "768x768",
-    "steps": 20,
-    "cfg_scale": 6.0,
-    "sampler": "euler",
-    "prompt": "industrial design exploded-view concept illustration, precise product edges, restrained material colors. a compact portable speaker with a teal shell, brass grille and dark rubber base, floating as three aligned layers above a pale studio surface. Show three to five main parts separated along one common vertical axis, all in the same three-quarter perspective. Keep the full assembly visible and evenly spaced. Additional details: a small shadow below each part, no wires or labels.",
-    "negative_prompt": "worst quality, low quality, watermark, jpeg artifacts, collage, split screen, cropped main subject",
-    "seconds": 47.24,
-    "runtime_revision": "a77d3623180b2bc1886f3dd04c0aa04156a987ef",
-    "transparent": false
-  },
-  "qwen-packaging": {
-    "recipe": "qwen-packaging",
-    "model": "qwen21",
-    "url": "/studio/recipe-examples/qwen-packaging.webp",
-    "inputs": {
-      "recipe": "qwen-packaging",
-      "subject": "a small cream tea tin with a dark green lid and a simple orange blossom illustration",
-      "scene": "on a pale limestone counter",
-      "details": "matte printed paper label, soft side lighting, no fine print",
-      "text": "BLOOM"
-    },
-    "quality": "standard",
-    "seed": 42,
-    "size": "1024x1024",
-    "steps": 40,
-    "cfg_scale": 6.0,
-    "sampler": "euler",
-    "prompt": "commercial packaging concept photography, refined print texture, clear front-facing label. a small cream tea tin with a dark green lid and a simple orange blossom illustration, on a pale limestone counter. Show one complete package in a gentle three-quarter view, with its front label readable. Use the requested wording as the only large brand line and leave fine print absent. Additional details: matte printed paper label, soft side lighting, no fine print. Visible wording must read exactly: 'BLOOM'. Preserve the spelling, capitalization and line breaks.",
-    "negative_prompt": "worst quality, low quality, watermark, jpeg artifacts, collage, split screen, cropped main subject, fine print, small text, extra captions, gibberish, ingredient list, barcode",
-    "seconds": 177.77,
-    "runtime_revision": "a77d3623180b2bc1886f3dd04c0aa04156a987ef",
-    "transparent": false
-  },
-  "qwen-neon-sign": {
-    "recipe": "qwen-neon-sign",
-    "model": "qwen21",
-    "url": "/studio/recipe-examples/qwen-neon-sign.webp",
-    "inputs": {
-      "recipe": "qwen-neon-sign",
-      "subject": "a small late-night noodle bar with one orange neon sign",
-      "scene": "on a quiet rain-soaked street at blue hour",
-      "details": "teal tiled walls, warm window light, subtle puddle reflections",
-      "text": "OPEN LATE"
-    },
-    "quality": "standard",
-    "seed": 42,
-    "size": "1216x832",
-    "steps": 40,
-    "cfg_scale": 6.0,
-    "sampler": "euler",
-    "prompt": "cinematic night photography, realistic neon glow, wet material reflections. a small late-night noodle bar with one orange neon sign, on a quiet rain-soaked street at blue hour. Frame the shop and its single sign together. Soft blue ambient fill and warm window light keep the teal facade, doorway and wet pavement clearly visible with open shadow detail. The exact requested wording belongs on the sign, large and readable, with restrained bloom and no other lettering. Additional details: teal tiled walls, warm window light, subtle puddle reflections. Visible wording must read exactly: 'OPEN LATE'. Preserve the spelling, capitalization and line breaks.",
-    "negative_prompt": "worst quality, low quality, watermark, jpeg artifact, anime, manga, cartoon, illustration, painting, CGI, 3d render, low poly, waxy skin, airbrushed skin, oversharpening, oversaturated colors, collage, contact sheet, underexposed facade, crushed blacks, blown-out neon, illegible lettering, unrequested text",
-    "seconds": 169.81,
-    "runtime_revision": "a77d3623180b2bc1886f3dd04c0aa04156a987ef",
-    "transparent": false
-  },
   "pixel-creature": {
     "recipe": "pixel-creature",
-    "model": "krea-pixel",
+    "model": "flux-pixel",
     "url": "/studio/recipe-examples/pixel-creature.webp",
     "inputs": {
       "recipe": "pixel-creature",
       "subject": "a round turquoise cave lizard with orange crystal horns",
       "scene": "in a side-on idle pose on a plain cream background",
-      "details": "short sturdy legs, a curled tail, one bright amber eye",
-      "pixel_grid": 64,
-      "pixel_colors": 24
+      "details": "short sturdy legs, a curled tail, one bright amber eye"
     },
-    "quality": "preview",
+    "quality": "standard",
     "seed": 42,
     "size": "1024x1024",
-    "steps": 8,
-    "cfg_scale": 1.0,
+    "steps": 20,
+    "cfg_scale": 4.0,
     "sampler": "euler",
-    "prompt": "retro monster sprite, crisp square clusters, limited color palette. a round turquoise cave lizard with orange crystal horns, in a side-on idle pose on a plain cream background. Show one complete creature with space around every edge, distinct limbs and simple grouped shadows. No sprite sheet, interface or text. Additional details: short sturdy legs, a curled tail, one bright amber eye.",
-    "negative_prompt": "",
+    "prompt": "PXART4. retro monster sprite, crisp square clusters, limited color palette. a round turquoise cave lizard with orange crystal horns, in a side-on idle pose on a plain cream background. Show one complete creature with space around every edge, distinct limbs and simple grouped shadows. No sprite sheet, interface or text. Additional details: short sturdy legs, a curled tail, one bright amber eye.",
+    "negative_prompt": "worst quality, low quality, blurry, jpeg artifacts, chromatic aberration, watermark, signature, comic panels, panel layout, split screen, collage, multiple views, reference sheet, white borders, manga, comic, storyboard, letterboxing",
     "seconds": 36.2,
     "runtime_revision": "a77d3623180b2bc1886f3dd04c0aa04156a987ef",
-    "transparent": false,
-    "pixel": {
-      "algorithm_version": 1,
-      "grid": 64,
-      "colors": 24,
-      "width": 64,
-      "height": 64,
-      "scale": 16,
-      "weights": "dora-v1"
-    },
-    "native_url": "/studio/recipe-examples/pixel-creature-pixels.png"
+    "transparent": false
   },
   "pixel-portrait": {
     "recipe": "pixel-portrait",
-    "model": "krea-pixel",
+    "model": "flux-pixel",
     "url": "/studio/recipe-examples/pixel-portrait.webp",
     "inputs": {
       "recipe": "pixel-portrait",
       "subject": "an adult airship captain with silver hair, round goggles and a navy scarf",
       "scene": "in a three-quarter bust view on a plain muted blue background",
-      "details": "a friendly raised eyebrow, brass collar clasp, warm skin highlights",
-      "pixel_grid": 64,
-      "pixel_colors": 24
+      "details": "a friendly raised eyebrow, brass collar clasp, warm skin highlights"
     },
-    "quality": "preview",
+    "quality": "standard",
     "seed": 42,
     "size": "1024x1024",
-    "steps": 8,
-    "cfg_scale": 1.0,
+    "steps": 20,
+    "cfg_scale": 4.0,
     "sampler": "euler",
-    "prompt": "retro RPG dialogue portrait, crisp square clusters, limited color palette. an adult airship captain with silver hair, round goggles and a navy scarf, in a three-quarter bust view on a plain muted blue background. A single head-and-shoulders portrait fills the image, leaving clear space above the hair. Keep the face expressive and clothing shapes broad. No dialogue box or lettering. Additional details: a friendly raised eyebrow, brass collar clasp, warm skin highlights.",
-    "negative_prompt": "",
+    "prompt": "PXART4. retro RPG dialogue portrait, crisp square clusters, limited color palette. an adult airship captain with silver hair, round goggles and a navy scarf, in a three-quarter bust view on a plain muted blue background. A single head-and-shoulders portrait fills the image, leaving clear space above the hair. Keep the face expressive and clothing shapes broad. No dialogue box or lettering. Additional details: a friendly raised eyebrow, brass collar clasp, warm skin highlights.",
+    "negative_prompt": "worst quality, low quality, blurry, jpeg artifacts, chromatic aberration, watermark, signature, comic panels, panel layout, split screen, collage, multiple views, reference sheet, white borders, manga, comic, storyboard, letterboxing",
     "seconds": 32.35,
     "runtime_revision": "a77d3623180b2bc1886f3dd04c0aa04156a987ef",
-    "transparent": false,
-    "pixel": {
-      "algorithm_version": 1,
-      "grid": 64,
-      "colors": 24,
-      "width": 64,
-      "height": 64,
-      "scale": 16,
-      "weights": "dora-v1"
-    },
-    "native_url": "/studio/recipe-examples/pixel-portrait-pixels.png"
+    "transparent": false
   },
   "pixel-vehicle": {
     "recipe": "pixel-vehicle",
-    "model": "krea-pixel",
+    "model": "flux-pixel",
     "url": "/studio/recipe-examples/pixel-vehicle.webp",
     "inputs": {
       "recipe": "pixel-vehicle",
       "subject": "a yellow lunar delivery rover with four chunky dark wheels and a small blue cargo box",
       "scene": "in a side view on a plain cream background",
-      "details": "one orange headlight, a short antenna, simple gray chassis",
-      "pixel_grid": 64,
-      "pixel_colors": 24
+      "details": "one orange headlight, a short antenna, simple gray chassis"
     },
-    "quality": "preview",
+    "quality": "standard",
     "seed": 42,
     "size": "1024x1024",
-    "steps": 8,
-    "cfg_scale": 1.0,
+    "steps": 20,
+    "cfg_scale": 4.0,
     "sampler": "euler",
-    "prompt": "retro game vehicle sprite, crisp square clusters, limited color palette. a yellow lunar delivery rover with four chunky dark wheels and a small blue cargo box, in a side view on a plain cream background. Show the complete vehicle with all outer edges inside the frame. Use broad body panels, readable wheels and one light direction. No track, interface or text. Additional details: one orange headlight, a short antenna, simple gray chassis.",
-    "negative_prompt": "",
+    "prompt": "PXART4. retro game vehicle sprite, crisp square clusters, limited color palette. a yellow lunar delivery rover with four chunky dark wheels and a small blue cargo box, in a side view on a plain cream background. Show the complete vehicle with all outer edges inside the frame. Use broad body panels, readable wheels and one light direction. No track, interface or text. Additional details: one orange headlight, a short antenna, simple gray chassis.",
+    "negative_prompt": "worst quality, low quality, blurry, jpeg artifacts, chromatic aberration, watermark, signature, comic panels, panel layout, split screen, collage, multiple views, reference sheet, white borders, manga, comic, storyboard, letterboxing",
     "seconds": 32.28,
     "runtime_revision": "a77d3623180b2bc1886f3dd04c0aa04156a987ef",
-    "transparent": false,
-    "pixel": {
-      "algorithm_version": 1,
-      "grid": 64,
-      "colors": 24,
-      "width": 64,
-      "height": 64,
-      "scale": 16,
-      "weights": "dora-v1"
-    },
-    "native_url": "/studio/recipe-examples/pixel-vehicle-pixels.png"
+    "transparent": false
   },
   "pixel-dungeon": {
     "recipe": "pixel-dungeon",
-    "model": "krea-pixel",
+    "model": "flux-pixel",
     "url": "/studio/recipe-examples/pixel-dungeon.webp",
     "inputs": {
       "recipe": "pixel-dungeon",
       "subject": "one small stone alchemist room with a round cauldron, wooden shelves and a blue rug",
       "scene": "seen from directly overhead",
-      "details": "two amber lamps, one entrance at the bottom, moss in the stone corners",
-      "pixel_grid": 128,
-      "pixel_colors": 32
+      "details": "two amber lamps, one entrance at the bottom, moss in the stone corners"
     },
-    "quality": "preview",
+    "quality": "standard",
     "seed": 42,
     "size": "1024x1024",
-    "steps": 8,
-    "cfg_scale": 1.0,
+    "steps": 20,
+    "cfg_scale": 4.0,
     "sampler": "euler",
-    "prompt": "pixel art, top-down pixel art dungeon environment, deliberate square clusters, limited color palette. one small stone alchemist room with a round cauldron, wooden shelves and a blue rug, seen from directly overhead. Keep the entire rectangular room visible with clear floor space, wall boundaries and one entrance. Place a few large props near the walls. No interface, characters or text. Additional details: two amber lamps, one entrance at the bottom, moss in the stone corners.",
-    "negative_prompt": "",
+    "prompt": "PXART4. top-down pixel art dungeon environment, deliberate square clusters, limited color palette. one small stone alchemist room with a round cauldron, wooden shelves and a blue rug, seen from directly overhead. Keep the entire rectangular room visible with clear floor space, wall boundaries and one entrance. Place a few large props near the walls. No interface, characters or text. Additional details: two amber lamps, one entrance at the bottom, moss in the stone corners.",
+    "negative_prompt": "worst quality, low quality, blurry, jpeg artifacts, chromatic aberration, watermark, signature, comic panels, panel layout, split screen, collage, multiple views, reference sheet, white borders, manga, comic, storyboard, letterboxing",
     "seconds": 36.67,
     "runtime_revision": "a77d3623180b2bc1886f3dd04c0aa04156a987ef",
-    "transparent": false,
-    "pixel": {
-      "algorithm_version": 1,
-      "grid": 128,
-      "colors": 32,
-      "width": 128,
-      "height": 128,
-      "scale": 8,
-      "weights": "dora-v1"
-    },
-    "native_url": "/studio/recipe-examples/pixel-dungeon-pixels.png"
+    "transparent": false
   },
   "zimage-ink": {
     "recipe": "zimage-ink",
@@ -1866,7 +1544,7 @@
   },
   "pixel-character-sheet": {
     "recipe": "pixel-character-sheet",
-    "model": "krea-pixel",
+    "model": "flux-pixel",
     "url": "/studio/recipe-examples/pixel-character-sheet.webp",
     "inputs": {
       "recipe": "pixel-character-sheet",
@@ -1874,35 +1552,23 @@
       "scene": "neutral A-pose, a short jacket ending above the hips, simple trousers",
       "details": "three main material colors: forest green cloth, brown leather and cream fabric; one small belt pouch",
       "modeling_view": "sheet",
-      "modeling_asset": "character",
-      "pixel_grid": 128,
-      "pixel_colors": 32
+      "modeling_asset": "character"
     },
     "quality": "standard",
     "seed": 42,
     "size": "1024x1024",
-    "steps": 8,
-    "cfg_scale": 1.0,
+    "steps": 20,
+    "cfg_scale": 4.0,
     "sampler": "euler",
-    "prompt": "pixel art, retro game asset, deliberate square pixel clusters, crisp silhouette, limited palette. A single square four-view concept sheet proposes one asset: an adult forest courier with short brown hair, a green jacket and brown boots. Exactly four equally sized panels in a two-by-two grid: upper left front view, upper right left-side profile, lower left back view, lower right three-quarter view. Repeat the same main shapes, colors, part count and design features in each panel. Use a neutral standing A-pose, arms slightly away from the torso, hands separated from the hips and feet apart on the same ground line. Show the entire character from head to soles. Keep clothing volumes simple and accessories clear of the body silhouette. Use one consistent scale, a plain light gray background, even light, complete silhouettes and clear margins. Keep separate panels aligned. No extra figures, captions, text, borders, arrows or measurement lines. Construction notes: neutral A-pose, a short jacket ending above the hips, simple trousers. Shared design and material colors: three main material colors: forest green cloth, brown leather and cream fabric; one small belt pouch.",
+    "prompt": "PXART4. retro game asset, deliberate square pixel clusters, crisp silhouette, limited palette. A single square four-view concept sheet proposes one asset: an adult forest courier with short brown hair, a green jacket and brown boots. Exactly four equally sized panels in a two-by-two grid: upper left front view, upper right left-side profile, lower left back view, lower right three-quarter view. Repeat the same main shapes, colors, part count and design features in each panel. Use a neutral standing A-pose, arms slightly away from the torso, hands separated from the hips and feet apart on the same ground line. Show the entire character from head to soles. Keep clothing volumes simple and accessories clear of the body silhouette. Use one consistent scale, a plain light gray background, even light, complete silhouettes and clear margins. Keep separate panels aligned. No extra figures, captions, text, borders, arrows or measurement lines. Construction notes: neutral A-pose, a short jacket ending above the hips, simple trousers. Shared design and material colors: three main material colors: forest green cloth, brown leather and cream fabric; one small belt pouch.",
     "negative_prompt": "",
     "seconds": 38.91,
     "runtime_revision": "a77d3623180b2bc1886f3dd04c0aa04156a987ef",
-    "transparent": false,
-    "pixel": {
-      "algorithm_version": 1,
-      "grid": 128,
-      "colors": 32,
-      "width": 128,
-      "height": 128,
-      "scale": 8,
-      "weights": "dora-v1"
-    },
-    "native_url": "/studio/recipe-examples/pixel-character-sheet-pixels.png"
+    "transparent": false
   },
   "pixel-kart-sheet": {
     "recipe": "pixel-kart-sheet",
-    "model": "krea-pixel",
+    "model": "flux-pixel",
     "url": "/studio/recipe-examples/pixel-kart-sheet.webp",
     "inputs": {
       "recipe": "pixel-kart-sheet",
@@ -1910,35 +1576,23 @@
       "scene": "short front bumper, two axles, centered seat and steering wheel, no driver",
       "details": "matte orange body panels, dark blue seat and frame, gray wheel hubs; large solid color regions",
       "modeling_view": "sheet",
-      "modeling_asset": "vehicle",
-      "pixel_grid": 128,
-      "pixel_colors": 32
+      "modeling_asset": "vehicle"
     },
     "quality": "standard",
     "seed": 42,
     "size": "1024x1024",
-    "steps": 8,
-    "cfg_scale": 1.0,
+    "steps": 20,
+    "cfg_scale": 4.0,
     "sampler": "euler",
-    "prompt": "pixel art, retro game asset, deliberate square pixel clusters, crisp silhouette, limited palette. A single square four-view concept sheet proposes one asset: a compact low-poly racing kart with four exposed black tires, one seat and a simple tubular chassis. Exactly four equally sized panels in a two-by-two grid: upper left front view, upper right left-side profile, lower left back view, lower right top view. Repeat the same main shapes, colors, part count and design features in each panel. Show the complete assembled vehicle with wheels straight, the chassis level and a readable relationship between chassis, axles, wheels and seat. Keep panels, wheel attachments and mechanical joins simple and physically connected. There is no driver. Use one consistent scale, a plain light gray background, even light, complete silhouettes and clear margins. Keep separate panels aligned. No extra figures, captions, text, borders, arrows or measurement lines. Construction notes: short front bumper, two axles, centered seat and steering wheel, no driver. Shared design and material colors: matte orange body panels, dark blue seat and frame, gray wheel hubs; large solid color regions.",
+    "prompt": "PXART4. retro game asset, deliberate square pixel clusters, crisp silhouette, limited palette. A single square four-view concept sheet proposes one asset: a compact low-poly racing kart with four exposed black tires, one seat and a simple tubular chassis. Exactly four equally sized panels in a two-by-two grid: upper left front view, upper right left-side profile, lower left back view, lower right top view. Repeat the same main shapes, colors, part count and design features in each panel. Show the complete assembled vehicle with wheels straight, the chassis level and a readable relationship between chassis, axles, wheels and seat. Keep panels, wheel attachments and mechanical joins simple and physically connected. There is no driver. Use one consistent scale, a plain light gray background, even light, complete silhouettes and clear margins. Keep separate panels aligned. No extra figures, captions, text, borders, arrows or measurement lines. Construction notes: short front bumper, two axles, centered seat and steering wheel, no driver. Shared design and material colors: matte orange body panels, dark blue seat and frame, gray wheel hubs; large solid color regions.",
     "negative_prompt": "",
     "seconds": 34.33,
     "runtime_revision": "a77d3623180b2bc1886f3dd04c0aa04156a987ef",
-    "transparent": false,
-    "pixel": {
-      "algorithm_version": 1,
-      "grid": 128,
-      "colors": 32,
-      "width": 128,
-      "height": 128,
-      "scale": 8,
-      "weights": "dora-v1"
-    },
-    "native_url": "/studio/recipe-examples/pixel-kart-sheet-pixels.png"
+    "transparent": false
   },
   "pixel-prop-sheet": {
     "recipe": "pixel-prop-sheet",
-    "model": "krea-pixel",
+    "model": "flux-pixel",
     "url": "/studio/recipe-examples/pixel-prop-sheet.webp",
     "inputs": {
       "recipe": "pixel-prop-sheet",
@@ -1946,30 +1600,18 @@
       "scene": "lid closed, rectangular body, clearly visible wood thickness and simple hinges",
       "details": "warm brown wood, dark gray iron bands and one brass latch; no scattered coins",
       "modeling_view": "sheet",
-      "modeling_asset": "prop",
-      "pixel_grid": 128,
-      "pixel_colors": 32
+      "modeling_asset": "prop"
     },
     "quality": "standard",
     "seed": 42,
     "size": "1024x1024",
-    "steps": 8,
-    "cfg_scale": 1.0,
+    "steps": 20,
+    "cfg_scale": 4.0,
     "sampler": "euler",
-    "prompt": "pixel art, retro game asset, deliberate square pixel clusters, crisp silhouette, limited palette. A single square four-view concept sheet proposes one asset: a small wooden treasure chest with a flat lid, two iron bands and a square latch. Exactly four equally sized panels in a two-by-two grid: upper left front view, upper right left-side profile, lower left back view, lower right three-quarter view. Repeat the same main shapes, colors, part count and design features in each panel. Show one complete assembled object in a stable resting position. Make its main volumes, thicknesses and functional joins readable. Keep separate parts visibly connected and small details large enough to rebuild. Use one consistent scale, a plain light gray background, even light, complete silhouettes and clear margins. Keep separate panels aligned. No extra figures, captions, text, borders, arrows or measurement lines. Construction notes: lid closed, rectangular body, clearly visible wood thickness and simple hinges. Shared design and material colors: warm brown wood, dark gray iron bands and one brass latch; no scattered coins.",
+    "prompt": "PXART4. retro game asset, deliberate square pixel clusters, crisp silhouette, limited palette. A single square four-view concept sheet proposes one asset: a small wooden treasure chest with a flat lid, two iron bands and a square latch. Exactly four equally sized panels in a two-by-two grid: upper left front view, upper right left-side profile, lower left back view, lower right three-quarter view. Repeat the same main shapes, colors, part count and design features in each panel. Show one complete assembled object in a stable resting position. Make its main volumes, thicknesses and functional joins readable. Keep separate parts visibly connected and small details large enough to rebuild. Use one consistent scale, a plain light gray background, even light, complete silhouettes and clear margins. Keep separate panels aligned. No extra figures, captions, text, borders, arrows or measurement lines. Construction notes: lid closed, rectangular body, clearly visible wood thickness and simple hinges. Shared design and material colors: warm brown wood, dark gray iron bands and one brass latch; no scattered coins.",
     "negative_prompt": "",
     "seconds": 34.17,
     "runtime_revision": "a77d3623180b2bc1886f3dd04c0aa04156a987ef",
-    "transparent": false,
-    "pixel": {
-      "algorithm_version": 1,
-      "grid": 128,
-      "colors": 32,
-      "width": 128,
-      "height": 128,
-      "scale": 8,
-      "weights": "dora-v1"
-    },
-    "native_url": "/studio/recipe-examples/pixel-prop-sheet-pixels.png"
+    "transparent": false
   }
 }

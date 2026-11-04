@@ -10,6 +10,26 @@ local-image-ai-service studio
 
 That starts the service and opens the browser. For a first installation, work through the steps below from the repository root.
 
+## One-shot setup
+
+`scripts/setup.sh` runs the steps below in order with dependency checks, reusing the tested per-part scripts. It stops a running service first, never enables login autostart, and ends with `doctor` and a service start:
+
+```bash
+# Runtime archive present in dist/ (produced by scripts/package-runtime.py):
+scripts/setup.sh
+
+# Also download extra model weights (service is stopped during the download):
+scripts/setup.sh --models anima z-image z-image-turbo flux-pixel
+
+# No archive and no known-good build? Build the pinned runtime from source
+# (CUDA toolkit is auto-detected; pass --cuda-toolkit <dir> to override):
+scripts/setup.sh --build-runtime
+```
+
+The runtime is installed in this order: `--build-runtime`, then a portable archive (`--runtime-archive <p>`, or auto-detected `dist/runtime-<revision>.tar.zst`), then a known-good build at the default paths. The archive bundles the pinned `sd-server` binary and its CUDA libraries, so a machine that has it needs no compiler or CUDA toolkit — only the NVIDIA driver. `scripts/package-runtime.py` produces the archive and a manifest from an installed, verified runtime; the installer re-verifies every file against [runtime.lock.json](../runtime.lock.json) before use. The archive is a build artifact (gitignored); distribute it however you like (a release, a model host, or `scp`) and point `--runtime-archive` at it.
+
+Use `--no-start` to leave the service stopped, `--skip-studio` to reuse an existing `studio/dist`, and `--runtime-binary/--runtime-cuda-lib/--runtime-source` to point at a different build. The manual steps below document what the script does.
+
 ## Check what you need
 
 The current setup is for **Linux with a systemd user manager, cgroup v2 and NVIDIA CUDA**. It has been tested on Fedora 44 KDE with an RTX 5070 Laptop, 8 GB VRAM and 64 GB RAM. CPU offloading is part of that setup; rendering time depends on the model, resolution and available memory.
@@ -73,11 +93,10 @@ With the service stopped, the model installer can download and verify the pinned
 
 ```bash
 python3 scripts/install-models.py anima
-python3 scripts/install-models.py qwen21
 python3 scripts/install-models.py z-image z-image-turbo
 ```
 
-These downloads are optional and explicit. MOSS continues to use your existing components. For Krea Pixel Art, follow [the pixel-art setup](krea-pixel-art.md), which also prepares the grid-specific DoRA weights. Model files are large, so check available disk space first.
+These downloads are optional and explicit. MOSS continues to use your existing components. For FLUX.2-klein Pixel Art, run `python3 scripts/install-models.py flux-pixel`. Model files are large, so check available disk space first.
 
 The two Z-Image profiles share an encoder and VAE and require about 10.54 GB in total. The pinned base model uses the runtime author’s compatible Q4_0 file; see [Z-Image setup and GPU checks](z-image-and-presets.md) for settings and the blank-output issue found with the initial checkpoint.
 

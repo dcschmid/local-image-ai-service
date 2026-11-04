@@ -20,8 +20,8 @@ CLI equivalents are `models`, `recipes`, `recipes ID`, `presets`, `formats` and
 `catalog`. Do not rely on a remembered count or revive retired models.
 
 The main choices are MOSS for photography/general art/low poly, Anima Aesthetic
-for anime/illustration, Qwen 2.1 for detailed scenes/text/stickers, Krea Pixel
-Art for sprites/icons/scenes with native pixel exports, Z-Image for creative
+for anime/illustration, Qwen 2.1 for detailed scenes/text/stickers, FLUX.2-klein
+Pixel Art for sprites/icons/scenes with the PXART4 LoRA, Z-Image for creative
 illustrations, and Z-Image Turbo for quick photographic studies. Turbo requires
 eight steps, CFG 1 and no negative prompt. Consult the current
 catalog's license information when the requested use requires it. The bundled
@@ -48,8 +48,8 @@ again. Do not stop unrelated GPU processes to work around a resource conflict.
 Call `generate_image` once with the request. It returns queued job IDs. Inspect
 `get_job` or use `wait_for_job` in bounded waits. A pending result means the same
 job continues; keep its ID. When complete, call `export_image` with its image ID
-and the user's project/output directory. Return the actual exported PNG path,
-metadata path and native pixel PNG when present. Inspect the image when visual
+and the user's project/output directory. Return the actual exported PNG path
+and metadata path. Inspect the image when visual
 quality or specific layout/content matters; identify any unresolved mismatch.
 Never describe a queued job as a completed image.
 

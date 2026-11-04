@@ -6,7 +6,7 @@ Configuration and API keys must stay out of Git. Changes take effect after a res
 
 | Field | Default / meaning |
 | --- | --- |
-| `active_model` | `moss` initially; `moss`, `anima`, `qwen21`, `krea-pixel`, `z-image` or `z-image-turbo` |
+| `active_model` | `moss` initially; `moss`, `anima`, `flux-pixel`, `z-image` or `z-image-turbo` |
 | `host` | Only `127.0.0.1` is accepted |
 | `port` | 7861, client-facing local API |
 | `backend_port` | 17861, internal loopback runtime |

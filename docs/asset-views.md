@@ -9,10 +9,10 @@ Atelier now offers two connected workflows. AI presets propose a design; the GLB
 | Presets | Model | Result |
 | --- | --- | --- |
 | `lowpoly-character-sheet`, `lowpoly-kart-sheet`, `lowpoly-prop-sheet` | MOSS | A requested four-view concept sheet |
-| `pixel-character-sheet`, `pixel-kart-sheet`, `pixel-prop-sheet` | Krea Pixel Art | A proposed sheet, 128-pixel grid and shared image palette |
+| `pixel-character-sheet`, `pixel-kart-sheet`, `pixel-prop-sheet` | FLUX.2-klein · Pixel Art | A proposed sheet with a shared image palette |
 | `voxel-character`, `voxel-kart`, `voxel-prop`, `voxel-building`, `voxel-diorama`, `voxel-anything` | MOSS | Cubic voxel-style image concepts |
 
-Asset controls also work with the original MOSS character/vehicle/prop/building/scene references and Krea character, vehicle, loot and isometric recipes. Choose a single direction or **Concept sheet**. The latter requests front, left profile, back and either top or three-quarter in a 2×2 arrangement. Directions, number of panels and repeated details remain estimates. A seed, requested orthographic camera or polished sheet does not certify shared geometry.
+Asset controls also work with the original MOSS character/vehicle/prop/building/scene references and FLUX.2-klein character, vehicle, loot and isometric recipes. Choose a single direction or **Concept sheet**. The latter requests front, left profile, back and either top or three-quarter in a 2×2 arrangement. Directions, number of panels and repeated details remain estimates. A seed, requested orthographic camera or polished sheet does not certify shared geometry.
 
 ## Render one model from seven directions
 

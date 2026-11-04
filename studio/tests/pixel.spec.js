@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 test('pixel presets, native exports, palette controls and keyboard access',async({page})=>{
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  const catalog=await(await page.request.get('/studio/api/catalog')).json();
- expect(catalog.models.map(m=>m.id)).toEqual(expect.arrayContaining(['anima','moss','qwen21','krea-pixel']));
+ expect(catalog.models.map(m=>m.id)).toEqual(expect.arrayContaining(['anima','moss','krea-pixel']));
  for(const id of ['pixel-loot','pixel-character','pixel-isometric','pixel-landscape']){
   const sample=catalog.examples[id];expect(sample.pixel.weights).toBe('dora-v1');
   const response=await page.request.get(sample.native_url);expect(response.ok()).toBeTruthy();

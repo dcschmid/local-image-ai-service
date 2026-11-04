@@ -6,6 +6,7 @@ config.json
 api-key*
 build/
 runtime/
+dist/
 test-results/
 *.gguf
 *.safetensors

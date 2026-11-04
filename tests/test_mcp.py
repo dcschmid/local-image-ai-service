@@ -49,8 +49,8 @@ class MCPTests(unittest.IsolatedAsyncioTestCase):
         self.assertFalse(tools['generate_image'].annotations.read_only_hint)
         self.assertTrue(tools['cancel_job'].annotations.destructive_hint)
         _, models = await self.call('list_models')
-        self.assertEqual(set(models['models']), {'moss', 'anima', 'qwen21', 'krea-pixel', 'z-image', 'z-image-turbo'})
-        _, all_presets = await self.call('list_presets');self.assertEqual(all_presets['count'], 82)
+        self.assertEqual(set(models['models']), {'moss', 'anima', 'flux-pixel', 'z-image', 'z-image-turbo'})
+        _, all_presets = await self.call('list_presets');self.assertEqual(all_presets['count'], 72)
         _, lowpoly = await self.call('list_presets', dict(model='moss', category='lowpoly'))
         self.assertEqual(lowpoly['count'], 12)
         self.assertIn('lowpoly-track-overview', [p['id'] for p in lowpoly['presets']])
@@ -62,7 +62,7 @@ class MCPTests(unittest.IsolatedAsyncioTestCase):
 
     @client_session
     async def test_compose_all_models_and_literal_switch_values_without_protocol_output(self):
-        for recipe, model in [('photo-product', 'moss'), ('anima-portrait', 'anima'), ('qwen-poster', 'qwen21'), ('pixel-loot', 'krea-pixel')]:
+        for recipe, model in [('photo-product', 'moss'), ('anima-portrait', 'anima'), ('pixel-loot', 'flux-pixel')]:
             result, data = await self.call('compose', dict(params=dict(recipe=recipe, example=True, quality='preview', seed=42)))
             self.assertFalse(result.is_error, data)
             self.assertEqual(data['request']['model'], model)
@@ -88,12 +88,11 @@ class MCPTests(unittest.IsolatedAsyncioTestCase):
         _, jobs = await self.call('list_jobs', dict(status='queued'));self.assertEqual(len(jobs['jobs']), 1)
 
     @client_session
-    async def test_export_keeps_png_alpha_metadata_and_native_pixel_bytes(self):
-        identifier, full, native = self.fixture.image(pixels=True)
+    async def test_export_keeps_png_alpha_metadata(self):
+        identifier, full, _ = self.fixture.image(pixels=True)
         result, data = await self.call('export_image', dict(image_id=identifier, save_dir=str(self.fixture.root / 'project-assets')))
         self.assertFalse(result.is_error, data)
         self.assertEqual(Path(data['exports']['image']).read_bytes(), full)
-        self.assertEqual(Path(data['exports']['native_pixels']).read_bytes(), native)
         self.assertTrue(Path(data['exports']['metadata']).is_file())
 
     @client_session

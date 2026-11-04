@@ -237,79 +237,38 @@ RECIPES += [
          tip='Specify one small subject, its surface and two visible details. Keep the background simple; fine insect anatomy can vary across seeds.'),
 ]
 
-QWEN_SOURCE='https://huggingface.co/Qwen/Qwen-Image-2.1'
-QWEN_RECIPES = [
-    dict(id='qwen-poster',name='Qwen · graphic travel poster',size='832x1216',featured=True,example_quality='standard',negative_extra='unrequested text, fine print, gibberish, extra captions, extra logos',
-         description='A bold illustrated poster with a clear subject and optional exact headline.',
-         example=dict(subject='a tiny silver spacecraft rising above a rust-red desert canyon',scene='beneath a deep blue starry sky',details='cream geometric shapes, a small orange sun, a restrained screen-print texture',text='EXPLORE'),
-         scene='beneath a deep blue starry sky',style='graphic travel poster, bold geometric illustration, limited cream orange and midnight blue palette, subtle print texture',
-         composition='A single minimalist poster uses one clear focal illustration and generous negative space. Render only the requested headline, large and readable at the top. There are no subtitles, fine print, extra captions, logos or invented lettering. Keep the illustration and the single headline balanced in one cohesive design.',
-         tip='Use Visible text for the exact headline. Short wording is easier to check; compare the letters before exporting.'),
-    dict(id='qwen-sticker',name='Qwen · transparent sticker',size='1024x1024',featured=True,transparent=True,example_quality='standard',
-         description='An isolated sticker illustration with a transparent PNG background.',
-         example=dict(subject='a cheerful orange robot holding a tiny potted cactus',scene='as one isolated sticker design',details='rounded enamel-like shapes, dark teal outlines, a neat white sticker border'),
-         scene='as one isolated sticker design',style='polished character sticker illustration, clean expressive shapes, crisp outline, harmonious colors',
-         composition='Show the complete subject as one centered sticker with a clean silhouette and clear space around every edge. Keep the outer background empty and preserve transparent space outside the sticker.',
-         tip='Describe a compact silhouette and keep accessories simple. The checkerboard shows actual transparency in the example; the downloaded output stays a PNG.'),
-    dict(id='qwen-portrait',name='Qwen · editorial portrait',size='832x1216',photographic=True,
-         description='A detailed photographic portrait with natural texture and editorial framing.',
-         example=dict(subject='an adult ceramic artist with short silver hair wearing a rust-colored work apron',scene='standing beside a window in a pottery studio',details='clay dust on the apron, a relaxed smile, shelves of handmade bowls'),
-         scene='beside a window in a pottery studio',style='realistic editorial portrait photography, natural skin texture, restrained colors',
-         composition='A single waist-up portrait at eye level uses soft available window light. Keep the face in clear focus, realistic fabric and skin texture, and a gently receding environment that supports the person.',
-         tip='Give the person an occupation, expression and specific setting. Start with one person before attempting group portraits.'),
-    dict(id='qwen-product',name='Qwen · product campaign',size='1024x1024',photographic=True,
-         description='A polished product scene with deliberate materials, reflections and optional label text.',
-         example=dict(subject='an amber glass perfume bottle with a brushed brass cap',scene='on a warm limestone plinth beside a softly lit cream wall',details='one curved reflection on the glass, a subtle botanical shadow, a small cream label',text='SOL'),
-         scene='on a warm limestone plinth beside a softly lit cream wall',style='realistic commercial product photography, refined material texture, controlled studio highlights',
-         composition='The complete product is clearly visible in a three-quarter view. Softbox highlights describe the material without hiding its outline. A grounded contact shadow, realistic scale and a simple supporting environment create one coherent campaign image. Place any requested wording on the product label.',
-         tip='Specify glass, metal or fabric and the desired finish. Visible text is treated literally; a short label is a useful first test.'),
-    dict(id='qwen-cover',name='Qwen · illustrated book cover',size='832x1216',negative_extra='unrequested text, subtitles, fine print, gibberish, extra captions, author names',
-         description='A dramatic illustrated cover with a clear focal scene and optional title.',
-         example=dict(subject='a lone deep-sea diver facing a luminous ancient gateway beneath the ocean',scene='among dark submerged ruins',details='teal bioluminescence, a warm diving lamp, a few drifting particles',text='WORLDS BELOW'),
-         scene='among dark submerged ruins',style='illustrated speculative-fiction book cover, painterly dramatic lighting, rich restrained colors',
-         composition='One vertical cover composition has a readable central subject and strong depth. The only typography is the single requested title at the top, clearly separated from the focal illustration. All other areas contain artwork or empty space, without subtitles, author names or invented lettering.',
-         tip='Use one title and one focal scene. Keep exact wording in Visible text and describe the visual mood in Extra details.'),
-    dict(id='qwen-world',name='Qwen · isometric world',size='1216x832',example_quality='standard',
-         description='A detailed miniature world with coherent architecture, scale and lighting.',
-         example=dict(subject='a tiny coastal research station with white domes, orange walkways and a turquoise harbor',scene='on a rocky island surrounded by calm water',details='small solar panels, a moored research boat, warm evening lights'),
-         scene='on a rocky island surrounded by calm water',style='detailed stylized isometric world illustration, precise architectural shapes, rich miniature environmental detail',
-         composition='A single elevated isometric view reveals the whole location with clear relationships between buildings and paths. Use consistent scale, readable silhouettes and soft directional light. The scene fills one cohesive frame.',
-         tip='Describe a small location and a few important structures. Consistent materials and a limited palette help the scene read as one world.'),
-]
-RECIPES += [dict(r,model='qwen21',category='qwen',checked='2026-10-31') for r in QWEN_RECIPES]
-
 PIXEL_RECIPES = [
-    dict(id='pixel-loot',name='Pixel · tiny loot icon',pixel_grid=32,pixel_colors=24,
-         description='A bold 32-pixel inventory icon with a simple silhouette and a small palette.',
-         example=dict(subject='a red mushroom with white spots',scene='centered on a plain white background',details='a cream stem and a bold black outline',pixel_grid=32,pixel_colors=24),
+    dict(id='pixel-loot',name='Pixel · tiny loot icon',
+         description='A bold pixel inventory icon with a simple silhouette and a small palette.',
+         example=dict(subject='a red mushroom with white spots',scene='centered on a plain white background',details='a cream stem and a bold black outline'),
          scene='centered on a plain white background',
          style='8-bit pixel art inventory icon',
          composition='One large isolated item fills most of the frame. Use a bold readable silhouette, chunky deliberate pixel clusters and simple shading. Leave a clear margin around the item. No lettering or interface.',
-         tip='Use one object with a recognizable silhouette. The 32-pixel variant is strongly abstract; choose 64 for more detail. This model does not produce transparent sprites.'),
-    dict(id='pixel-character',name='Pixel · adventure character',pixel_grid=64,pixel_colors=24,
-         description='A complete 64-pixel game character with readable clothing and pose.',
-         example=dict(subject='a small red-haired forest ranger in a green cloak holding a wooden staff',scene='standing in a relaxed three-quarter view against a plain cream background',details='brown boots, a small leather satchel, warm amber highlights',pixel_grid=64,pixel_colors=24),
+         tip='Use one object with a recognizable silhouette. The LoRA produces a clean pixel grid at 1024 square.'),
+    dict(id='pixel-character',name='Pixel · adventure character',
+         description='A complete pixel game character with readable clothing and pose.',
+         example=dict(subject='a small red-haired forest ranger in a green cloak holding a wooden staff',scene='standing in a relaxed three-quarter view against a plain cream background',details='brown boots, a small leather satchel, warm amber highlights'),
          scene='standing in a relaxed three-quarter view against a plain cream background',
          style='retro 16-bit RPG character sprite, crisp square clusters, limited color palette',
          composition='Show one complete character from head to feet, centered, with a clear silhouette and space around the edges. Use a consistent light direction and simple grouped shading. No text or interface.',
-         tip='Keep the pose and equipment simple. The author recommends omitting the words “pixel art” for the 64-pixel LoRA; this template already does that.'),
-    dict(id='pixel-isometric',name='Pixel · isometric hideaway',pixel_grid=64,pixel_colors=32,
-         description='A miniature 64-pixel isometric building with tidy forms and cozy details.',
-         example=dict(subject='a tiny timber cabin with a red roof and a glowing round window',scene='on one small grassy isometric tile against a dark blue background',details='a stone path, one pine tree, a chimney with a small puff of smoke',pixel_grid=64,pixel_colors=32),
+         tip='Keep the pose and equipment simple. The LoRA produces a clean pixel grid at 1024 square.'),
+    dict(id='pixel-isometric',name='Pixel · isometric hideaway',
+         description='A miniature pixel isometric building with tidy forms and cozy details.',
+         example=dict(subject='a tiny timber cabin with a red roof and a glowing round window',scene='on one small grassy isometric tile against a dark blue background',details='a stone path, one pine tree, a chimney with a small puff of smoke'),
          scene='on one small grassy isometric tile against a dark blue background',
          style='retro isometric game asset, crisp square clusters, limited color palette',
          composition='Show the complete miniature structure from an elevated three-quarter view on one isolated square ground tile. Consistent isometric perspective, clear roof and walls, simple grouped shadows. No lettering or interface.',
-         tip='One building, one ground tile and two or three props work best. More details need a larger grid, rather than more sampling steps.'),
-    dict(id='pixel-landscape',name='Pixel · scenic world',pixel_grid=128,pixel_colors=32,
-         description='A detailed 128-pixel scene with layered scenery and a restrained palette.',
-         example=dict(subject='a quiet mountain lake with a small wooden cabin and tall pine trees',scene='at sunset beneath lavender mountains and a peach-colored sky',details='a warm window reflected in the water, reeds in the foreground, a thin crescent moon',pixel_grid=128,pixel_colors=32),
+         tip='One building, one ground tile and two or three props work best.'),
+    dict(id='pixel-landscape',name='Pixel · scenic world',
+         description='A detailed pixel scene with layered scenery and a restrained palette.',
+         example=dict(subject='a quiet mountain lake with a small wooden cabin and tall pine trees',scene='at sunset beneath lavender mountains and a peach-colored sky',details='a warm window reflected in the water, reeds in the foreground, a thin crescent moon'),
          scene='at sunset beneath lavender mountains and a peach-colored sky',
          style='detailed pixel art landscape, classic adventure game background',
          composition='One cohesive landscape with distinct foreground, middle distance and background. Group colors into deliberate square clusters and use a consistent light direction. No text, border or interface.',
-         tip='Describe a foreground, a focal point and distant scenery. Try 32 colors first, then 64 for smoother skies. Wide aspect ratios also work with a matching rectangular pixel grid.'),
+         tip='Describe a foreground, a focal point and distant scenery. Wide aspect ratios also work.'),
 ]
-RECIPES += [dict(r,model='krea-pixel',category='pixel',size='1024x1024',featured=True,
-                 example_quality='standard',checked='2026-10-31') for r in PIXEL_RECIPES]
+RECIPES += [dict(r,model='flux-pixel',category='pixel',size='1024x1024',featured=True,
+                 example_quality='standard',checked='2026-11-04') for r in PIXEL_RECIPES]
 
 # MOSS handles the low-poly workflow without separate Anima style adapters.
 RECIPES += [
@@ -411,53 +370,27 @@ ADDITIONAL_RECIPES = [
          framing='single wide establishing view, clear foreground terrace, connected middle-ground paths, distant hillside, readable architecture',
          composition='One coherent neighborhood with layered depth and a clear focal route.',
          tip='Choose a small neighborhood and three important structures. Greenery should support the paths and building silhouettes.'),
-    dict(id='qwen-infographic', model='qwen21', category='qwen', name='Qwen · illustrated explainer', size='832x1216',
-         description='A simple illustrated process with a short heading and a few clearly separated stages.',
-         example=dict(subject='the growth of a sunflower from seed to flowering plant in three stages', scene='on a warm cream educational poster', details='three large botanical drawings connected by simple arrows, no small captions', text='GROW'),
-         scene='on a clean cream poster', style='editorial educational infographic, simple flat illustration, clear visual hierarchy',
-         composition='Reserve the upper quarter for the requested headline in large bold dark lettering. Below the heading, arrange three large stages in reading order with generous spacing and simple connecting arrows. The only text is the requested headline; leave out small captions and statistics.',
-         tip='Keep wording short and verify every arrow and factual relationship; this is an illustration, not a validated scientific diagram.'),
-    dict(id='qwen-exploded', model='qwen21', category='qwen', name='Qwen · exploded product concept', size='1024x1024',
-         description='Separated product layers with readable materials and a coherent assembly direction.',
-         example=dict(subject='a compact portable speaker with a teal shell, brass grille and dark rubber base', scene='floating as three aligned layers above a pale studio surface', details='a small shadow below each part, no wires or labels'),
-         scene='against a pale studio background', style='industrial design exploded-view concept illustration, precise product edges, restrained material colors',
-         composition='Show three to five main parts separated along one common vertical axis, all in the same three-quarter perspective. Keep the full assembly visible and evenly spaced.',
-         tip='Name only the major components. Verify connections yourself; generated parts are not CAD or engineering documentation.'),
-    dict(id='qwen-packaging', model='qwen21', category='qwen', name='Qwen · packaging concept', size='1024x1024',
-         negative_extra='fine print, small text, extra captions, gibberish, ingredient list, barcode',
-         description='One package with a clear front label, material texture and a coordinated graphic motif.',
-         example=dict(subject='a small cream tea tin with a dark green lid and a simple orange blossom illustration', scene='on a pale limestone counter', details='matte printed paper label, soft side lighting, no fine print', text='BLOOM'),
-         scene='on a neutral studio surface', style='commercial packaging concept photography, refined print texture, clear front-facing label',
-         composition='Show one complete package in a gentle three-quarter view, with its front label readable. Use the requested wording as the only large brand line and leave fine print absent.',
-         tip='Use a short invented name and one package. Check the main label and any invented fine print. This is a mockup image, not a dieline or editable label file.'),
-    dict(id='qwen-neon-sign', model='qwen21', category='qwen', name='Qwen · neon lettering scene', size='1216x832', photographic=True,
-         negative_extra='underexposed facade, crushed blacks, blown-out neon, illegible lettering, unrequested text',
-         description='Short luminous lettering integrated into a rainy cinematic street scene.',
-         example=dict(subject='a small late-night noodle bar with one orange neon sign', scene='on a quiet rain-soaked street at blue hour', details='teal tiled walls, warm window light, subtle puddle reflections', text='OPEN LATE'),
-         scene='on a rainy street at night', style='cinematic night photography, realistic neon glow, wet material reflections',
-         composition='Frame the shop and its single sign together. Soft blue ambient fill and warm window light keep the teal facade, doorway and wet pavement clearly visible with open shadow detail. The exact requested wording belongs on the sign, large and readable, with restrained bloom and no other lettering.',
-         tip='Quote a short phrase in Visible text. Check every letter and keep the glow low enough to preserve its shape.'),
-    dict(id='pixel-creature', model='krea-pixel', category='pixel', name='Pixel · creature sprite', size='1024x1024', pixel_grid=64, pixel_colors=24,
+    dict(id='pixel-creature', model='flux-pixel', category='pixel', name='Pixel · creature sprite', size='1024x1024',
          description='One complete game creature with grouped shading and an expressive silhouette.',
-         example=dict(subject='a round turquoise cave lizard with orange crystal horns', scene='in a side-on idle pose on a plain cream background', details='short sturdy legs, a curled tail, one bright amber eye', pixel_grid=64, pixel_colors=24),
+         example=dict(subject='a round turquoise cave lizard with orange crystal horns', scene='in a side-on idle pose on a plain cream background', details='short sturdy legs, a curled tail, one bright amber eye'),
          scene='in an idle pose on a plain background', style='retro monster sprite, crisp square clusters, limited color palette',
          composition='Show one complete creature with space around every edge, distinct limbs and simple grouped shadows. No sprite sheet, interface or text.',
          tip='Request one pose. Multiple generations do not guarantee matching animation frames; the background stays opaque.'),
-    dict(id='pixel-portrait', model='krea-pixel', category='pixel', name='Pixel · dialogue portrait', size='1024x1024', pixel_grid=64, pixel_colors=24,
+    dict(id='pixel-portrait', model='flux-pixel', category='pixel', name='Pixel · dialogue portrait', size='1024x1024',
          description='A readable character bust suitable as a starting point for a game dialogue portrait.',
-         example=dict(subject='an adult airship captain with silver hair, round goggles and a navy scarf', scene='in a three-quarter bust view on a plain muted blue background', details='a friendly raised eyebrow, brass collar clasp, warm skin highlights', pixel_grid=64, pixel_colors=24),
+         example=dict(subject='an adult airship captain with silver hair, round goggles and a navy scarf', scene='in a three-quarter bust view on a plain muted blue background', details='a friendly raised eyebrow, brass collar clasp, warm skin highlights'),
          scene='as a bust portrait on a plain background', style='retro RPG dialogue portrait, crisp square clusters, limited color palette',
          composition='A single head-and-shoulders portrait fills the image, leaving clear space above the hair. Keep the face expressive and clothing shapes broad. No dialogue box or lettering.',
-         tip='Give the face one expression and one distinctive accessory. Use 128 for finer facial features.'),
-    dict(id='pixel-vehicle', model='krea-pixel', category='pixel', name='Pixel · tiny vehicle', size='1024x1024', pixel_grid=64, pixel_colors=24,
+         tip='Give the face one expression and one distinctive accessory.'),
+    dict(id='pixel-vehicle', model='flux-pixel', category='pixel', name='Pixel · tiny vehicle', size='1024x1024',
          description='One small vehicle with clear wheels, readable bodywork and a simple background.',
-         example=dict(subject='a yellow lunar delivery rover with four chunky dark wheels and a small blue cargo box', scene='in a side view on a plain cream background', details='one orange headlight, a short antenna, simple gray chassis', pixel_grid=64, pixel_colors=24),
+         example=dict(subject='a yellow lunar delivery rover with four chunky dark wheels and a small blue cargo box', scene='in a side view on a plain cream background', details='one orange headlight, a short antenna, simple gray chassis'),
          scene='in a side view on a plain background', style='retro game vehicle sprite, crisp square clusters, limited color palette',
          composition='Show the complete vehicle with all outer edges inside the frame. Use broad body panels, readable wheels and one light direction. No track, interface or text.',
          tip='Choose side view or three-quarter view and a few large parts. This is one concept, not matched directional sprites.'),
-    dict(id='pixel-dungeon', model='krea-pixel', category='pixel', name='Pixel · dungeon room', size='1024x1024', pixel_grid=128, pixel_colors=32,
+    dict(id='pixel-dungeon', model='flux-pixel', category='pixel', name='Pixel · dungeon room', size='1024x1024',
          description='A single overhead game room with clear boundaries and a few readable props.',
-         example=dict(subject='one small stone alchemist room with a round cauldron, wooden shelves and a blue rug', scene='seen from directly overhead', details='two amber lamps, one entrance at the bottom, moss in the stone corners', pixel_grid=128, pixel_colors=32),
+         example=dict(subject='one small stone alchemist room with a round cauldron, wooden shelves and a blue rug', scene='seen from directly overhead', details='two amber lamps, one entrance at the bottom, moss in the stone corners'),
          scene='seen from directly overhead as one complete room', style='top-down pixel art dungeon environment, deliberate square clusters, limited color palette',
          composition='Keep the entire rectangular room visible with clear floor space, wall boundaries and one entrance. Place a few large props near the walls. No interface, characters or text.',
          tip='Use this as a room concept. It does not provide a seamless tileset, collision map or guaranteed navigable layout.'),
@@ -525,8 +458,6 @@ ADDITIONAL_RECIPES = [
 for recipe in ADDITIONAL_RECIPES:
     recipe['checked'] = '2026-11-01'
     recipe['evidence'] = 'Curated template based on model-author guidance; inspect the generated example for style fit.'
-    if recipe['model']=='qwen21' and recipe['example'].get('text'):
-        recipe['example_quality']='standard'
     if recipe['model'] in ('z-image', 'z-image-turbo'):
         # Stay within the public API's 1024-dimension limit until local GPU
         # verification has established larger sizes for these exact weights.
@@ -534,15 +465,14 @@ for recipe in ADDITIONAL_RECIPES:
 RECIPES += ADDITIONAL_RECIPES
 
 ASSET_RECIPES = []
-for family,model in (('lowpoly','moss'),('pixel','krea-pixel')):
+for family,model in (('lowpoly','moss'),('pixel','flux-pixel')):
     for asset,label in (('character','character'),('vehicle','kart'),('prop','prop')):
         example=dict(modeling_reference.ASSETS[asset]['example'],modeling_view='sheet',modeling_asset=asset)
-        if family=='pixel':example.update(pixel_grid=128,pixel_colors=32)
         ASSET_RECIPES.append(dict(id=family+'-'+label+'-sheet',model=model,category='lowpoly' if family=='lowpoly' else 'pixel',
             name=('Low Poly' if family=='lowpoly' else 'Pixel')+' · '+label+' concept sheet',size='1024x1024',
             description='Four proposed views of one '+label+' design. AI estimates can differ; use a 3D model for geometry-consistent views.',
             example=example,scene='on a plain light gray background',style='game asset concept sheet',composition='Four aligned proposed views of one asset.',
-            default_modeling_view='sheet',pixel_grid=128,pixel_colors=32,example_quality='standard' if family=='pixel' else 'preview',
+            default_modeling_view='sheet',example_quality='standard' if family=='pixel' else 'preview',
             tip='Compare the four proposed silhouettes, part counts and colors yourself. For exact matching views, open 3D Asset Views and import one GLB.'))
 for identifier,asset,label in (('voxel-character','character','character'),('voxel-kart','vehicle','kart'),
                               ('voxel-prop','prop','prop'),('voxel-building','building','building'),('voxel-diorama','scene','diorama')):
@@ -562,15 +492,15 @@ for recipe in ASSET_RECIPES:recipe.update(checked='2026-11-02',evidence='Curated
 RECIPES += ASSET_RECIPES
 
 def recipes():
-    return [dict(r, model=r.get('model','anima'), version=VERSION,preview_size=r['size'] if r.get('model')=='krea-pixel' else preview_size(r['size']),
+    return [dict(r, model=r.get('model','anima'), version=VERSION,preview_size=preview_size(r['size']),
                  modeling_asset=modeling_reference.RECIPE_ASSETS.get(r['id']),
                  category=r.get('category','anime' if r.get('model','anima')=='anima' else 'lowpoly'),
-                 source={'anima':SOURCE,'moss':MOSS_SOURCE,'qwen21':QWEN_SOURCE,'krea-pixel':'https://huggingface.co/e-n-v-y/Krea-2-Pixel-Art'}.get(r.get('model','anima'),MODELS[r.get('model','anima')]['source']),
+                 source={'anima':SOURCE,'moss':MOSS_SOURCE,'flux-pixel':'https://huggingface.co/adirik/pixel-art-lora-flux.2-klein-4B'}.get(r.get('model','anima'),MODELS[r.get('model','anima')]['source']),
                  checked=r.get('checked','2026-10-31'), steps=defaults(r.get('model','anima'))['steps'],
                  cfg_scale=defaults(r.get('model','anima'))['cfg'],sampler='euler') for r in RECIPES]
 
 def compose(body):
-    allowed={'model','recipe','subject','scene','details','text','aspect_ratio','quality','seed','pixel_grid','pixel_colors','modeling_view','modeling_asset'}
+    allowed={'model','recipe','subject','scene','details','text','aspect_ratio','quality','seed','modeling_view','modeling_asset'}
     if set(body)-allowed:
         raise ValueError('Unknown guided settings. Use recipe inputs, Blender reference options or free prompt mode for custom parameters.')
     recipe=next((r for r in RECIPES if r['id']==body.get('recipe')),None)
@@ -584,7 +514,7 @@ def compose(body):
             raise ValueError(f'{key}: use at most {maximum} characters.')
         fields[key]=value.strip()
     if not fields['subject']: raise ValueError('Enter what you would like to see in the image.')
-    if fields['text'] and model not in ('qwen21','z-image','z-image-turbo'):raise ValueError('Visible text is available in Qwen and Z-Image recipes. Use the details field with other models.')
+    if fields['text'] and model not in ('z-image','z-image-turbo'):raise ValueError('Visible text is available in Z-Image recipes. Use the details field with other models.')
     ratio=body.get('aspect_ratio','auto')
     if not isinstance(ratio,str) or (ratio!='auto' and ratio not in FORMATS):raise ValueError('Choose a supported aspect ratio or Recommended.')
     quality=body.get('quality','standard')
@@ -615,7 +545,7 @@ def compose(body):
     else:
         negative=NEGATIVE+(', color, colored illustration' if recipe['id']=='anima-manga' else ', manga, comic, storyboard, letterboxing')
         if recipe['id'].startswith('lowpoly-'):negative+=' , smooth subdivided geometry, photorealistic textures, glossy plastic'
-    if recipe.get('category')=='craft' or model in ('qwen21','z-image','z-image-turbo'):
+    if recipe.get('category')=='craft' or model in ('z-image','z-image-turbo'):
         prompt=f"{recipe['style']}. {fields['subject']}, {scene}. {recipe['composition']}"
         if fields['details']:prompt+=' Additional details: '+fields['details']+'.'
         if fields['text']:prompt+=' Visible wording must read exactly: '+repr(fields['text'])+'. Preserve the spelling, capitalization and line breaks.'
@@ -623,26 +553,17 @@ def compose(body):
         negative=PHOTO_NEGATIVE if recipe.get('photographic') else 'worst quality, low quality, watermark, jpeg artifacts, collage, split screen, cropped main subject'
     if recipe.get('negative_extra'):negative+=', '+recipe['negative_extra']
     if not MODELS[model]['negative']:negative=''
-    if model=='krea-pixel':
-        from pixel_art import settings
-        grid,colors=settings(body.get('pixel_grid',recipe['pixel_grid']),body.get('pixel_colors',recipe['pixel_colors']))
-        # The 64-pixel LoRA works best without the author's pixel-art trigger.
-        style=recipe['style'].replace('pixel art','retro game') if grid==64 else 'pixel art, '+recipe['style']
-        prompt=f"{style}. {fields['subject']}, {scene}. {recipe['composition']}"
-        if recipe['id']=='pixel-loot':prompt=f"{style}, {scene}\n\n{fields['subject']}"
+    if model=='flux-pixel':
+        prompt=f"PXART4. {recipe['style']}. {fields['subject']}, {scene}. {recipe['composition']}"
         if fields['details']:prompt+=' Additional details: '+fields['details']+'.'
-        negative=''
-    elif 'pixel_grid' in body or 'pixel_colors' in body:
-        raise ValueError('Pixel settings are available with Krea Pixel Art.')
     if reference:
         prompt,negative=reference['prompt'],reference['negative_prompt']
     selected_formats=model_formats(model)
     size=(reference['size'] if reference else recipe['size']) if ratio=='auto' else selected_formats[ratio][1]
     draft_size=preview_size(size) if ratio=='auto' else selected_formats[ratio][2]
     sampling_model=model
-    steps={'anima':{'preview':30,'standard':35,'detail':45},'moss':{'preview':recipe.get('preview_steps',30 if photo or reference else 20),'standard':50,'detail':60},'qwen21':{'preview':20,'standard':40,'detail':50},'krea-pixel':dict.fromkeys(('preview','standard','detail'),8),'z-image':{'preview':28,'standard':40,'detail':50},'z-image-turbo':dict.fromkeys(('preview','standard','detail'),8)}[sampling_model]
-    result=dict(model=model,prompt=prompt,size=draft_size if quality=='preview' and model!='krea-pixel' else size,
+    steps={'anima':{'preview':30,'standard':35,'detail':45},'moss':{'preview':recipe.get('preview_steps',30 if photo or reference else 20),'standard':50,'detail':60},'flux-pixel':{'preview':12,'standard':20,'detail':35},'z-image':{'preview':28,'standard':40,'detail':50},'z-image-turbo':dict.fromkeys(('preview','standard','detail'),8)}[sampling_model]
+    result=dict(model=model,prompt=prompt,size=draft_size if quality=='preview' else size,
                 steps=steps[quality],cfg_scale=defaults(model)['cfg'],sampler='euler',negative_prompt=negative,preset='none')
-    if model=='krea-pixel': result.update(pixel_grid=grid,pixel_colors=colors)
     if 'seed' in body:result['seed']=body['seed']
     return result

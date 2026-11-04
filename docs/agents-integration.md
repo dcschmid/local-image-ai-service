@@ -156,15 +156,14 @@ agents should query live discovery before choosing IDs or reporting availability
 | --- | --- | ---: |
 | `moss` | Realistic photos, comic/craft illustrations, low-poly concepts and Blender references | 34: 9 photo, 7 craft/comic, 12 low-poly, 6 voxel |
 | `anima` | Anime, manga, character art, print styles and illustrated backgrounds | 17 |
-| `qwen21` | Detailed scenes, text, product/packaging concepts and transparent stickers | 10 |
-| `krea-pixel` | Native pixel icons, characters, creatures, vehicles, rooms, landscapes and concept sheets | 11 |
+| `flux-pixel` | Pixel icons, characters, creatures, vehicles, rooms, landscapes and concept sheets | 11 |
 | `z-image` | Fantasy paintings, ink wash, vintage science fiction, fashion and botanical art | 5 |
 | `z-image-turbo` | Eight-step photo, cinema, product, lettering and food studies | 5 |
 
 There are also 17 free-prompt styles and 7 aspect ratios. Discovery includes
-model licenses and installation status; Qwen's configured profile has a
-non-commercial research/evaluation license. Describe the installed profiles
-accurately when agents explain the choices.
+model licenses and installation status; Anima's model weights are non-commercial
+(generated images may be used commercially). Describe the
+installed profiles accurately when agents explain the choices.
 
 Each model’s `formats` lists its actual final and draft sizes; Z-Image’s 3:2 and
 2:3 formats differ from the common defaults. After adding profiles, reconnect
@@ -200,7 +199,7 @@ The Studio example library remains available under `/studio/`.
 | `generate_image` | Queue 1–8 images and return job IDs immediately |
 | `list_jobs`, `get_job`, `wait_for_job` | Follow progress; individual waits last at most 30 seconds |
 | `cancel_job` | Cancel the specified job when requested |
-| `export_image` | Export PNG, JSON metadata and native pixel companion |
+| `export_image` | Export PNG and JSON metadata |
 | `list_images`, `get_image` | Find archived images and inspect their metadata |
 | `set_favorite` | Set/clear an image's favorite flag |
 | `list_asset_views`, `get_asset_views` | Inspect Blender options and CPU model render progress |

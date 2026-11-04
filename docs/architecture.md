@@ -64,21 +64,15 @@ private configuration while the service is stopped.
 | --- | --- |
 | MOSS SFT | Diffusion model, text encoder, VAE and tokenizer; photography, illustration and low-poly recipes. |
 | Anima Aesthetic | Shared Anima diffusion model, text encoder and VAE; anime and illustration recipes. |
-| Qwen Image 2.1 | Dedicated diffusion model, encoder and VAE; its non-commercial research license is displayed in the UI. |
 | Z-Image / Turbo | Separate diffusion weights with one shared Qwen3 4B encoder and FLUX VAE; normal CFG/negative prompting versus eight-step distilled sampling. |
-| Krea Pixel Art | Krea Turbo components with separately prepared 32, 64 and 128-grid DoRA variants, followed by deterministic pixel cleanup. |
+| FLUX.2-klein · Pixel Art | FLUX.2-klein-4B diffusion, Qwen3-4B encoder, FLUX VAE and the PXART4 pixel art LoRA; the LoRA is applied at load time. |
 
 MOSS handles all low-poly compositions through visible prompts and sampling
 presets. The retired Anima PSX/Low Poly Style profiles and their separate adapter
 loader are removed. Their historical images remain readable/exportable, and the
 shared Anima Aesthetic base components remain available.
 
-Krea's DoRA adapters need a different preparation path. The pinned native runtime
-does not apply their learned magnitudes directly. `scripts/prepare-pixel-models.py`
-merges each complete adapter into its own quantized diffusion copy using the CPU
-conversion helper. At runtime the selected grid loads that prepared copy; it
-must not apply the adapter a second time. The original base remains unchanged.
-See the [pixel-art setup guide](krea-pixel-art.md) for dependencies and disk usage.
+The PXART4 LoRA is applied at load time through the native runtime's `--lora-model-dir` flag; no separate preparation step is needed. See the [pixel-art guide](pixel-art.md) for components and disk usage.
 
 ## Recipes and public examples
 
@@ -93,7 +87,7 @@ not guarantee identical output across different hardware, weights or runtimes.
 can read existing candidates without modifying the user's gallery, and reuses
 them only when their inputs, compiled settings and required adapter revision
 match. The bundled manifest records the actual example inputs and seed, which
-the frontend restores through “Use this example”. Public WebP examples and native pixel PNGs are committed under `studio/public/recipe-examples/`.
+the frontend restores through “Use this example”. Public WebP examples are committed under `studio/public/recipe-examples/`.
 
 ## Private image lifecycle
 
@@ -156,8 +150,7 @@ The `scripts/verify-*.py` tools perform explicit GPU checks with their documente
 service lifecycle requirements. Prefer their isolated archives for new model QA;
 do not generate disposable checks into the user's gallery. Existing measurements
 and limitations are recorded in the model-specific test reports, including
-[historical Anima Low Poly](anima-lowpoly-test-report.md) and
-[Krea Pixel Art](krea-pixel-test-report.md). The current [Z-Image and expanded-preset report](z-image-and-presets.md#verification-results) includes the compatible checkpoint, all 70 examples, native format checks and CLI/MCP measurements.
+[historical Anima Low Poly](anima-lowpoly-test-report.md). The current [Z-Image and expanded-preset report](z-image-and-presets.md#verification-results) includes the compatible checkpoint, all 70 examples, native format checks and CLI/MCP measurements.
 
 ## CPU model views
 

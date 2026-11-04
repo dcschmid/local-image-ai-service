@@ -8,8 +8,7 @@ Generated from the service catalog at installation/package time. Query the live 
 | --- | --- | --- | --- |
 | `moss` | MOSS SFT | Choose a realistic photography recipe or a low-poly scene. Each recipe prepares lighting, composition and settings; only your subject is required. | Apache-2.0 |
 | `anima` | Anima Aesthetic · 1.1 | For anime and illustration: choose a recipe and describe your subject. Aesthetic needs no score_* tags. | CircleStone (commercial image use allowed) |
-| `qwen21` | Qwen Image 2.1 · Uncensored GGUF | For detailed scenes, typography and transparent stickers. The supplier labels this upstream-weight GGUF uncensored. Qwen Research License: non-commercial research and evaluation only. | Qwen Research (non-commercial research/evaluation) |
-| `krea-pixel` | Krea 2 · Pixel Art | Pixel art with the 32, 64 or 128 pixel LoRA on Krea 2 Turbo. Generate at 1024 square, then refine to a clean grid and palette. LoRA and base-model licenses both apply. | LoRAs: MIT · Base: Krea 2 Community License |
+| `flux-pixel` | FLUX.2-klein · Pixel Art | Pixel art on FLUX.2-klein-4B with the PXART4 LoRA. Generate at 1024 square; the LoRA produces a clean pixel grid. All components are Apache-2.0. | Apache-2.0 |
 | `z-image` | Z-Image | For creative illustration, varied characters and photography. Use descriptive sentences; negative prompts are supported. Recommended: 40 steps and CFG 4. | Apache-2.0 |
 | `z-image-turbo` | Z-Image Turbo | For quick photographs, product ideas and short English or Chinese lettering. Eight steps, CFG 1 and no negative prompt; describe the result you want directly. | Apache-2.0 |
 
@@ -80,22 +79,7 @@ Generated from the service catalog at installation/package time. Query the live 
 | `moss-felt` | Needle felt · tiny wool world | Soft wool fibers, rounded handmade figures and a miniature scene. |
 | `moss-stained-glass` | Stained glass · luminous window | Jewel-colored glass shapes, dark lead outlines and glowing transmitted light. |
 
-### qwen21 / qwen
-
-| ID | Preset | Purpose |
-| --- | --- | --- |
-| `qwen-poster` | Qwen · graphic travel poster | A bold illustrated poster with a clear subject and optional exact headline. |
-| `qwen-sticker` | Qwen · transparent sticker | An isolated sticker illustration with a transparent PNG background. |
-| `qwen-portrait` | Qwen · editorial portrait | A detailed photographic portrait with natural texture and editorial framing. |
-| `qwen-product` | Qwen · product campaign | A polished product scene with deliberate materials, reflections and optional label text. |
-| `qwen-cover` | Qwen · illustrated book cover | A dramatic illustrated cover with a clear focal scene and optional title. |
-| `qwen-world` | Qwen · isometric world | A detailed miniature world with coherent architecture, scale and lighting. |
-| `qwen-infographic` | Qwen · illustrated explainer | A simple illustrated process with a short heading and a few clearly separated stages. |
-| `qwen-exploded` | Qwen · exploded product concept | Separated product layers with readable materials and a coherent assembly direction. |
-| `qwen-packaging` | Qwen · packaging concept | One package with a clear front label, material texture and a coordinated graphic motif. |
-| `qwen-neon-sign` | Qwen · neon lettering scene | Short luminous lettering integrated into a rainy cinematic street scene. |
-
-### krea-pixel / pixel
+### flux-pixel / pixel
 
 | ID | Preset | Purpose |
 | --- | --- | --- |

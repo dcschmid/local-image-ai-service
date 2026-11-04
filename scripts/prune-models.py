@@ -5,7 +5,7 @@ import os
 from pathlib import Path
 import subprocess
 
-KEEP={'anima','moss','qwen21','krea-pixel','z-image','z-image-turbo'}
+KEEP={'anima','moss','flux-pixel','z-image','z-image-turbo'}
 
 def main():
     os.umask(0o077)

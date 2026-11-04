@@ -86,11 +86,9 @@ def load_config(path=CONFIG):
         raise ValueError("gpu_uuid must be an NVIDIA GPU UUID")
     for name, files in cfg["models"].items():
         required = {"diffusion", "llm", "vae"} | ({"tokenizer"} if name == "moss" else set())
-        if name == 'krea-pixel':required |= {'lora32','lora64','lora128','pixel32','pixel64','pixel128'}
+        if name == 'flux-pixel':required |= {'lora'}
         if set(files) != required or any(not Path(p).is_absolute() for p in files.values()):
             raise ValueError(f"Invalid model paths for {name}")
-        if name == 'krea-pixel' and len({str(Path(files['lora'+str(grid)]).parent) for grid in (32,64,128)})!=1:
-            raise ValueError('Pixel LoRAs must share one directory')
     if cfg.get("api_key_file"):
         key_path = Path(cfg["api_key_file"])
         if not key_path.is_absolute():
@@ -218,7 +216,6 @@ class Backend:
         self.stopping = threading.Event()
         self.failure = None
         self.model = cfg["active_model"]
-        self.pixel_grid = 64
 
     def stop(self):
         self.ready.clear()
@@ -264,12 +261,9 @@ class Backend:
             args[args.index("--sampling-method") + 1] = MODELS[self.model]["sampler"]
             flags = {"diffusion": "--diffusion-model", "llm": "--llm", "vae": "--vae", "tokenizer": "--tokenizer", "checkpoint": "--model"}
             for role, path in cfg["models"][self.model].items():
-                # Adapter sources and prepared variants are provenance entries,
-                # not additional native command-line model roles.
-                if role.startswith(('lora','pixel')):continue
-                if self.model=='krea-pixel' and role=='diffusion':
-                    # DoRA is already baked into this variant; do not apply it twice.
-                    path=cfg['models'][self.model]['pixel'+str(self.pixel_grid)]
+                if role == 'lora':
+                    args.extend(["--lora-model-dir", str(Path(path).parent)])
+                    continue
                 args.extend([flags[role], path])
             if self.stopping.is_set():
                 return
@@ -314,10 +308,10 @@ class Backend:
         if "steps" in native: sample["sample_steps"] = native.pop("steps")
         if "cfg_scale" in native: sample["guidance"] = {"txt_cfg": native.pop("cfg_scale")}
         if "sampler" in native: sample["sample_method"] = native.pop("sampler")
-        if self.model=='krea-pixel':
-            sample.update(scheduler='flux',extra_sample_args=MODELS[self.model]['extra_sample_args'])
         if sample: extra["sample_params"] = sample
         if "negative_prompt" in native: extra["negative_prompt"] = native.pop("negative_prompt")
+        if self.model == 'flux-pixel':
+            native["prompt"] = "<lora:pixelart_lora:1> " + native["prompt"]
         native["prompt"] += "<sd_cpp_extra_args>" + json.dumps(extra) + "</sd_cpp_extra_args>"
         conn = http.client.HTTPConnection("127.0.0.1", self.cfg["backend_port"], timeout=self.cfg["generation_timeout"])
         expired = threading.Event()
@@ -339,11 +333,6 @@ class Backend:
             if response.status != 200 or len(payload) > MAX_RESPONSE:
                 raise ValueError(f"Backend HTTP {response.status} or oversized response")
             result = validate_response(payload, body["size"])
-            if self.model == 'krea-pixel':
-                import pixel_art
-                for item in result['data']:
-                    raw, _, _ = pixel_art.refine(base64.b64decode(item['b64_json']), self.pixel_grid, 24)
-                    item['b64_json'] = base64.b64encode(raw).decode()
             result["model"] = self.model
             result["seed"] = seed
             return result
