@@ -15,18 +15,20 @@ That starts the service and opens the browser. For a first installation, work th
 `scripts/setup.sh` runs the steps below in order with dependency checks, reusing the tested per-part scripts. It stops a running service first, never enables login autostart, and ends with `doctor` and a service start:
 
 ```bash
-# Runtime archive present in dist/ (produced by scripts/package-runtime.py):
+# Fresh machine: builds the pinned runtime from source and reuses the
+# existing MOSS components:
 scripts/setup.sh
 
 # Also download extra model weights (service is stopped during the download):
 scripts/setup.sh --models anima z-image z-image-turbo flux-pixel
 
-# No archive and no known-good build? Build the pinned runtime from source
-# (CUDA toolkit is auto-detected; pass --cuda-toolkit <dir> to override):
-scripts/setup.sh --build-runtime
+# No build tools or CUDA toolkit? Install from a portable archive instead:
+scripts/setup.sh --no-build --runtime-archive /path/to/runtime-<revision>.tar.zst
 ```
 
-The runtime is installed in this order: `--build-runtime`, then a portable archive (`--runtime-archive <p>`, or auto-detected `dist/runtime-<revision>.tar.zst`), then a known-good build at the default paths. The archive bundles the pinned `sd-server` binary and its CUDA libraries, so a machine that has it needs no compiler or CUDA toolkit — only the NVIDIA driver. `scripts/package-runtime.py` produces the archive and a manifest from an installed, verified runtime; the installer re-verifies every file against [runtime.lock.json](../runtime.lock.json) before use. The archive is a build artifact (gitignored); distribute it however you like (a release, a model host, or `scp`) and point `--runtime-archive` at it.
+By default the pinned `stable-diffusion.cpp` runtime is **built from source**, so a fresh machine needs no prebuilt artifact — only the NVIDIA driver, a CUDA 13.4 toolkit (auto-detected, or `--cuda-toolkit <dir>`) and the build tools (`cmake`, `ninja`, a C/C++ compiler). The build is cached under `~/.cache/local-image-ai-service/build` and the installed binary is re-verified against [runtime.lock.json](../runtime.lock.json).
+
+`--no-build` skips the source build and installs the runtime from a portable archive (`--runtime-archive <p>`) or a known-good build at the default paths. `scripts/package-runtime.py` produces such an archive and a manifest from an installed, verified runtime; the installer re-verifies every file against the pin before use. The archive is a build artifact (gitignored) — use it to skip the build on machines without a compiler or CUDA toolkit.
 
 Use `--no-start` to leave the service stopped, `--skip-studio` to reuse an existing `studio/dist`, and `--runtime-binary/--runtime-cuda-lib/--runtime-source` to point at a different build. The manual steps below document what the script does.
 

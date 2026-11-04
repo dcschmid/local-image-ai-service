@@ -4,7 +4,8 @@
 # Runs the documented steps in order, reusing the tested per-part scripts:
 #   1. dependency checks
 #   2. build the Studio (npm)
-#   3. install the inference runtime (copy a known build, or build from source)
+#   3. install the inference runtime (built from source by default; or a
+#      portable archive / known-good build with --no-build)
 #   4. install the application + user unit (scripts/install.py)
 #   5. fill the private config (gpu_uuid, runtime paths, MOSS model paths)
 #   6. doctor
@@ -21,16 +22,16 @@ RUNTIME_DIR="$HOME/.local/share/local-image-ai-service/runtime"
 CONFIG="$HOME/.config/local-image-ai-service/config.json"
 OLD_MODELS="$HOME/.local/share/local-image-ai/models"
 
-# Known-good runtime build (see docs/installation.md). Override with --runtime-*.
+# Known-good runtime build (fallback when --no-build). Override with --runtime-*.
 RUNTIME_BINARY="$HOME/.local/share/local-image-ai/engines/sd-install/bin/sd-server"
 RUNTIME_CUDA_LIB="$HOME/.local/share/local-image-ai/engines/cuda/lib"
 RUNTIME_SOURCE="$HOME/.local/share/local-image-ai/engines/stable-diffusion.cpp"
-# Portable runtime archive (see scripts/package-runtime.py). Empty = auto-detect in dist/.
+# Portable runtime archive (see scripts/package-runtime.py). Empty = not used.
 RUNTIME_ARCHIVE=""
 
 MODELS=""            # space-separated model ids to install (default: none)
-BUILD_RUNTIME=0      # 1 = build the pinned runtime from source
-CUDA_TOOLKIT=""      # CUDA 13.4 toolkit root (auto-detected when --build-runtime)
+NO_BUILD=0           # 1 = skip the source build (use archive or known-good build)
+CUDA_TOOLKIT=""      # CUDA 13.4 toolkit root (auto-detected)
 SKIP_STUDIO=0
 NO_START=0
 
@@ -41,11 +42,10 @@ Usage: scripts/setup.sh [options]
 Options:
   --models <ids...>     Model weights to download (anima z-image z-image-turbo flux-pixel).
                         Default: none (MOSS is reused from the existing installation).
+  --no-build            Do not build the runtime from source; use a portable
+                        archive (--runtime-archive) or a known-good build instead.
   --runtime-archive <p> Install the runtime from a portable archive produced by
-                        scripts/package-runtime.py. Default: auto-detect
-                        dist/runtime-<revision>.tar.zst.
-  --build-runtime       Build the pinned stable-diffusion.cpp runtime from source
-                        (needs a CUDA 13.4 toolkit; auto-detected if not given).
+                        scripts/package-runtime.py (with --no-build).
   --cuda-toolkit <dir>  CUDA 13.4 toolkit root (default: auto-detected).
   --runtime-binary <p>  sd-server binary to copy (known-good build fallback).
   --runtime-cuda-lib <p> CUDA library dir to copy (known-good build fallback).
@@ -54,15 +54,18 @@ Options:
   --no-start            Do not start the service at the end.
   -h, --help            Show this help.
 
-Runtime install order: --build-runtime, then --runtime-archive / dist/ archive,
-then a known-good build at the default paths.
+By default the pinned stable-diffusion.cpp runtime is built from source, so a
+fresh machine needs no prebuilt artifact — only the NVIDIA driver, a CUDA 13.4
+toolkit and the build tools (cmake, ninja, a C/C++ compiler). The build is
+cached under ~/.cache/local-image-ai-service/build and re-verified against
+runtime.lock.json.
 EOF
 }
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --models) shift; MODELS="$*"; break ;;
-    --build-runtime) BUILD_RUNTIME=1; shift ;;
+    --no-build) NO_BUILD=1; shift ;;
     --cuda-toolkit) CUDA_TOOLKIT="$2"; shift 2 ;;
     --runtime-archive) RUNTIME_ARCHIVE="$2"; shift 2 ;;
     --runtime-binary) RUNTIME_BINARY="$2"; shift 2 ;;
@@ -102,7 +105,8 @@ GPU_UUID="$(nvidia-smi --query-gpu=uuid --format=csv,noheader | head -1 | tr -d 
 [[ "$GPU_UUID" =~ ^GPU-[0-9a-fA-F-]+$ ]] || fail "could not read a valid NVIDIA GPU UUID"
 echo "  GPU: $GPU_UUID"
 
-if [[ "$BUILD_RUNTIME" -eq 1 ]]; then
+if [[ "$NO_BUILD" -eq 0 ]]; then
+  # Building the runtime from source needs a CUDA 13.4 toolkit and build tools.
   if [[ -z "$CUDA_TOOLKIT" ]]; then
     for cand in /usr/local/cuda /usr/local/cuda-13.4 /usr/local/cuda-13* \
                 "$HOME/.local/share/local-image-ai/engines/cuda" /opt/cuda*; do
@@ -110,9 +114,11 @@ if [[ "$BUILD_RUNTIME" -eq 1 ]]; then
     done
   fi
   [[ -n "$CUDA_TOOLKIT" && -x "$CUDA_TOOLKIT/bin/nvcc" ]] || \
-    fail "no CUDA 13.4 toolkit found; pass --cuda-toolkit <dir> or drop --build-runtime"
+    fail "no CUDA 13.4 toolkit found; pass --cuda-toolkit <dir> or use --no-build with --runtime-archive"
   need cmake
   need ninja
+  need gcc
+  need g++
   echo "  CUDA toolkit: $CUDA_TOOLKIT"
 fi
 
@@ -135,15 +141,10 @@ fi
 
 # --- 3. Runtime -------------------------------------------------------------
 step "3/7 Installing the inference runtime"
-if [[ "$BUILD_RUNTIME" -eq 1 ]]; then
+if [[ "$NO_BUILD" -eq 0 ]]; then
+  # Default: build the pinned runtime from source (cached, re-verified).
   CUDA_TOOLKIT_ROOT="$CUDA_TOOLKIT" bash scripts/build-runtime.sh
-elif [[ -z "$RUNTIME_ARCHIVE" ]]; then
-  # Auto-detect the portable archive in dist/ (see scripts/package-runtime.py).
-  for cand in "$ROOT"/dist/runtime-*.tar.zst; do
-    [[ -f "$cand" ]] && { RUNTIME_ARCHIVE="$cand"; break; }
-  done
-fi
-if [[ -n "$RUNTIME_ARCHIVE" ]]; then
+elif [[ -n "$RUNTIME_ARCHIVE" ]]; then
   [[ -f "$RUNTIME_ARCHIVE" ]] || fail "runtime archive not found: $RUNTIME_ARCHIVE"
   python3 - "$RUNTIME_ARCHIVE" "$RUNTIME_DIR" <<'PY'
 import hashlib, json, sys, tarfile
@@ -178,7 +179,7 @@ for rel, want in lock["installed_reference_sha256"].items():
 print(f"  installed {len(lock['installed_reference_sha256'])} runtime files from {archive.name}")
 PY
 else
-  [[ -x "$RUNTIME_BINARY" ]] || fail "no runtime source: pass --runtime-archive, --build-runtime, or a known-good build at the default paths"
+  [[ -x "$RUNTIME_BINARY" ]] || fail "no runtime source: build from source (drop --no-build), pass --runtime-archive, or a known-good build at the default paths"
   [[ -d "$RUNTIME_CUDA_LIB" ]] || fail "CUDA lib dir not found: $RUNTIME_CUDA_LIB"
   [[ -d "$RUNTIME_SOURCE/.git" ]] || fail "runtime source not a git checkout: $RUNTIME_SOURCE"
   python3 scripts/install-runtime.py \
