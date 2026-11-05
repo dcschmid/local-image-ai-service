@@ -207,10 +207,21 @@ class Studio:
         return path
 
     def fingerprint(self, model):
-        # Receipts are tied to runtime and the exact local component files.
+        # Receipts are tied to the runtime and the exact local component files.
+        # Content, not mtime, decides: copying byte-identical files during a
+        # reinstall keeps verification valid; real updates change it.
         paths = [self.backend.cfg['runtime'], *self.backend.cfg['models'].get(model, {}).values()]
         try:
-            return hashlib.sha256(json.dumps([(p, Path(p).stat().st_size, Path(p).stat().st_mtime_ns) for p in paths]).encode()).hexdigest()
+            marker = []
+            for p in paths:
+                size = Path(p).stat().st_size
+                with Path(p).open('rb') as stream:
+                    head = stream.read(4096)
+                    if size > 8192:
+                        stream.seek(-4096, os.SEEK_END)
+                        head += stream.read(4096)
+                marker.append((p, size, hashlib.sha256(head).hexdigest()))
+            return hashlib.sha256(json.dumps(marker).encode()).hexdigest()
         except OSError:
             return ''
 

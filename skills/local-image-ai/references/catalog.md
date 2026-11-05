@@ -83,10 +83,10 @@ Generated from the service catalog at installation/package time. Query the live 
 
 | ID | Preset | Purpose |
 | --- | --- | --- |
-| `pixel-loot` | Pixel · tiny loot icon | A bold 32-pixel inventory icon with a simple silhouette and a small palette. |
-| `pixel-character` | Pixel · adventure character | A complete 64-pixel game character with readable clothing and pose. |
-| `pixel-isometric` | Pixel · isometric hideaway | A miniature 64-pixel isometric building with tidy forms and cozy details. |
-| `pixel-landscape` | Pixel · scenic world | A detailed 128-pixel scene with layered scenery and a restrained palette. |
+| `pixel-loot` | Pixel · tiny loot icon | A bold pixel inventory icon with a simple silhouette and a small palette. |
+| `pixel-character` | Pixel · adventure character | A complete pixel game character with readable clothing and pose. |
+| `pixel-isometric` | Pixel · isometric hideaway | A miniature pixel isometric building with tidy forms and cozy details. |
+| `pixel-landscape` | Pixel · scenic world | A detailed pixel scene with layered scenery and a restrained palette. |
 | `pixel-creature` | Pixel · creature sprite | One complete game creature with grouped shading and an expressive silhouette. |
 | `pixel-portrait` | Pixel · dialogue portrait | A readable character bust suitable as a starting point for a game dialogue portrait. |
 | `pixel-vehicle` | Pixel · tiny vehicle | One small vehicle with clear wheels, readable bodywork and a simple background. |

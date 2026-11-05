@@ -52,6 +52,23 @@ The separate runtime needs the three CUDA libraries recorded in `runtime/receipt
 `cuda_lib` must point to its own absolute library directory. The previous installation is not
 used as a runtime fallback. `doctor` must report CUDA0; CPU fallback is not silent.
 
+## Wide recipe sizes fail after a runtime rebuild
+
+Recipes wider or taller than 1024 px (for example `1216x832` and `832x1216`) are only accepted
+for a model whose verification receipt matches the current runtime fingerprint, so compose can
+answer `size: dimensions must be multiples of 64 between 256 and 1024`. Reinstalling the runtime
+(`scripts/setup.sh`, `scripts/install-runtime.py` or a source rebuild) changes that fingerprint
+and invalidates every receipt. Refresh them with one real render per model on the GPU:
+
+```bash
+local-image-ai-service stop
+python3 scripts/verify-recipes.py --only lowpoly-world photo-portrait anima-portrait
+python3 scripts/verify-formats.py            # optional: dropdown formats too
+local-image-ai-service start
+```
+
+`verification.json` lives with the image library and survives reinstalls; the fingerprint decides.
+
 ## HTTP 404, 409, 429, or 504
 
 404 `model_not_found`: choose an installed curated model from `local-image-ai-service models`; the five supported IDs are `moss`, `anima`, `flux-pixel`, `z-image` and `z-image-turbo`.

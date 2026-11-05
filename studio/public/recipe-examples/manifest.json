@@ -675,9 +675,9 @@
     "steps": 20,
     "cfg_scale": 4.0,
     "sampler": "euler",
-    "prompt": "PXART4. retro isometric game asset, crisp square clusters, limited color palette. a tiny timber cabin with a red roof and a glowing round window, on one small grassy isometric tile against a dark blue background. Show the complete miniature structure from an elevated three-quarter view on one isolated square ground tile. Consistent isometric perspective, clear roof and walls, simple grouped shadows. No lettering or interface. Additional details: a stone path, one pine tree, a chimney with a small puff of smoke.",
-    "negative_prompt": "worst quality, low quality, blurry, jpeg artifacts, chromatic aberration, watermark, signature, comic panels, panel layout, split screen, collage, multiple views, reference sheet, white borders, manga, comic, storyboard, letterboxing",
-    "seconds": 52.87,
+    "prompt": "PXART4. 8-bit isometric pixel art game asset, chunky visible square pixels, hard-edged flat color blocks, limited color palette. a tiny timber cabin with a red roof and a glowing round window, on one small grassy isometric tile against a dark blue background. Show the complete miniature structure as a 2D pixel art sprite drawn on a coarse pixel grid, viewed from an elevated three-quarter angle on one isolated square ground tile. Every edge snaps to the grid; shading uses a few flat color steps. No lettering or interface. Additional details: a stone path, one pine tree, a chimney with a small puff of smoke.",
+    "negative_prompt": "worst quality, low quality, blurry, jpeg artifacts, chromatic aberration, watermark, signature, comic panels, panel layout, split screen, collage, multiple views, reference sheet, white borders, manga, comic, storyboard, letterboxing, 3d render, low poly, smooth gradients, soft shading, glossy surfaces, anti-aliasing",
+    "seconds": 50.52,
     "runtime_revision": "a77d3623180b2bc1886f3dd04c0aa04156a987ef",
     "transparent": false
   },
