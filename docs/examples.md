@@ -293,8 +293,3 @@ For more natural photos, see [the MOSS photography guide](moss-photography.md). 
 
 The source settings for all 82 public examples are in [the example manifest](../studio/public/recipe-examples/manifest.json). They include the original fields, composed prompt, negative prompt, seed and sampling settings.
 
-## Views from one model
-
-![One shared voxel kart, seven actual cameras](images/asset-views-voxel.webp)
-
-This sheet comes from one derived cubic mesh of the original demo kart, using the [3D Asset Views](asset-views.md) renderer. The GLB download contains that same mesh. Unlike an AI concept sheet, every camera sees the same geometry.

@@ -131,35 +131,6 @@ def create_server(**overrides) -> MCPServer:
         return guarded(lambda: dict(styles=presets(), formats=formats(), samplers=SAMPLERS, modeling=modeling_options()))
 
     @server.tool(annotations=read, structured_output=False)
-    def list_asset_views() -> CallToolResult:
-        """List recent 3D model renders and live Blender import options. Check these before retrying an uncertain submission."""
-        return guarded(lambda: dict(options=execute(['assets','options']),jobs=execute(['assets','list'])))
-
-    @server.tool(annotations=write, structured_output=False)
-    def render_asset_views(input_glb: Annotated[str,Field(min_length=1)], name: Annotated[str,Field(min_length=1,max_length=80)]='Imported asset',
-                           style: Literal['model','lowpoly','pixel','voxel']='model', front: Literal['-Y','+Y','-X','+X']='-Y',
-                           pixel_grid: Literal[32,64,128]=128, colors: Literal[16,24,32,64,128]=32,
-                           voxel_grid: Literal[16,24,32,48,64]=24) -> CallToolResult:
-        """Queue seven orthographic CPU views from one embedded GLB (at most 32 MiB). Returns an accepted ID immediately. Z is up. Voxel creates a derived cube mesh; AI images are not converted to 3D."""
-        return guarded(lambda: execute(['assets','render','--input='+input_glb,'--name='+name,'--style='+style,'--front='+front,
-                                       '--pixel-grid',str(pixel_grid),'--colors',str(colors),'--voxel-grid',str(voxel_grid),'--async']))
-
-    @server.tool(annotations=read, structured_output=False)
-    def get_asset_views(job_id: RecordID) -> CallToolResult:
-        """Read progress, error or completed downloads for a model render. Poll this accepted ID; do not render again while it is pending."""
-        return guarded(lambda: execute(['assets','get',job_id]))
-
-    @server.tool(annotations=write, structured_output=False)
-    def export_asset_views(job_id: RecordID,save_dir: Annotated[str,Field(min_length=1)]) -> CallToolResult:
-        """Export a completed model render ZIP: seven PNGs, sheet, rendered GLB, camera/hash manifest and native pixel PNGs when selected. No new render."""
-        return guarded(lambda: execute(['assets','export',job_id,'--save-dir='+save_dir]))
-
-    @server.tool(annotations=ToolAnnotations(read_only_hint=False,destructive_hint=True,idempotent_hint=True,open_world_hint=False),structured_output=False)
-    def cancel_asset_views(job_id: RecordID) -> CallToolResult:
-        """Cancel the specified CPU model render when requested. Only this render's own Blender process is stopped."""
-        return guarded(lambda: execute(['assets','cancel',job_id]))
-
-    @server.tool(annotations=read, structured_output=False)
     def service_status() -> CallToolResult:
         """Read live readiness, loaded model and GPU busy state without starting or switching anything."""
         def status():

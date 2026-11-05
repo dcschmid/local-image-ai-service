@@ -158,8 +158,8 @@ with the supported low-poly, pixel and voxel recipes. MOSS supplies the low-poly
 Agents cannot pass arbitrary adapter paths or runtime control tags.
 
 AI references are single-view concepts or proposed concept sheets. Independently generated views can
-change geometry or details. See [the shared-blockout workflow](blender-references.md)
-or use [assets render](asset-views.md#cli-and-mcp) for consistent sheets from an imported GLB. A seed does not establish geometric or cross-hardware identity.
+change geometry or details. See [the shared-blockout workflow](blender-references.md).
+A seed does not establish geometric or cross-hardware identity.
 
 ## Asynchronous work, batches and recovery
 
@@ -211,6 +211,3 @@ switch occurs, and saving is opt-in. Use `render` for the complete Studio workfl
 See [the CLI verification report](agent-cli-test-report.md) for isolated HTTP
 coverage, real GPU rendering/export checks and user-data preservation.
 
-## Views from one GLB
-
-`assets options|list|render|get|wait|cancel|export` handles local CPU model renders separately from AI jobs. See [3D Asset Views](asset-views.md#cli-and-mcp) for commands, supported formats, recovery and export contents.

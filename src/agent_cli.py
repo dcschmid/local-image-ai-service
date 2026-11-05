@@ -18,7 +18,7 @@ from modeling_reference import ASSETS, VIEWS, options as modeling_options
 from recipes import formats, recipes
 from service import APIError, MAX_RESPONSE, missing_files, sampling_settings
 
-COMMANDS = {'catalog', 'models', 'recipes', 'presets', 'formats', 'compose', 'render', 'jobs', 'export', 'gallery', 'assets'}
+COMMANDS = {'catalog', 'models', 'recipes', 'presets', 'formats', 'compose', 'render', 'jobs', 'export', 'gallery'}
 JSON_LIMIT = 2 * 1024 * 1024
 INPUT_LIMIT = 65536
 
@@ -73,24 +73,6 @@ def request_arguments(parser):
 
 
 def add_commands(commands):
-    assets=commands.add_parser('assets',help='Render seven consistent CPU views from one local GLB')
-    actions=assets.add_subparsers(dest='action',required=True)
-    actions.add_parser('options');actions.add_parser('list')
-    render=actions.add_parser('render')
-    render.add_argument('--input',type=Path,required=True,help='Self-contained binary GLB, at most 32 MiB')
-    render.add_argument('--name',default='Imported asset')
-    render.add_argument('--style',choices=('model','lowpoly','pixel','voxel'),default='model')
-    render.add_argument('--front',choices=('-Y','+Y','-X','+X'),default='-Y',help='Use --front=-Y for negative axes; Blender Z is up')
-    render.add_argument('--pixel-grid',type=int,choices=(32,64,128),default=128)
-    render.add_argument('--colors',type=int,choices=(16,24,32,64,128),default=32)
-    render.add_argument('--voxel-grid',type=int,choices=(16,24,32,48,64),default=24)
-    render.add_argument('--async',dest='asynchronous',action='store_true')
-    render.add_argument('--save-dir',type=Path)
-    render.add_argument('--timeout',type=positive_seconds,default=330)
-    for name in ('get','wait','cancel','export'):
-        action=actions.add_parser(name);action.add_argument('id',type=identifier)
-        if name=='wait':action.add_argument('--timeout',type=positive_seconds,default=330)
-        if name in ('wait','export'):action.add_argument('--save-dir',type=Path,required=name=='export')
     for name in ('catalog', 'models', 'recipes'):
         parser = commands.add_parser(name, help='JSON model/recipe discovery; no generation')
         parser.add_argument('--model', choices=sorted(MODELS))
@@ -198,9 +180,9 @@ class Client:
     def call(self, path, body=None, *, raw=False, timeout=10):
         try:
             status, result = self.request(self.cfg, '/studio/api/' + path, body=body, timeout=timeout,
-                                          raw=raw, limit=(128*1024*1024 if path.startswith('assets/') else MAX_RESPONSE) if raw else JSON_LIMIT)
+                                          raw=raw, limit=MAX_RESPONSE if raw else JSON_LIMIT)
         except (OSError, ValueError, RuntimeError, http.client.HTTPException) as exc:
-            raise CommandError(str(exc), 'transport_error', submission_uncertain=path in ('jobs','assets') and body is not None) from None
+            raise CommandError(str(exc), 'transport_error', submission_uncertain=path == 'jobs' and body is not None) from None
         if status >= 400:
             if raw:
                 try: result = json.loads(result)
@@ -261,47 +243,6 @@ class Client:
         return output
 
 
-def execute_assets(args,client):
-    from asset_views import MAX_GLB,settings,validate_glb
-    if args.action in ('list','options'):return client.call('assets'+('/options' if args.action=='options' else ''))
-    directory=export_directory(args.save_dir) if getattr(args,'save_dir',None) is not None else None
-    if args.action=='render':
-        if args.asynchronous and directory is not None:raise CommandError('--async returns an ID; export the accepted render later.','invalid_arguments',2)
-        with args.input.expanduser().open('rb') as stream:raw=stream.read(MAX_GLB+1)
-        validate_glb(raw)
-        body=settings(dict(name=args.name,style=args.style,front=args.front,pixel_grid=args.pixel_grid,colors=args.colors,voxel_grid=args.voxel_grid))
-        job=client.call('assets',dict(body,data=base64.b64encode(raw).decode()))
-        job_id=identifier(job['id'])
-        if args.asynchronous:return job
-    else:job_id=args.id
-    try:
-        if args.action=='cancel':return client.call('assets/'+job_id+'/cancel',{})
-        if args.action in ('render','wait'):
-            deadline=time.monotonic()+args.timeout
-            while True:
-                remaining=deadline-time.monotonic()
-                if remaining<=0:raise CommandError('Client wait timed out; the render continues. Inspect the accepted ID before resubmitting.','wait_timeout',4,job_id=job_id)
-                job=client.call('assets/'+job_id,timeout=min(10,remaining))
-                if job['status']=='completed':break
-                if job['status'] in ('failed','cancelled'):raise CommandError(job.get('error') or job['status'],'job_'+job['status'],3,job_id=job_id)
-                time.sleep(min(.5,max(0,deadline-time.monotonic())))
-        else:job=client.call('assets/'+job_id)
-        if directory is not None:
-            if job['status']!='completed':raise CommandError('The asset render is not completed.','asset_pending',3,job_id=job_id)
-            raw=client.call('assets/'+job_id+'/files/views.zip',raw=True)
-            if not raw.startswith(b'PK\x03\x04'):raise CommandError('The asset archive is not a ZIP.','invalid_response',job_id=job_id)
-            directory.mkdir(parents=True,exist_ok=True)
-            path=directory/('asset-'+job_id+'-'+uuid.uuid4().hex[:8]+'.zip')
-            descriptor=os.open(path,os.O_WRONLY|os.O_CREAT|os.O_EXCL,0o600)
-            try:
-                with os.fdopen(descriptor,'wb') as stream:stream.write(raw);stream.flush();os.fsync(stream.fileno())
-            except BaseException:path.unlink(missing_ok=True);raise
-            job['exports']=dict(archive=str(path))
-        return job
-    except CommandError as exc:exc.details.setdefault('job_id',job_id);raise
-    except OSError as exc:raise CommandError(str(exc),'export_failed',job_id=job_id,note='The accepted model render remains archived; retry export without rendering again.') from None
-
-
 def discovery(args, load_config):
     selection = [r for r in recipes() if not getattr(args, 'model', None) or r['model'] == args.model]
     if args.command == 'recipes':
@@ -328,11 +269,11 @@ def discovery(args, load_config):
         output['sampling'] = sampling_settings(cfg) if cfg['active_model'] == 'moss' else defaults(cfg['active_model'])
     else:
         output.update(recipes=selection, presets=presets(), formats=formats(), modeling=modeling_options(), samplers=SAMPLERS,
-                      workflow=['compose', 'render', 'jobs get|wait|cancel', 'export', 'assets options|render|get|wait|cancel|export'],
+                      workflow=['compose', 'render', 'jobs get|wait|cancel', 'export'],
                       notes=['Discovery is local; configured_model is not a readiness claim. Use status --json.',
                              'compose/render use the running Studio API and its validation.',
                              'render archives results and switches models through the serial Studio worker.',
-                             'Independent AI reference views are concepts; assets render imports one GLB for matching geometry.'])
+                             'Independent AI reference views are concepts, not measured blueprints.'])
     return output
 
 
@@ -341,7 +282,6 @@ def execute(args, load_config, request, save_image, default_save_dir):
         return discovery(args, load_config)
     cfg = load_config()
     client = Client(cfg, request, save_image)
-    if args.command=='assets':return execute_assets(args,client)
     if args.command == 'gallery':
         if args.action == 'list':
             if not 0 <= args.offset <= 1000000:

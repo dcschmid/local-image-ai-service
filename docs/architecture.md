@@ -152,6 +152,3 @@ do not generate disposable checks into the user's gallery. Existing measurements
 and limitations are recorded in the model-specific test reports, including
 [historical Anima Low Poly](anima-lowpoly-test-report.md). The current [Z-Image and expanded-preset report](z-image-and-presets.md#verification-results) includes the compatible checkpoint, all 70 examples, native format checks and CLI/MCP measurements.
 
-## CPU model views
-
-`asset_views.py` validates embedded GLB uploads and maintains an independent persistent CPU queue. `render_asset.py` runs in a separate factory-startup Blender process, bakes one static model and renders seven shared-scale orthographic cameras. Pixel postprocessing uses one cross-view palette; voxel conversion creates one shared cubic surface mesh before rendering. Authenticated API routes, the Astro asset page, CLI `assets` commands and five MCP tools share this workflow. See [formats, bounds and verification](asset-views.md).

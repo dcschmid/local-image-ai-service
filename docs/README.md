@@ -25,7 +25,6 @@ If you just want to make an image, open the Studio and choose an example. You ca
 | People, products, food, interiors or natural landscapes | [MOSS photography](moss-photography.md) |
 | Anime, manga, watercolor, mecha or storybook art | [Anima and the Studio workflow](studio.md#choose-a-look) |
 | Animals, props, buildings, a kart or a whole track in low poly | [MOSS Low Poly](moss-lowpoly.md) |
-| Matching Low Poly, Pixel and Voxel views from one model | [3D Asset Views](asset-views.md) |
 | A modeler-friendly concept to build in Blender | [Blender references](blender-references.md) |
 | Icons, sprites, isometric buildings or pixel landscapes | [Pixel Art](pixel-art.md) |
 | Fast photo studies, ink wash or imaginative painted worlds | [Z-Image and the expanded presets](z-image-and-presets.md) |
@@ -49,7 +48,6 @@ These reports describe checks that were actually run. Older reports may mention 
 
 | Area | Report |
 | --- | --- |
-| Asset concepts, real GLB views, pixel/voxel exports | [CPU, GPU, browser and installed-service verification](asset-views-test-report.md) |
 | Z-Image, Turbo, all 70 examples and the expanded catalog | [Research, GPU measurements and integration checks](z-image-and-presets.md#verification-results) |
 | CLI, MCP, skill installation and all three agent clients | [Agent integration](agent-integration-test-report.md) |
 | Current MOSS low-poly presets and migration | [MOSS Low Poly](moss-lowpoly-test-report.md) |

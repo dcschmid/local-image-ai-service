@@ -125,6 +125,3 @@ The earlier cleanup retained 17 recipe images and newer custom results. It remov
 
 </details>
 
-## Consistent asset views
-
-Open **3D Asset Views** in the navigation to import one GLB and render seven directions with shared geometry and camera scale. It supports original materials, flat shading, shared pixel palettes and a derived voxel mesh. The AI creator also offers low-poly/pixel concept sheets and six voxel concepts. [Full workflow, limits and downloads](asset-views.md).

@@ -473,7 +473,7 @@ for family,model in (('lowpoly','moss'),('pixel','flux-pixel')):
             description='Four proposed views of one '+label+' design. AI estimates can differ; use a 3D model for geometry-consistent views.',
             example=example,scene='on a plain light gray background',style='game asset concept sheet',composition='Four aligned proposed views of one asset.',
             default_modeling_view='sheet',example_quality='standard' if family=='pixel' else 'preview',
-            tip='Compare the four proposed silhouettes, part counts and colors yourself. For exact matching views, open 3D Asset Views and import one GLB.'))
+            tip='Compare the four proposed silhouettes, part counts and colors yourself.'))
 for identifier,asset,label in (('voxel-character','character','character'),('voxel-kart','vehicle','kart'),
                               ('voxel-prop','prop','prop'),('voxel-building','building','building'),('voxel-diorama','scene','diorama')):
     example=dict(modeling_reference.ASSETS[asset]['example'],modeling_view='three-quarter',modeling_asset=asset)
@@ -481,7 +481,7 @@ for identifier,asset,label in (('voxel-character','character','character'),('vox
         description='A cubic voxel-style '+label+' concept with readable block shapes and a small material palette.',
         example=example,scene='on a plain light gray background',style='voxel art, visible cubic blocks, stepped forms, consistent cube size, matte limited colors',
         composition='One complete voxel-style asset, clear silhouette, neutral light and plain background.',
-        tip='This preset generates a voxel-style image. Import a GLB in 3D Asset Views for a real shared voxel mesh and matching directions.'))
+        tip='This preset generates a voxel-style image.'))
 ASSET_RECIPES.append(dict(id='voxel-anything',model='moss',category='voxel',name='Voxel · anything',size='1024x1024',
     description='Voxel-style creatures, objects and small worlds built from clear cubic blocks.',
     example=dict(subject='a small orange fox beside a blue pond and three pine trees',scene='on one square voxel terrain tile',details='large visible cubes, orange fur, green trees and pale blue water'),

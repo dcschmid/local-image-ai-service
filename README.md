@@ -27,7 +27,7 @@ These are actual outputs from the local service. Click a picture for its preset,
 </tr>
 </table>
 
-For game concepts, there are also [kart references and complete track overviews](docs/examples.md#game-concepts). The images are useful starting points for Blender; [3D Asset Views](docs/asset-views.md) renders seven matching directions from an imported GLB, including shared pixel palettes and real voxel meshes.
+For game concepts, there are also [kart references and complete track overviews](docs/examples.md#game-concepts). The images are useful starting points for Blender.
 
 ## Open the Studio
 
@@ -88,7 +88,7 @@ Discover the available choices with `models`, `recipes`, `presets` and `formats`
 
 ## Let your agent do the setup
 
-The installable **local-image-ai** skill teaches an agent to choose a preset, preview the prompt, generate locally and export the finished asset. MCP exposes the same workflow as 22 tools, including model discovery and library management.
+The installable **local-image-ai** skill teaches an agent to choose a preset, preview the prompt, generate locally and export the finished asset. MCP exposes the same workflow as 17 tools, including model discovery and library management.
 
 For Codex:
 
@@ -110,7 +110,6 @@ Then try a brief such as:
 | Learn the browser workflow | [Studio tour](docs/studio.md) |
 | See images and try their presets | [Example gallery](docs/examples.md) |
 | Make low-poly game concepts | [MOSS Low Poly](docs/moss-lowpoly.md) |
-| Render consistent Low Poly, Pixel and Voxel views | [3D Asset Views](docs/asset-views.md) |
 | Prepare useful Blender references | [Blender workflow](docs/blender-references.md) |
 | Use the terminal or an AI agent | [CLI](docs/agent-cli.md) · [MCP and skills](docs/agents-integration.md) |
 | Connect an application | [HTTP API](docs/api.md) · [Open WebUI](docs/open-webui.md) |

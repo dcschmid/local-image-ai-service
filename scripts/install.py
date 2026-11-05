@@ -17,7 +17,7 @@ def main():
     target = HOME / ".local/share/local-image-ai-service"
     app = target / "app"
     app.mkdir(parents=True, exist_ok=True)
-    for name in ("service.py", "manage.py", "agent_cli.py", "agent_integration.py", "mcp_server.py", "catalog.py", "studio_service.py", "recipes.py", "modeling_reference.py", "asset_views.py", "render_asset.py"):
+    for name in ("service.py", "manage.py", "agent_cli.py", "agent_integration.py", "mcp_server.py", "catalog.py", "studio_service.py", "recipes.py", "modeling_reference.py"):
         shutil.copyfile(ROOT / "src" / name, app / name)
     shutil.copytree(ROOT / 'skills/local-image-ai', app / 'skills/local-image-ai', dirs_exist_ok=True)
     web = ROOT / "studio/dist"
@@ -28,6 +28,17 @@ def main():
     (app / 'lora_adapter.py').unlink(missing_ok=True)
     for path in (app / '__pycache__').glob('lora_adapter.*.pyc'):
         path.unlink()
+    # The 3D asset views feature was removed; drop its installed code and pages.
+    for retired in ('asset_views.py', 'render_asset.py'):
+        (app / retired).unlink(missing_ok=True)
+        for path in (app / '__pycache__').glob(retired.replace('.py', '.*.pyc')):
+            path.unlink()
+    for stale in (app / 'web/asset-views').glob('*') if (app / 'web/asset-views').is_dir() else []:
+        stale.unlink()
+    (app / 'web/asset-views').rmdir() if (app / 'web/asset-views').is_dir() else None
+    if (app / 'web/assets').is_dir():
+        for path in (app / 'web/assets').glob('asset-views.*'):
+            path.unlink()
     for identifier in ('psx-character', 'psx-world', 'psx-prop', 'anima3d-character', 'anima3d-diorama', 'anima3d-landscape'):
         (app / 'web/recipe-examples' / (identifier + '.webp')).unlink(missing_ok=True)
     from PIL import Image  # Required for safe decoding, masks and PNG validation.

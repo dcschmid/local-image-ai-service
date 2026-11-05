@@ -124,12 +124,10 @@ also uses the skill description. Models and presets are available through the
 same discovery tools as in Codex.
 
 The private Claude and OMP skill copies have been refreshed for the current
-82-preset catalog and [GLB asset workflow](asset-views.md). Their shared private
-catalog and the stack's source payload contain the same managed skill as Codex,
-including pixel/voxel exports and the five model-view tools. Verification found
-22 MCP tools, a connected Claude registration and a working OMP discovery call.
-Installed-profile and strict skill audits passed; see the
-[refresh verification](asset-views-test-report.md#private-client-skill-refresh).
+catalog. Their shared private catalog and the stack's source payload contain the
+same managed skill as Codex. At the time of that refresh the bridge exposed 22
+MCP tools, a connected Claude registration and a working OMP discovery call.
+Installed-profile and strict skill audits passed at that point.
 
 Working profiles keep their existing configuration. Claude Working uses its
 scoped strict MCP configuration and swaps out private skill links at launch;
@@ -202,9 +200,6 @@ The Studio example library remains available under `/studio/`.
 | `export_image` | Export PNG and JSON metadata |
 | `list_images`, `get_image` | Find archived images and inspect their metadata |
 | `set_favorite` | Set/clear an image's favorite flag |
-| `list_asset_views`, `get_asset_views` | Inspect Blender options and CPU model render progress |
-| `render_asset_views` | Queue seven shared-scale views from one local GLB |
-| `export_asset_views`, `cancel_asset_views` | Export the model/view ZIP or cancel the specified CPU render |
 | `delete_images` | Delete 1–500 explicitly selected archive IDs |
 
 The `local-image-ai://catalog` resource exposes the full current catalog.

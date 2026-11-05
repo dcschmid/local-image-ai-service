@@ -1,6 +1,6 @@
 # Low-poly references for rebuilding in Blender
 
-Supported MOSS low-poly, FLUX.2-klein pixel and MOSS voxel recipes offer an **Asset concept** composition. Dedicated character, kart and prop sheet presets request four proposed views. [3D Asset Views](asset-views.md) additionally renders seven consistent directions from one imported GLB.
+Supported MOSS low-poly, FLUX.2-klein pixel and MOSS voxel recipes offer an **Asset concept** composition. Dedicated character, kart and prop sheet presets request four proposed views.
 New low-poly selections in guided mode start in three-quarter view. Choose an
 asset type: full-body character, vehicle, prop, building or modular environment.
 **Use Blender starter** fills an editable example brief. Only the subject is
@@ -67,7 +67,7 @@ Blender's official manual covers [image empties for references](https://docs.ble
 [orthographic cameras](https://docs.blender.org/manual/en/4.1/render/cameras.html)
 and [flat shading](https://docs.blender.org/manual/en/latest/modeling/meshes/editing/face/shading.html).
 Our recommended workflow uses these tools to obtain consistent views from shared
-geometry. The image generator itself does not export meshes, UVs or rigged assets. The separate GLB renderer exports the static mesh it actually rendered; it does not reconstruct a mesh from the concept image.
+geometry. The image generator itself does not export meshes, UVs or rigged assets, and it does not reconstruct a mesh from a concept image.
 
 ## Settings and compatibility
 
@@ -102,4 +102,4 @@ settings and `modeling_version` independently of the unchanged recipe version.
 Reusing it restores the requested asset type and view. Separate AI views remain
 independent concepts; the UI does not mark them as geometrically verified.
 
-Pixel references use the PXART4 LoRA on FLUX.2-klein. Voxel concepts use MOSS with a cubic style. Concept sheets use a square recommended canvas; their aspect ratio and quality controls still apply. See [the asset workflow](asset-views.md) for presets, real voxel geometry and shared pixel palettes from GLB.
+Pixel references use the PXART4 LoRA on FLUX.2-klein. Voxel concepts use MOSS with a cubic style. Concept sheets use a square recommended canvas; their aspect ratio and quality controls still apply.

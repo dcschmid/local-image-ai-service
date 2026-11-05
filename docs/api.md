@@ -156,6 +156,3 @@ retries or model reloads.
 The compatibility HTTP API creates no output URLs and saves no images. Optional CLI saving
 is performed by the client. Studio jobs separately save PNGs and metadata automatically.
 
-## GLB model views
-
-The authenticated `/studio/api/assets` endpoints manage a separate CPU queue for seven orthographic model views. See [the upload schema, routes, limits and outputs](asset-views.md#installation-api-and-boundaries). These are model renders; the `/v1/images` routes retain their existing text-to-image contract.
