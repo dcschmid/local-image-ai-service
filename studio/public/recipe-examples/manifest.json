@@ -633,7 +633,7 @@
     "sampler": "euler",
     "prompt": "PXART4. 8-bit pixel art inventory icon. a red mushroom with white spots, centered on a plain white background. One large isolated item fills most of the frame. Use a bold readable silhouette, chunky deliberate pixel clusters and simple shading. Leave a clear margin around the item. No lettering or interface. Additional details: a cream stem and a bold black outline.",
     "negative_prompt": "worst quality, low quality, blurry, jpeg artifacts, chromatic aberration, watermark, signature, comic panels, panel layout, split screen, collage, multiple views, reference sheet, white borders, manga, comic, storyboard, letterboxing",
-    "seconds": 35.26,
+    "seconds": 50.87,
     "runtime_revision": "a77d3623180b2bc1886f3dd04c0aa04156a987ef",
     "transparent": false
   },
@@ -655,7 +655,7 @@
     "sampler": "euler",
     "prompt": "PXART4. retro 16-bit RPG character sprite, crisp square clusters, limited color palette. a small red-haired forest ranger in a green cloak holding a wooden staff, standing in a relaxed three-quarter view against a plain cream background. Show one complete character from head to feet, centered, with a clear silhouette and space around the edges. Use a consistent light direction and simple grouped shading. No text or interface. Additional details: brown boots, a small leather satchel, warm amber highlights.",
     "negative_prompt": "worst quality, low quality, blurry, jpeg artifacts, chromatic aberration, watermark, signature, comic panels, panel layout, split screen, collage, multiple views, reference sheet, white borders, manga, comic, storyboard, letterboxing",
-    "seconds": 40.11,
+    "seconds": 48.62,
     "runtime_revision": "a77d3623180b2bc1886f3dd04c0aa04156a987ef",
     "transparent": false
   },
@@ -677,7 +677,7 @@
     "sampler": "euler",
     "prompt": "PXART4. retro isometric game asset, crisp square clusters, limited color palette. a tiny timber cabin with a red roof and a glowing round window, on one small grassy isometric tile against a dark blue background. Show the complete miniature structure from an elevated three-quarter view on one isolated square ground tile. Consistent isometric perspective, clear roof and walls, simple grouped shadows. No lettering or interface. Additional details: a stone path, one pine tree, a chimney with a small puff of smoke.",
     "negative_prompt": "worst quality, low quality, blurry, jpeg artifacts, chromatic aberration, watermark, signature, comic panels, panel layout, split screen, collage, multiple views, reference sheet, white borders, manga, comic, storyboard, letterboxing",
-    "seconds": 32.3,
+    "seconds": 52.87,
     "runtime_revision": "a77d3623180b2bc1886f3dd04c0aa04156a987ef",
     "transparent": false
   },
@@ -699,7 +699,7 @@
     "sampler": "euler",
     "prompt": "PXART4. detailed pixel art landscape, classic adventure game background. a quiet mountain lake with a small wooden cabin and tall pine trees, at sunset beneath lavender mountains and a peach-colored sky. One cohesive landscape with distinct foreground, middle distance and background. Group colors into deliberate square clusters and use a consistent light direction. No text, border or interface. Additional details: a warm window reflected in the water, reeds in the foreground, a thin crescent moon.",
     "negative_prompt": "worst quality, low quality, blurry, jpeg artifacts, chromatic aberration, watermark, signature, comic panels, panel layout, split screen, collage, multiple views, reference sheet, white borders, manga, comic, storyboard, letterboxing",
-    "seconds": 40.04,
+    "seconds": 48.59,
     "runtime_revision": "a77d3623180b2bc1886f3dd04c0aa04156a987ef",
     "transparent": false
   },
@@ -1059,7 +1059,7 @@
     "sampler": "euler",
     "prompt": "PXART4. retro monster sprite, crisp square clusters, limited color palette. a round turquoise cave lizard with orange crystal horns, in a side-on idle pose on a plain cream background. Show one complete creature with space around every edge, distinct limbs and simple grouped shadows. No sprite sheet, interface or text. Additional details: short sturdy legs, a curled tail, one bright amber eye.",
     "negative_prompt": "worst quality, low quality, blurry, jpeg artifacts, chromatic aberration, watermark, signature, comic panels, panel layout, split screen, collage, multiple views, reference sheet, white borders, manga, comic, storyboard, letterboxing",
-    "seconds": 36.2,
+    "seconds": 50.61,
     "runtime_revision": "a77d3623180b2bc1886f3dd04c0aa04156a987ef",
     "transparent": false
   },
@@ -1081,7 +1081,7 @@
     "sampler": "euler",
     "prompt": "PXART4. retro RPG dialogue portrait, crisp square clusters, limited color palette. an adult airship captain with silver hair, round goggles and a navy scarf, in a three-quarter bust view on a plain muted blue background. A single head-and-shoulders portrait fills the image, leaving clear space above the hair. Keep the face expressive and clothing shapes broad. No dialogue box or lettering. Additional details: a friendly raised eyebrow, brass collar clasp, warm skin highlights.",
     "negative_prompt": "worst quality, low quality, blurry, jpeg artifacts, chromatic aberration, watermark, signature, comic panels, panel layout, split screen, collage, multiple views, reference sheet, white borders, manga, comic, storyboard, letterboxing",
-    "seconds": 32.35,
+    "seconds": 48.67,
     "runtime_revision": "a77d3623180b2bc1886f3dd04c0aa04156a987ef",
     "transparent": false
   },
@@ -1103,7 +1103,7 @@
     "sampler": "euler",
     "prompt": "PXART4. retro game vehicle sprite, crisp square clusters, limited color palette. a yellow lunar delivery rover with four chunky dark wheels and a small blue cargo box, in a side view on a plain cream background. Show the complete vehicle with all outer edges inside the frame. Use broad body panels, readable wheels and one light direction. No track, interface or text. Additional details: one orange headlight, a short antenna, simple gray chassis.",
     "negative_prompt": "worst quality, low quality, blurry, jpeg artifacts, chromatic aberration, watermark, signature, comic panels, panel layout, split screen, collage, multiple views, reference sheet, white borders, manga, comic, storyboard, letterboxing",
-    "seconds": 32.28,
+    "seconds": 48.61,
     "runtime_revision": "a77d3623180b2bc1886f3dd04c0aa04156a987ef",
     "transparent": false
   },
@@ -1125,7 +1125,7 @@
     "sampler": "euler",
     "prompt": "PXART4. top-down pixel art dungeon environment, deliberate square clusters, limited color palette. one small stone alchemist room with a round cauldron, wooden shelves and a blue rug, seen from directly overhead. Keep the entire rectangular room visible with clear floor space, wall boundaries and one entrance. Place a few large props near the walls. No interface, characters or text. Additional details: two amber lamps, one entrance at the bottom, moss in the stone corners.",
     "negative_prompt": "worst quality, low quality, blurry, jpeg artifacts, chromatic aberration, watermark, signature, comic panels, panel layout, split screen, collage, multiple views, reference sheet, white borders, manga, comic, storyboard, letterboxing",
-    "seconds": 36.67,
+    "seconds": 48.61,
     "runtime_revision": "a77d3623180b2bc1886f3dd04c0aa04156a987ef",
     "transparent": false
   },
@@ -1562,7 +1562,7 @@
     "sampler": "euler",
     "prompt": "PXART4. retro game asset, deliberate square pixel clusters, crisp silhouette, limited palette. A single square four-view concept sheet proposes one asset: an adult forest courier with short brown hair, a green jacket and brown boots. Exactly four equally sized panels in a two-by-two grid: upper left front view, upper right left-side profile, lower left back view, lower right three-quarter view. Repeat the same main shapes, colors, part count and design features in each panel. Use a neutral standing A-pose, arms slightly away from the torso, hands separated from the hips and feet apart on the same ground line. Show the entire character from head to soles. Keep clothing volumes simple and accessories clear of the body silhouette. Use one consistent scale, a plain light gray background, even light, complete silhouettes and clear margins. Keep separate panels aligned. No extra figures, captions, text, borders, arrows or measurement lines. Construction notes: neutral A-pose, a short jacket ending above the hips, simple trousers. Shared design and material colors: three main material colors: forest green cloth, brown leather and cream fabric; one small belt pouch.",
     "negative_prompt": "",
-    "seconds": 38.91,
+    "seconds": 48.6,
     "runtime_revision": "a77d3623180b2bc1886f3dd04c0aa04156a987ef",
     "transparent": false
   },
@@ -1586,7 +1586,7 @@
     "sampler": "euler",
     "prompt": "PXART4. retro game asset, deliberate square pixel clusters, crisp silhouette, limited palette. A single square four-view concept sheet proposes one asset: a compact low-poly racing kart with four exposed black tires, one seat and a simple tubular chassis. Exactly four equally sized panels in a two-by-two grid: upper left front view, upper right left-side profile, lower left back view, lower right top view. Repeat the same main shapes, colors, part count and design features in each panel. Show the complete assembled vehicle with wheels straight, the chassis level and a readable relationship between chassis, axles, wheels and seat. Keep panels, wheel attachments and mechanical joins simple and physically connected. There is no driver. Use one consistent scale, a plain light gray background, even light, complete silhouettes and clear margins. Keep separate panels aligned. No extra figures, captions, text, borders, arrows or measurement lines. Construction notes: short front bumper, two axles, centered seat and steering wheel, no driver. Shared design and material colors: matte orange body panels, dark blue seat and frame, gray wheel hubs; large solid color regions.",
     "negative_prompt": "",
-    "seconds": 34.33,
+    "seconds": 48.54,
     "runtime_revision": "a77d3623180b2bc1886f3dd04c0aa04156a987ef",
     "transparent": false
   },
@@ -1610,7 +1610,7 @@
     "sampler": "euler",
     "prompt": "PXART4. retro game asset, deliberate square pixel clusters, crisp silhouette, limited palette. A single square four-view concept sheet proposes one asset: a small wooden treasure chest with a flat lid, two iron bands and a square latch. Exactly four equally sized panels in a two-by-two grid: upper left front view, upper right left-side profile, lower left back view, lower right three-quarter view. Repeat the same main shapes, colors, part count and design features in each panel. Show one complete assembled object in a stable resting position. Make its main volumes, thicknesses and functional joins readable. Keep separate parts visibly connected and small details large enough to rebuild. Use one consistent scale, a plain light gray background, even light, complete silhouettes and clear margins. Keep separate panels aligned. No extra figures, captions, text, borders, arrows or measurement lines. Construction notes: lid closed, rectangular body, clearly visible wood thickness and simple hinges. Shared design and material colors: warm brown wood, dark gray iron bands and one brass latch; no scattered coins.",
     "negative_prompt": "",
-    "seconds": 34.17,
+    "seconds": 48.63,
     "runtime_revision": "a77d3623180b2bc1886f3dd04c0aa04156a987ef",
     "transparent": false
   }
