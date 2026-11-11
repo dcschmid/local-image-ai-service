@@ -12,6 +12,11 @@ test('guided recipes, photography, low poly, free prompt, guide and mobile layou
  await expect(page.locator('#recipe optgroup[label="MOSS · realistic photography"] option')).toHaveCount(9);
  await expect(page.locator('#recipe option:checked')).toHaveText('Cinematic character portrait');
  await expect(page.locator('#model-note')).toContainText('For anime and illustration');
+ await expect(page.locator('#expertise-easy')).toHaveAttribute('aria-pressed','true');
+ await expect(page.locator('#workflow-field')).toBeHidden();await expect(page.locator('#license')).toBeHidden();
+ await page.locator('#expertise-expert').click();
+ await expect(page.locator('#expertise-expert')).toHaveAttribute('aria-pressed','true');
+ await expect(page.locator('#workflow-field')).toBeVisible();await expect(page.locator('#license')).toBeVisible();
  await page.locator('#example').click();await page.locator('#recipe-quality').selectOption('standard');
  await expect(page.locator('#subject')).toHaveValue(/bounty hunter/);
  await expect(page.locator('#recipe-preview')).toContainText('cinematic anime illustration');

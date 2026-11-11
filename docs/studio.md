@@ -12,6 +12,8 @@ The command starts the service and opens [the Studio](http://127.0.0.1:7861/stud
 
 *Screenshots show the real interface with bundled public examples in an isolated documentation demo.*
 
+The header of **Your creation** switches the panel between **Easy** and **Expert**. Easy hides the workflow choice, the model license link, template save/delete, the style suffix, mask upload/zoom and the advanced settings; Expert shows everything. The choice is remembered in your browser and never changes a request on its own.
+
 ## Find a starting point
 
 Open **Explore**. Browse by model or search for a look such as `portrait`, `neon`, `clay`, `sticker` or `low poly`.
@@ -90,7 +92,7 @@ Deletion asks for confirmation and removes the selected archive images and saved
 
 Switch to **Free prompt · custom settings** to write the full prompt and adjust size, sampler, steps, CFG and the negative prompt directly. Sixteen free-prompt styles can add a starting look.
 
-The current six profiles are text-to-image workflows. Image-to-image, reference-image editing and mask editing are not available with this selection. For a low-poly reference you intend to model in Blender, use [the dedicated workflow](blender-references.md): separate generated views can change the design.
+The current six profiles are text-to-image workflows. Verified models additionally accept editing workflows: upload a template image (a photo of yourself works well), then pick **Reimagine image** to restyle it through any verified model, or **Edit area** with a mask to change one part. Save a picture once under **My templates** and it stays available for every model and every later session. Editing modes unlock per model after one measured local run of `python3 scripts/verify-modes.py`; until then the Studio keeps them marked as not yet tested. For a low-poly reference you intend to model in Blender, use [the dedicated workflow](blender-references.md): separate generated views can change the design.
 
 ## Where everything lives
 

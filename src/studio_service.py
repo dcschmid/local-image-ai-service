@@ -202,9 +202,19 @@ class Studio:
     def visible_file(self, identifier):
         path=self.file(identifier)
         with self.db() as db:
-            found=db.execute("SELECT 1 FROM records WHERE id=? AND kind IN ('image','upload')",(identifier,)).fetchone()
+            found=db.execute("SELECT 1 FROM records WHERE id=? AND kind IN ('image','upload','template')",(identifier,)).fetchone()
         if not found: error(404,'Image not found.')
         return path
+
+    def source(self, identifier):
+        # Reference inputs arrive as transient uploads or as named templates.
+        from service import APIError
+        for kind in ('upload','template'):
+            try:
+                return self.get(identifier, kind)
+            except APIError:
+                continue
+        error(404,'Record not found.')
 
     def fingerprint(self, model):
         # Receipts are tied to the runtime and the exact local component files.
@@ -261,6 +271,42 @@ class Studio:
         self.write_file(identifier, raw)
         return self.put('upload', dict(id=identifier, size=list(size), created=time.time()))
 
+    def save_template(self, body):
+        # A template is a durable, named copy of an upload, gallery image or template.
+        from service import APIError
+        source_id = body.get('source_id')
+        name = body.get('name')
+        if not isinstance(name, str) or not 1 <= len(name.strip()) <= 60:
+            error(400, 'Template name must be 1 to 60 characters.')
+        source = None
+        for kind in ('upload','image','template'):
+            try: source = self.get(source_id, kind); break
+            except APIError: continue
+        if source is None:
+            error(404, 'Source image not found. Upload a picture or pick one from the library first.')
+        identifier = uuid.uuid4().hex
+        try:
+            self.write_file(identifier, self.file(source['id']).read_bytes())
+            with Image.open(self.file(identifier)) as opened: size = list(opened.size)
+        except OSError as exc:
+            error(500, 'The template file could not be stored: ' + str(exc)[:200])
+        return self.put('template', dict(id=identifier, name=name.strip(), source_id=source['id'], size=size, created=time.time()))
+
+    def rename_template(self, identifier, body):
+        name = body.get('name')
+        if not isinstance(name, str) or not 1 <= len(name.strip()) <= 60:
+            error(400, 'Template name must be 1 to 60 characters.')
+        item = self.get(identifier, 'template')
+        item['name'] = name.strip()
+        return self.put('template', item)
+
+    def delete_template(self, identifier):
+        self.get(identifier, 'template')
+        with self.db() as db:
+            db.execute("DELETE FROM records WHERE id=? AND kind='template'", (identifier,))
+        self.file(identifier).unlink(missing_ok=True)
+        return {'id': identifier, 'deleted': True}
+
     def prepare(self, body, verification=False):
         from service import validate_request
         if not isinstance(body, dict):
@@ -309,7 +355,8 @@ class Studio:
             except (OSError,ValueError): pass
         native, seed = validate_request(request, model, max_dimension=max_dimension)
         request.update(model=model,seed=seed,size=native['size'],mode=mode)
-        for key, default, maximum in [('strength',.65,1),('feather',8,32)]:
+        default_strength = MODELS[model].get('edit',{}).get('strength',.65)
+        for key, default, maximum in [('strength',default_strength,1),('feather',8,32)]:
             value = body.get(key,default)
             if type(value) not in (int,float) or not 0 <= value <= maximum:
                 error(400, 'Invalid value: ' + key)
@@ -318,7 +365,7 @@ class Studio:
         if not isinstance(request['preset'],str) or request['preset'] not in {p['id'] for p in presets()}:
             error(400, 'Unknown preset.')
         if mode != 'text':
-            image = self.get(body.get('image_id'), 'upload')
+            image = self.source(body.get('image_id'))
             request['image_id'] = image['id']
             if mode == 'inpaint':
                 mask = self.get(body.get('mask_id'), 'upload')
@@ -560,6 +607,7 @@ class Studio:
             if route=='/studio/api/status': return h.send_json(200,dict(ready=self.backend.available(),model=self.backend.model,error=self.backend.failure))
             if route=='/studio/api/catalog': return h.send_json(200,dict(models=self.catalog(),presets=presets(),samplers=SAMPLERS,recipes=recipes(),formats=formats(),examples=self.examples(),modeling=modeling_reference.options()))
             if route=='/studio/api/jobs': return h.send_json(200,self.listing('job'))
+            if route=='/studio/api/templates': return h.send_json(200,self.listing('template',200))
             match=re.fullmatch('/studio/api/jobs/([a-f0-9]{32})',route)
             if match: return h.send_json(200,self.get(match[1],'job'))
             match=re.fullmatch('/studio/api/gallery/([a-f0-9]{32})',route)
@@ -579,6 +627,13 @@ class Studio:
         if h.command=='POST':
             body=self.read_body(h)
             if route=='/studio/api/uploads': return h.send_json(201,self.upload(body))
+            if route=='/studio/api/templates': return h.send_json(201,self.save_template(body))
+            match=re.fullmatch('/studio/api/templates/([a-f0-9]{32})/rename',route)
+            if match: return h.send_json(200,self.rename_template(match[1],body))
+            if route=='/studio/api/templates/delete':
+                ids=body.get('ids')
+                if not isinstance(ids,list) or not 1<=len(ids)<=200: error(400,'Select 1 to 200 templates to delete.')
+                return h.send_json(200,{'deleted_ids':[self.delete_template(self.get(i,'template')['id'])['id'] for i in dict.fromkeys(ids)]})
             if route=='/studio/api/gallery/delete': return h.send_json(200,self.delete_images(body.get('ids')))
             if route=='/studio/api/jobs': return h.send_json(202,self.submit(body))
             if route=='/studio/api/compose': return h.send_json(200,self.prepare(body))

@@ -75,5 +75,9 @@ AI profiles are text-to-image workflows. A requested orthographic camera,
 fixed seed or multiple independent views does not establish shared 3D geometry.
 Use one approved image and a shared Blender blockout for matched views. Images
 are concepts, not meshes, UV maps, rigs or verified drivable track splines.
-For reference-image editing, first check current supported/verified capabilities;
-do not silently substitute an unrelated new image or a cloud provider.
+Editing verified models works: pass `mode img2img` (or `inpaint` with a mask)
+with `template`/`template_id` through MCP or `--template`/`--template-id` on the
+CLI, and named durable pictures through `list_templates`/`save_template` (CLI
+`templates list|save|rename|delete`). Editing modes unlock per model only after
+a local `scripts/verify-modes.py` receipt; unverified models report that plainly.
+Do not silently substitute an unrelated new image or a cloud provider.

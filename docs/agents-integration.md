@@ -201,6 +201,7 @@ The Studio example library remains available under `/studio/`.
 | `list_images`, `get_image` | Find archived images and inspect their metadata |
 | `set_favorite` | Set/clear an image's favorite flag |
 | `delete_images` | Delete 1–500 explicitly selected archive IDs |
+| `list_templates`, `save_template`, `delete_templates` | Named template pictures shared by every model; `ImageRequest` accepts `mode`, `template`, `template_id`, `mask`, `strength` |
 
 The `local-image-ai://catalog` resource exposes the full current catalog.
 Tools include read-only/destructive annotations and typed input schemas. Outputs

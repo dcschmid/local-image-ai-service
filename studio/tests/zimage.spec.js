@@ -26,7 +26,7 @@ test('Z-Image variants expose their recipes, literal text and distilled controls
  await expect(page.locator('#recipe-quality option[value="detail"]')).toBeDisabled();
  await page.locator('#recipe-quality').selectOption('preview');
  await expect(page.locator('#recipe-preview')).toContainText('8 steps · CFG 1');
- await page.locator('#workflow').selectOption('free');
+ await page.locator('#expertise-expert').click();await page.locator('#workflow').selectOption('free');
  await expect(page.locator('#cfg')).toBeDisabled();await expect(page.locator('#negative')).toBeDisabled();
  await expect(page.locator('#quality option')).toHaveCount(1);
  await page.locator('#model').selectOption('z-image');

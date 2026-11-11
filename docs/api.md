@@ -14,7 +14,9 @@ allowed only under `/studio/`; Open WebUI calls `/v1` from its server. Optional 
 | GET | `/ready` | 200 with a ready backend, otherwise 503 |
 
 Chat, embeddings, video, native SDAPI and native administration are unavailable on the service port.
-Image editing is exposed through validated studio jobs. MOSS is configured for text-to-image.
+Image editing is exposed through validated studio jobs: `mode` `img2img` and `inpaint` with an
+uploaded `image_id` (and `mask_id`), gated per model by local verification receipts. Templates are
+named durable copies under `/studio/api/templates`. MOSS is configured for text-to-image by default.
 A native editing route does not establish model editing support.
 
 `/v1/models` remains reachable after a load failure. `installed` checks readable files;

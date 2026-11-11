@@ -33,9 +33,34 @@ class StudioTests(unittest.TestCase):
         with self.assertRaises(APIError): self.studio.submit({'prompt':'tree','preset':[]})
         for i in range(16): self.studio.submit({'prompt':'tree'})
         with self.assertRaises(APIError): self.studio.submit({'prompt':'tree'})
-    def test_edit_modes_not_supported_by_retained_models(self):
+    def test_editing_modes_require_receipts_and_templates(self):
+        # Declared modes stay gated until a local receipt verifies them.
         for model in ('moss','anima'):
             with self.assertRaises(APIError): self.studio.prepare({'model':model,'prompt':'tree','mode':'inpaint'})
+        (self.studio.root/'verification.json').write_text(json.dumps({'moss':dict(fingerprint=self.studio.fingerprint('moss'),modes=['img2img','inpaint'],sizes=[])}))
+        with self.assertRaises(APIError): self.studio.prepare({'model':'moss','prompt':'tree','mode':'img2img'})
+        upload=self.upload()
+        request=self.studio.prepare({'model':'moss','prompt':'tree','mode':'img2img','image_id':upload['id']})
+        self.assertEqual(request['mode'],'img2img');self.assertEqual(request['image_id'],upload['id'])
+        self.assertEqual(request['strength'],0.75)
+        mask=self.upload(size=(256,256))
+        with self.assertRaises(APIError): self.studio.prepare({'model':'moss','prompt':'tree','mode':'inpaint','image_id':upload['id'],'mask_id':mask['id']})
+        matching=self.upload()['id']
+        request=self.studio.prepare({'model':'moss','prompt':'tree','mode':'inpaint','image_id':upload['id'],'mask_id':matching})
+        self.assertEqual(request['mask_id'],matching)
+    def test_templates_are_durable_named_copies(self):
+        upload=self.upload()
+        saved=self.studio.save_template(dict(source_id=upload['id'],name='my portrait'))
+        self.assertEqual(saved['name'],'my portrait');self.assertEqual(saved['size'],[512,512])
+        self.assertEqual(self.studio.file(saved['id']).read_bytes(),self.studio.file(upload['id']).read_bytes())
+        self.assertEqual(self.studio.listing('template'),[saved])
+        self.assertEqual(self.studio.rename_template(saved['id'],dict(name='renamed'))['name'],'renamed')
+        for body in (dict(source_id='missing',name='x'),dict(source_id=upload['id'],name=' '),dict(source_id=upload['id'])):
+            with self.assertRaises(APIError): self.studio.save_template(body)
+        self.assertEqual(self.studio.delete_template(saved['id']),{'id':saved['id'],'deleted':True})
+        self.assertEqual(self.studio.listing('template'),[])
+        self.assertFalse(self.studio.file(saved['id']).exists())
+        self.assertTrue(self.studio.file(upload['id']).exists())
     def test_restart_does_not_regenerate_ambiguous_jobs(self):
         job=self.studio.submit({'prompt':'tree'})
         restored=Studio(self.backend,self.work.name)

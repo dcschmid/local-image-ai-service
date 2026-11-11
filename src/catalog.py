@@ -2,25 +2,29 @@
 CHECKED = '2026-11-01'
 MODELS = {
     'moss': dict(name='MOSS SFT', license='Apache-2.0', source='https://huggingface.co/OpenMOSS-Team/MOSS-Image-SFT',
-                 steps=50, cfg=3., sampler='euler', scheduler='discrete', shift=5., modes=['text'], negative=True,
+                 steps=50, cfg=3., sampler='euler', scheduler='discrete', shift=5., modes=['text','img2img','inpaint'],
+                 edit=dict(strength=.75), negative=True,
                  tip='Choose a realistic photography recipe or a low-poly scene. Each recipe prepares lighting, composition and settings; only your subject is required.'),
 }
 MODELS['anima'] = dict(name='Anima Aesthetic · 1.1', license='CircleStone (commercial image use allowed)',
     license_url='https://huggingface.co/circlestone-labs/Anima/blob/main/LICENSE.md',
     source='https://huggingface.co/circlestone-labs/Anima', steps=35,cfg=4.5,sampler='euler',scheduler='discrete',shift=None,
-    modes=['text'],negative=True,tip='For anime and illustration: choose a recipe and describe your subject. Aesthetic needs no score_* tags.')
+    modes=['text','img2img','inpaint'],edit=dict(strength=.65),negative=True,tip='For anime and illustration: choose a recipe and describe your subject. Aesthetic needs no score_* tags.')
 MODELS['flux-pixel'] = dict(name='FLUX.2-klein · Pixel Art', license='Apache-2.0',
     source='https://huggingface.co/adirik/pixel-art-lora-flux.2-klein-4B',
-    steps=20, cfg=4., sampler='euler', scheduler='flux', shift=None, modes=['text'], negative=True,
+    steps=20, cfg=4., sampler='euler', scheduler='flux', shift=None, modes=['text','img2img','inpaint'],
+    edit=dict(strength=.8), negative=True,
     tip='Pixel art on FLUX.2-klein-4B with the PXART4 LoRA. Generate at 1024 square; the LoRA produces a clean pixel grid. All components are Apache-2.0.')
 SAMPLERS = ['euler', 'euler_a', 'heun', 'dpm++2m']
 MODELS['z-image'] = dict(name='Z-Image', license='Apache-2.0',
     source='https://huggingface.co/Tongyi-MAI/Z-Image',
-    steps=40, cfg=4., sampler='euler', scheduler='discrete', shift=6., modes=['text'], negative=True,
+    steps=40, cfg=4., sampler='euler', scheduler='discrete', shift=6., modes=['text','img2img','inpaint'],
+    edit=dict(strength=.7), negative=True,
     tip='For creative illustration, varied characters and photography. Use descriptive sentences; negative prompts are supported. Recommended: 40 steps and CFG 4.')
 MODELS['z-image-turbo'] = dict(name='Z-Image Turbo', license='Apache-2.0',
     source='https://huggingface.co/Tongyi-MAI/Z-Image-Turbo',
-    steps=8, cfg=1., sampler='euler', scheduler='discrete', shift=3., modes=['text'], negative=False,
+    steps=8, cfg=1., sampler='euler', scheduler='discrete', shift=3., modes=['text','img2img','inpaint'],
+    edit=dict(strength=.55), negative=False,
     tip='For quick photographs, product ideas and short English or Chinese lettering. Eight steps, CFG 1 and no negative prompt; describe the result you want directly.')
 STYLES = [
     ('none', 'Custom style', '', '', 'Start by describing the subject, action and composition.'),

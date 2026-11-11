@@ -10,6 +10,14 @@ The archive is also available as JSON: `gallery list [--offset N] [--favorites]`
 `gallery delete IMAGE_ID [IMAGE_ID ...]` (up to 500 selected IDs). Each page
 contains up to 60 images. Deleting archive records leaves exported copies intact.
 
+Named templates are durable reference pictures shared by every model:
+`templates list`, `templates save --source IMAGE_ID --name 'my portrait'`,
+`templates rename IMAGE_ID --name NAME`, `templates delete TEMPLATE_ID ...`
+(up to 200). `render`/`compose` accept `--template FILE` (uploaded first),
+`--template-id ID`, `--mask FILE` and `--strength 0..1`; with any of these the
+request becomes `mode img2img` (or `inpaint` with a mask), which requires the
+model's editing verification receipt like the Studio does.
+
 Use `local-image-ai-service render` for the same guided recipes, queued model
 switches and image archive as the Studio. Successful agent commands write one
 JSON document to stdout. Errors write one JSON document to stderr and exit

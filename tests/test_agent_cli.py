@@ -96,6 +96,24 @@ class AgentCLITests(unittest.TestCase):
         self.assertEqual(self.cli('gallery', 'list')[1], [])
         self.assertEqual(Path(exported['exports']['image']).read_bytes(), full)
 
+    def test_templates_store_and_edit_requests_flow_through_http(self):
+        identifier, raw, _ = self.image()
+        source = self.root / 'portrait.png';source.write_bytes(raw)
+        code, saved, err = self.cli('templates','save','--source', identifier, '--name','my portrait')
+        self.assertEqual((code, err), (0, None));self.assertEqual(saved['name'], 'my portrait')
+        self.assertEqual([item['id'] for item in self.cli('templates','list')[1]], [saved['id']])
+        self.assertEqual(self.cli('templates','rename', saved['id'], '--name','renamed')[1]['name'], 'renamed')
+        (self.studio.root/'verification.json').write_text(json.dumps({'moss':dict(fingerprint=self.studio.fingerprint('moss'),modes=['img2img','inpaint'],sizes=[])}))
+        code, output, error = self.cli('compose','--prompt','reimagine','--model','moss','--template',str(source),'--strength','0.4')
+        self.assertEqual((code, error), (0, None))
+        self.assertEqual(output['request']['mode'],'img2img');self.assertEqual(output['request']['strength'], 0.4)
+        self.assertEqual(self.studio.get(output['request']['image_id'], 'upload')['size'], [256, 256])
+        self.assertEqual(self.studio.get(saved['id'], 'template')['name'], 'renamed')
+        code, deleted, _ = self.cli('templates','delete', saved['id'])
+        self.assertEqual((code, deleted['deleted_ids']), (0, [saved['id']]))
+        self.assertEqual(self.cli('templates','list')[1], [])
+        self.assertTrue(self.studio.file(identifier).exists())
+
     def test_retired_profiles_are_rejected_but_historical_images_still_export(self):
         for model in ('anima-psx', 'anima-lowpoly'):
             with redirect_stderr(io.StringIO()), self.assertRaises(SystemExit) as raised:

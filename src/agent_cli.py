@@ -18,7 +18,7 @@ from modeling_reference import ASSETS, VIEWS, options as modeling_options
 from recipes import formats, recipes
 from service import APIError, MAX_RESPONSE, missing_files, sampling_settings
 
-COMMANDS = {'catalog', 'models', 'recipes', 'presets', 'formats', 'compose', 'render', 'jobs', 'export', 'gallery'}
+COMMANDS = {'catalog', 'models', 'recipes', 'presets', 'formats', 'compose', 'render', 'jobs', 'export', 'gallery', 'templates'}
 JSON_LIMIT = 2 * 1024 * 1024
 INPUT_LIMIT = 65536
 
@@ -70,6 +70,11 @@ def request_arguments(parser):
     parser.add_argument('--sampler', choices=SAMPLERS)
     parser.add_argument('--negative-prompt')
     parser.add_argument('--preset', choices=[p['id'] for p in presets()], help='Free prompt style ID')
+    parser.add_argument('--mode', choices=('text', 'img2img', 'inpaint'), help='Editing mode; editing needs --template-id or --template')
+    parser.add_argument('--template', type=Path, help='Local image file used as the template; uploaded first')
+    parser.add_argument('--template-id', type=identifier, help='Existing template or upload ID as the editing source')
+    parser.add_argument('--mask', type=Path, help='Local black-and-white mask file; inpaint mode only')
+    parser.add_argument('--strength', type=float, help='Editing strength 0..1; defaults to the model value')
 
 
 def add_commands(commands):
@@ -112,14 +117,25 @@ def add_commands(commands):
     favorite.add_argument('id', type=identifier)
     favorite.add_argument('value', choices=('true', 'false'))
     actions.add_parser('delete').add_argument('ids', type=identifier, nargs='+', help='Delete 1–500 specified images and their native companions')
+    parser = commands.add_parser('templates', help='List, save, rename or delete named template images as JSON')
+    actions = parser.add_subparsers(dest='action', required=True)
+    actions.add_parser('list')
+    save = actions.add_parser('save', help='Copy an upload, gallery image or template into the named template store')
+    save.add_argument('--source', type=identifier, required=True, help='Upload, gallery or template ID')
+    save.add_argument('--name', required=True, help='1–60 characters, for example: my portrait')
+    rename = actions.add_parser('rename')
+    rename.add_argument('id', type=identifier)
+    rename.add_argument('--name', required=True, help='1–60 characters')
+    actions.add_parser('delete').add_argument('ids', type=identifier, nargs='+', help='Delete 1–200 templates; saved images stay untouched')
 
 
 def build_request(args, cfg):
     keys = ('model', 'subject', 'scene', 'details', 'text', 'quality', 'aspect_ratio', 'modeling_view',
-            'modeling_asset', 'seed', 'size', 'steps', 'cfg_scale', 'sampler', 'negative_prompt', 'preset')
+            'modeling_asset', 'seed', 'size', 'steps', 'cfg_scale', 'sampler', 'negative_prompt', 'preset',
+            'mode', 'strength')
     values = {key: getattr(args, key) for key in keys if getattr(args, key) is not None}
     if args.input is not None:
-        if values or args.example:
+        if values or args.example or args.template or args.template_id or args.mask:
             raise CommandError('--input cannot be combined with request overrides.', 'invalid_arguments', 2)
         if str(args.input) == '-':
             raw = sys.stdin.read(INPUT_LIMIT + 1).encode('utf-8')
@@ -282,6 +298,13 @@ def execute(args, load_config, request, save_image, default_save_dir):
         return discovery(args, load_config)
     cfg = load_config()
     client = Client(cfg, request, save_image)
+    if args.command == 'templates':
+        if args.action == 'list': return client.call('templates')
+        if args.action == 'save': return client.call('templates', dict(source_id=args.source, name=args.name))
+        if args.action == 'rename': return client.call('templates/' + args.id + '/rename', dict(name=args.name))
+        if len(args.ids) > 200:
+            raise CommandError('Delete at most 200 templates per request.', 'invalid_arguments', 2)
+        return client.call('templates/delete', dict(ids=args.ids))
     if args.command == 'gallery':
         if args.action == 'list':
             if not 0 <= args.offset <= 1000000:
@@ -308,6 +331,24 @@ def execute(args, load_config, request, save_image, default_save_dir):
         job = client.wait(args.id, time.monotonic() + timeout)
         return dict(status='completed', jobs=[dict(id=job['id'], status=job['status'])], images=[client.image(job['image_id'], directory)])
     body = build_request(args, cfg)
+    # Template and mask files ride in as uploads before validation, exactly like the Studio upload.
+    for flag, key in (('template', 'image_id'), ('mask', 'mask_id')):
+        path = getattr(args, flag, None)
+        if path is None:
+            continue
+        try:
+            raw = path.expanduser().read_bytes()
+        except OSError as exc:
+            raise CommandError('Could not read ' + str(path) + ': ' + str(exc)[:200], 'input_unreadable', 2)
+        if not 0 < len(raw) <= 12 * 1024 * 1024:
+            raise CommandError('Input images are PNG, JPEG or WebP up to 12 MiB.', 'invalid_input', 2)
+        body[key] = client.call('uploads', dict(data=base64.b64encode(raw).decode()))['id']
+    if getattr(args, 'template_id', None) is not None:
+        body['image_id'] = args.template_id
+    if 'image_id' in body:
+        body.setdefault('mode', 'img2img')
+    if 'mask_id' in body and body.get('mode', 'text') == 'text':
+        body['mode'] = 'inpaint'
     if args.command == 'render' and args.asynchronous and directory is not None:
         raise CommandError('--async cannot export before completion; use jobs wait --save-dir or export later.', 'invalid_arguments', 2)
     prepared = client.call('compose', body)

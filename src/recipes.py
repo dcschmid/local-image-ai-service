@@ -501,9 +501,14 @@ def recipes():
                  cfg_scale=defaults(r.get('model','anima'))['cfg'],sampler='euler') for r in RECIPES]
 
 def compose(body):
-    allowed={'model','recipe','subject','scene','details','text','aspect_ratio','quality','seed','modeling_view','modeling_asset'}
+    allowed={'model','recipe','subject','scene','details','text','aspect_ratio','quality','seed','modeling_view','modeling_asset','mode','image_id','strength'}
     if set(body)-allowed:
         raise ValueError('Unknown guided settings. Use recipe inputs, Blender reference options or free prompt mode for custom parameters.')
+    mode=body.get('mode','text')
+    if mode not in ('text','img2img','inpaint'):
+        raise ValueError('Guided recipes edit templates with img2img or inpaint, or use free prompt mode.')
+    if mode!='text' and not isinstance(body.get('image_id'),str):
+        raise ValueError('A template image is required for editing modes.')
     recipe=next((r for r in RECIPES if r['id']==body.get('recipe')),None)
     if recipe is None: raise ValueError('Unknown recipe.')
     model=recipe.get('model','anima')
@@ -566,5 +571,8 @@ def compose(body):
     steps={'anima':{'preview':30,'standard':35,'detail':45},'moss':{'preview':recipe.get('preview_steps',30 if photo or reference else 20),'standard':50,'detail':60},'flux-pixel':{'preview':12,'standard':20,'detail':35},'z-image':{'preview':28,'standard':40,'detail':50},'z-image-turbo':dict.fromkeys(('preview','standard','detail'),8)}[sampling_model]
     result=dict(model=model,prompt=prompt,size=draft_size if quality=='preview' else size,
                 steps=steps[quality],cfg_scale=defaults(model)['cfg'],sampler='euler',negative_prompt=negative,preset='none')
+    if mode!='text':
+        result.update(mode=mode,image_id=body['image_id'])
+        if 'strength' in body:result['strength']=body['strength']
     if 'seed' in body:result['seed']=body['seed']
     return result

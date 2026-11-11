@@ -88,7 +88,7 @@ Discover the available choices with `models`, `recipes`, `presets` and `formats`
 
 ## Let your agent do the setup
 
-The installable **local-image-ai** skill teaches an agent to choose a preset, preview the prompt, generate locally and export the finished asset. MCP exposes the same workflow as 17 tools, including model discovery and library management.
+The installable **local-image-ai** skill teaches an agent to choose a preset, preview the prompt, generate locally and export the finished asset. MCP exposes the same workflow as 20 tools, including model discovery, template pictures and library management.
 
 For Codex:
 

@@ -50,6 +50,11 @@ class ImageRequest(BaseModel):
     sampler: SamplerID | None = None
     negative_prompt: str | None = Field(default=None, max_length=16000)
     preset: PresetID | None = None
+    mode: Literal['text', 'img2img', 'inpaint'] | None = None
+    template: str | None = Field(default=None, min_length=1, description='Local PNG/JPEG/WebP file used as the template; uploaded first')
+    template_id: RecordID | None = Field(default=None, description='Existing template or upload ID as the editing source')
+    mask: str | None = Field(default=None, min_length=1, description='Local black-and-white mask file; inpaint only')
+    strength: float | None = Field(default=None, ge=0, le=1, allow_inf_nan=False)
 
     @model_validator(mode='after')
     def choose_source(self):
@@ -207,6 +212,21 @@ def create_server(**overrides) -> MCPServer:
     def delete_images(image_ids: Annotated[list[RecordID], Field(min_length=1, max_length=500)]) -> CallToolResult:
         """Delete only explicitly requested archived image IDs and native companions. Local exported copies remain available."""
         return guarded(lambda: execute(['gallery', 'delete', *image_ids]))
+
+    @server.tool(annotations=read, structured_output=False)
+    def list_templates() -> CallToolResult:
+        """List named template images: durable reference pictures available to every model."""
+        return guarded(lambda: execute(['templates', 'list']))
+
+    @server.tool(annotations=ToolAnnotations(read_only_hint=False, destructive_hint=False, idempotent_hint=False, open_world_hint=False), structured_output=False)
+    def save_template(source_id: RecordID, name: Annotated[str, Field(min_length=1, max_length=60, description='1–60 characters, for example: my portrait')]) -> CallToolResult:
+        """Copy an upload, archived image or template into the named template store."""
+        return guarded(lambda: execute(['templates', 'save', '--source=' + source_id, '--name=' + name]))
+
+    @server.tool(annotations=ToolAnnotations(read_only_hint=False, destructive_hint=True, idempotent_hint=False, open_world_hint=False), structured_output=False)
+    def delete_templates(template_ids: Annotated[list[RecordID], Field(min_length=1, max_length=200)]) -> CallToolResult:
+        """Delete only explicitly requested templates; saved images and results stay untouched."""
+        return guarded(lambda: execute(['templates', 'delete', *template_ids]))
 
     @server.resource('local-image-ai://catalog')
     def catalog_resource() -> str:
